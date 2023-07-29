@@ -1,0 +1,67 @@
+No Kali (WSL)...
+
+Baixar o arquivo de wget https://kali.sh/xfce4.sh
+Depois do diretório raiz executar o comando "sh xfce4.sh"
+
+ou
+
+apt-get --yes --force-yes install kali-desktop-xfce xorg xrdp
+
+
+Para iniciar o xrdp: /etc/init.d/xrdp start -- para parar -- stop
+
+Depois...
+
+Alterar o arquivo xrdp.ini para uma porta diferente da padrão: "nano etc/xrdp/xrdp.ini" 
+
+"i" = Iniciar o modo de edição.
+Ctrl + X = Para sair do modo de edição.
+
+Obs: Alterar para a porta 3390, por exemplo (No começo do arquivo).
+
+Após trocar o número da porta restartar o serviço = service xrdp restart
+
+
+Tentar acessar através do "mstsc /v localhost:3390"
+
+
+Comandos extras -- ?
+
+No Ubuntu (com Vagrant)...
+
+No arquivo Vagrantfile, "descomente" as linhas:
+
+      config.vm.provider "virtualbox" do |vb|
+       # Display the VirtualBox GUI when booting the machine
+       vb.gui = true
+
+Ligue a máquina:
+
+    $ vagrant up
+
+Conecte a máquina:
+
+    $ vagrant ssh
+
+Atualize a máquina:
+
+    $ sudo apt-get update
+
+Adicione os pacotes básicos do gnome:
+
+    $ sudo apt-get install xorg gnome-core gnome-system-tools gnome
+
+Adicione o XFCE:
+
+    $ sudo apt-get install xfce4
+
+Inicializar o XFCE:
+
+    $ sudo startxfce4&
+
+
+
+
+
+
+

@@ -1,0 +1,314 @@
+------- AWS CLI Referência - https://docs.aws.amazon.com/cli/latest/reference/
+
+------- Comandos utilizados:
+
+$ aws ecs list-services
+
+$ aws ecs list-services --cluster default
+
+$ aws ecs list-tasks
+
+$ aws ecs update-service --service "nome do servico" --desired-count 2
+
+$ aws ecs describe-clusters
+
+$ aws ecs describe-clusters --query 'clusters[*].[clusterName, runningTasksCount]'
+
+$ aws ecs describe-clusters | grep Name
+
+$ aws ecs describe-tasks --cluster default --tasks "ID da task"
+
+$ aws ecs describe-tasks --cluster default --tasks "ID da task" --query 'tasks[*].{cpu:cpu, memoria:memory}'
+
+$ aws autoscaling describe-auto-scaling-groups
+
+Obs: Neste comando acima do autoscaling utilizamos o comando da AWS "pura" porque nos comandos ECS não teriamos está opção de comando.
+        Podemos checar os comandos próprios para autoscaling nos docs: https://docs.aws.amazon.com/cli/latest/reference/autoscaling/index.html
+
+
+$ aws autoscaling set-desired-capacity --auto-scaling-group-name "nome do grupo de autoscaling" --desired-capacity 2
+
+
+------- Camadas do ECS:
+
+Do mais alto nível até o mais baixo
+
+Cluster | Serviço | Task | Container (Como quase todos os componentes já estou familiarizado, para assimilar melhor o conceito de "task" podemos ver ela como se fosse o POD)
+
+Devemos lembrar que para a melhor utilização de recursos o container roda apenas a aplicação à qual foi proposto, ficando a cargo de Cluster, Serviço e Task/Pod as demais
+configurações e tarefas.
+
+
+------- ECR - Amazon Elastic Container Registry - https://aws.amazon.com/pt/ecr/
+
+Para as primeiras lições do ECR utilizei a Alura
+Imagem do instrutor: $ sudo docker pull rmerces/api-monolitica
+Teste da imagem: $ docker run --name api-mono -d -p 3000:3000 rmerces/api-monolitica
+
+Fazendo push da imagem para o ECR:
+
+1 Realizando login - $ sudo docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) "id da conta aws".dkr.ecr.us-east-1.amazonaws.com
+
+        Obs: Tentar depois configurar "credential Helper" para remover os alertas na hora do login
+
+        Obs2: Estava tendo muito problema para realizar o login, até que descobri que o problema não era na AWS e sim no Docker, encontrei a solução neste link:
+                https://stackoverflow.com/questions/60583847/aws-ecr-saying-cannot-perform-an-interactive-login-from-a-non-tty-device-after
+
+2 - "Tagueando a imagem" - $ sudo docker tag rmerces/api-monolitica:latest "id da conta aws".dkr.ecr.us-east-1.amazonaws.com/api-monolitica:latest
+
+3 - Verificando se a imagem foi tagueada corretamente - $ sudo docker images
+
+4 - Realizando o push da imagem - $ sudo docker push 089350267643.dkr.ecr.us-east-1.amazonaws.com/api-monolitica:latest
+
+
+------- Comandos para Task
+
+$ aws ecs list-tasks --cluster ecs-api
+
+$ aws ecs stop-task --task 667e351c38d74d9f96ef544535c9066f  --cluster ecs-api
+
+$ aws ecs list-task-definitions # Isto é como se fosse a classe de onde os objetos (containers) são gerados
+
+$ aws ecs run-task --cluster ecs-api --task-definition api-monolitica:1 (podemos adicionar mais que uma utilizando o parâmetro '--count 3')
+
+
+O que foi aprendido e questões -------
+
+Aula 01: Conhecendo o Elastic Container Service -------
+
+        Nessa aula aprendemos:
+
+                - O que é AWS Fargate
+                - A diferença entre Container Definition, Task Definition, Service e Cluster
+                - O modelo de cobrança do Fargate (https://aws.amazon.com/pt/fargate/pricing/)
+
+
+Questões aula 01:
+
+        1 - A tecnologia Fargate pode ser representada por um diagrama. Marque os objetos que fazem parte desta estrutura:
+
+                R: A tecnologia Fargate pode ser representada por um diagrama. Os objetos que fazem parte desta estrutura são: Container, Service, 
+                        Task e Cluster.
+
+        
+        2 - O que é AWS Fargate no Amazon ECS?
+
+                R: AWS Fargate o "gerenciador" da infraestrutra que roda os containers. O Fargate decide quais maquinas a usar, tipo de servers e como 
+                        escalar.
+
+                        O AWS Fargate permite executar containers sem a necessidade de gerenciar servidores de instâncias do AWS EC2. Ou seja, você não 
+                        precisar se preocupar em escolher tipos de servidor, decidir quando o tamanho do clusters ou otimizar os recursos.
+
+        
+        3 - Do ponto de vista dos recursos oferecidos pela tecnologia Fargate, podemos fazer as seguintes afirmações:
+
+                1 - É escalável
+                2 - Assim como o EC2, gerenciamos nossa infraestrutura
+                3 - Podemos especificar as quantidades de memória e CPU para os nossos containers
+                
+                Qual é a afirmativa falsa?
+
+                        R: A afirmativa 2
+
+                                No modelo Fargate, toda a infraestrutura é provisionada e gerenciada automaticamente pela AWS, diferentemente do modelo EC2.
+
+
+Aula 02: Ensaiando a orquestração -------
+
+        Nessa aula aprendemos:
+
+                - Que um serviço possui 0 ou mais tarefas
+                - Que o serviço automaticamente inicializa a quantidade de tarefas configuradas
+                - Para parar uma tarefa devemos definir o serviço com a quantidade 0 de tarefas
+                - Como usar aws-cli para manipular o serviço e a quantidade de tarefas
+                - Como usar aws-cli para executar queries
+
+Questões aula 02:
+
+        01 - Para verificar os serviços que estão criados dentro do cluster TESTE, foi executado o seguinte comando:
+
+                aws ecs services
+
+                O comando está correto?
+
+                        R: Não, o comando possui 2 erros!
+
+                                aws ecs list-services --cluster TESTE
+                                Além de utilizar o list-services, é preciso especificar o nome do cluster.
+
+
+        02 - Ao executar o comando:
+
+                aws ecs describe-tasks --cluster default --task 388d3bd2…
+
+                Foi exibida a saída abaixo. Como podemos filtrar o resultado de forma que seja mostrado o último status da tarefa?
+
+                                {
+                "tasks": [
+                        {
+                        "taskArn": "arn:aws:ecs:us-east-1:4538885…….
+                        "clusterArn": "arn:aws:ecs:us-east-1:453888594646:cluster/default",
+                        "taskDefinitionArn": "arn:aws:ecs:us-east-1:453888594646…………….
+                        "overrides": {
+                                "containerOverrides": [
+                                {
+                                        "name": "sample-app"
+                                }
+                                ]
+                        },
+                        "lastStatus": "STOPPED",
+                        "desiredStatus": "STOPPED",
+                        "cpu": "256",
+                        "memory": "512",
+                        "containers": [
+                                {
+
+                R: --query 'tasks[*].[lastStatus]'
+
+                        Utilizamos o [*] para percorrer toda a lista, seguido do [lastStatus], que corresponde ao campo que desejamos.
+
+
+Aula 03: Preparando nosso ambiente -------
+
+        Nessa aula aprendemos:
+
+                - Como provisionar o ECS através de instâncias EC2
+                - Como o cluster foi definido usando Auto Scaling Groups
+                - Como alterar propriedades do cluster tanto no console web quanto no aws-cli
+
+Questões aula 03:
+
+        01 -  Para a criação de um cluster EC2, existem alguns pré-requisitos como infraestrutura, rede e segurança.
+
+                Todas as afirmativas abaixo estão corretas, exceto:
+
+                R: Load Balancer
+                
+                        A criação do Load Balancer NÃO é pré-requisito para o processo de criação do cluster. O Load Balancer é um recurso extra que tem 
+                        como objetivo distribuir automaticamente o tráfego de entrada dos aplicativos em várias instâncias do EC2.
+
+
+        02 - Sobre as questões que envolvem o redimensionamento do cluster, é correto afirmar que:
+
+                R1: Ao criarmos o cluster pelo console, automaticamente é criado um autoscaling group.
+                        Ao ser criado o cluster, é criado um autoscaling group, a fim de manter o número desejado de instâncias em operação.
+
+                R2: É possível fazer o resize do cluster tanto pela CLI como pelo console da AWS.
+                         Por ambas as ferramentas podemos fazer o gerenciamento (resize) do cluster.
+
+
+Aula 04: Elastic Container Registry -------
+
+        Nessa aula aprendemos:
+
+                - O que é o ECR e para que serve
+                - Como adicionar uma imagem no repositório do ECR
+                - Que cada repositório possui um URL
+                - Que as imagens são diferenciadas pela tag
+                - Que um repositório pode ter regras que definem o ciclo da vida das imagens
+
+Questões aula 04:
+
+        01 - A utilização de políticas para ciclo e vida das imagens mantém o ambiente devidamente organizado, resultando inclusive na economia de recursos 
+                financeiros. Sobre as definições das políticas, é correto afirmar que:
+
+                R: É possível criar uma política para limitar o número de imagens no repositório.
+
+
+Aula 05: Trabalhando com tasks -------
+
+        Nessa aula aprendemos:
+
+                - Como criar uma Task Definition separadamente
+                - Como adicionar uma Container Definition ao Task Definition
+                - Que a Task Definition já pode ser usado no cluster mesmo sem Service
+                - Lembrando que o Service automatiza o processo da Task Definition
+                - Usar a aws-cli para administrar tarefas
+
+Questões aula 05:
+
+        01 - As tasks configuram os parâmetros e o ambiente dos containers. Um destes parâmetros é o limite de memória (memory limits). Qual das afirmativas 
+                abaixo está correta?
+
+                R: Pelo menos uma das definições é obrigatória (SOFT LIMIT ou HARD LIMIT).
+
+        
+        02 - Para visualizar as tasks que estão em execução no cluster ecs-api, utilizamos o seguinte comando via cli:
+
+                aws ecs list-tasks --cluster ecs-api
+
+                R: A sintaxe está correta, lembrando que é sempre importante especificar o nome do cluster com --cluster.
+
+
+Aula 06: Serviços, o Maestro da Orquestra -------
+
+        Nessa aula aprendemos:
+
+                - Como criar um service baseado no EC2 que usa a nossa Task Definition
+                - Como criar o loadbalancer e associar aos containers
+                - Como liberar o roteamento pelo Inbound Rule do Security Group
+
+Questões aula 06:
+
+        01 - É possível fazer a exclusão de um serviço que está em produção?
+
+                R: Sim, desde que o número de tarefas seja igual a 0.
+
+                Para configurar o número de tarefas como zero, basta fazer um update do serviço, seja pelo console ou pela cli.
+
+        
+        02 - Para o correto acesso às aplicações rodando no ECS, precisamos fazer o seguinte ajuste no Security Group:
+
+                R: Além do acesso à aplicação, é preciso liberar todo o acesso à rede interna
+
+                        Sim, além de liberar o acesso à aplicação, no caso a porta 80 e/ou 443, é preciso incluir uma regra, autorizando o balanceador a se 
+                        comunicar com os containers. Resumindo, liberar também todo o acesso dentro da VPC.
+
+
+Aula 07: Hora doconcerto -------
+
+        Nessa aula aprendemos:
+
+                - Como construir uma arquitetura de microserviços no ECS
+                - Como criar a task através do JSON
+                - Como fazer uma revisão da task
+                - Como definir regras no load balancer para forwards
+
+Questões aula 07:
+
+        01 - Para enviarmos uma imagem para o repositório, existe uma sequência que precisa ser observada:
+
+                R: Fazer login no repositório, buildar a imagem, taggear e por fim fazer o envio (push).
+                     Lembrando que o login pode ser feito em qualquer momento antes do push!
+
+
+        02 - Para iniciar uma task, é necessário que a mesma esteja vinculada a um serviço?
+
+                R: Mesmo estando associada a um serviço, é possível iniciar uma task manualmente.
+                        Mesmo estando associada a um serviço, você tem a opção de iniciar uma task manualmente, a fim de, por exemplo, efetuar um teste.
+
+        
+        03 - Tomando como referência as regras aplicadas ao Load Balancer, marque as alternativas corretas:
+
+                R1: Além das opções de HTTP e HTTPS, é possível criar outros tipos de balanceadores.
+                    A AWS oferece, além do Application Load Balancer (HTTP e HTTPS), a opção do TCP Load Balancer, no qual é possível criar regras baseadas 
+                    em conexão, portas, etc.    
+
+                R2: No Load Balancer, é possível redirecionarmos o tráfego para um servidor específico utilizando apenas o path de uma URL.
+                       Isso mesmo, editando as regras do listener, você pode redirecionar todo o seu tráfego baseando-se apenas na URL. Por exemplo, 
+                       xpto.com/imagens aponta para o servidor 1, enquanto xpto.com/catalogo aponta para o servidor 2.     
+
+                R3: No Load Balancer, é possível dizer se um servidor está ativo ou não apenas apontando para uma URL ou objeto da sua aplicação.
+                        Uma dica é utilizar o Health Check e apontá-lo para uma URL ou objeto específico da sua aplicação. Caso este objeto ou URL não 
+                        esteja respondendo, o Load Balancer considera que o seu servidor está down.
+
+
+        04 - Tomando como referência a tabala abaixo, podemos afirmar:
+
+                EC2 ||||||| SERVICOS: 4 - RUNING TASKS: 6 - PENDING TASKS: 0 - CONTAINER INSTANCES: 2
+
+                R: Para saber se realmente está tudo certo, é necessário, além deste quadro, checar as informações referentes à relação de serviços e tasks.
+
+                      Sem dados adicionais fica difícil fazer algum diagnóstico mais preciso. Considerando apenas esta tela, um indicativo de problema 
+                      seriam os dados relativos à utilização de memória e CPU quando estes beiram os 100%.  
+

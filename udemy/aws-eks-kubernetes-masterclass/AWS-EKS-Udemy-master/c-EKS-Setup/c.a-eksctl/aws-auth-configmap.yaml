@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: arn:aws:iam::089350267643:role/EKS-course-role
+      rolename: EKS-course-role
+      groups:
+        - system:masters
+  mapUsers: |
+    - userarn: arn:aws:iam::089350267643:user/eks-course
+      username: eks-course
+      groups:
+        - system:masters

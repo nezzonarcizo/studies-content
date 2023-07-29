@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2021-11-02T18:20:47Z"
+  labels:
+    kubernetes.io/metadata.name: terere
+  name: terere
+  resourceVersion: "57909"
+  uid: 7a3edae6-5e01-4754-b2d9-3f56bd6a2762
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active

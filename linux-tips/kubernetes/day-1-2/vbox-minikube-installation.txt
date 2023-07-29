@@ -1,0 +1,36 @@
+-*- Quando o sistema não consegue fazer uploads
+
+# subscription-manager attach --auto
+
+
+-*- Removendo VirtualBox antigo e Reinstalando a nova versão
+
+# sudo yum update
+
+# sudo yum list installed | grep -i VirtualBox
+
+# sudo yum remove VirtualBox-6.1.x86_64
+
+Baixar a versão correta (RPM para RHEL), depois:
+
+# dnf install /path/to/package.rpm
+
+
+-*- Definir qual será o driver utilizado pelo Minikube:
+
+Obs: Para instalação do Kubectl e do Minikube consultar a documentação
+
+Obs: Toda vez antes de executar o # minikube start
+    Deve ser executado # minikube delete
+
+# minikube start --vm-driver=virtualbox
+
+
+-*- Instalando as dependencias do Kernel:
+
+# sudo yum install -y "kernel-devel-$(uname -r)"
+
+# sudo yum install VirtualBox-guest-additions
+
+Obs: Para verificar possíveis problemas no Kernel: # /sbin/vboxconfig
+        E mesmo após consertar tudo este comando deve ser executado mais uma vez

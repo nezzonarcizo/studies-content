@@ -1,0 +1,1407 @@
+Aula 01: Primeiros passos na AWS -------
+
+    Teoria:
+
+        Introdução:
+
+            Este curso é voltado para quem quer aprender a dispolnibilizar aplicações em um provedor de serviços na nuvem como a AWS.
+            Vamos aprender a utilizar as instâncias EC2 que são um recurso computacional que a AWS disponibiliza para que possamos criar nossa infraestrutura.
+            Também aprenderemos a deixar nossa aplicação em alta disponibilidade e alta escalabilidade para que tenhamos um ambiente de produção profissional.
+
+        Ciração de uma conta na AWS:
+
+            - Não existe diferença de contas.
+            - Temos o direito de uso gratuito por um ano desde que não estrapolemos o limite dos recursos disponibilizados no free tier.
+            - Exige cadastro de um cartão de crédito internacional.
+
+        Uso gratuito e recomendações iniciais:
+
+            - Algumas coisas são sempre gratuitas
+
+                - AWS Lambda - Não somos cobrados pelo hardware, mas sim por tempo e quantidade de memória
+
+            - O que tem limite
+
+                - Temos 12 meses de uso gratuito a partir da data do cadastramento
+                - Amazon EC2 - 750 horas por mês
+                - Amazon S3 - 5 gb de armazenamento
+                - Amazon RDS - 750 horas por mês de uso do banco de dados.
+
+            Ativar 2FA para que tenha mais segurança, já que temos em nossa conta um cartão de crédito cadastrado e os serviços da AWS não são baratos.
+
+        Criando a primeira instância EC2:
+
+            EC2 - Elástic Computer:
+
+                EC2 Dashboard:
+
+                    Aqui podemos ver o que está acontecendo em nosso ambiente da Amazon AWS, como, e principalmente, instâncias rodando (Running instances).
+                    Pode clicar neste menu (Running Instances) para "lançar" nossa primeira instância (Launch Instance).
+                    Temos sempre que nos atentar onde (em que região) estamos criando nossa instância.
+
+                    O dashboard é individual, ou seja, se criarmos uma instância em Nort Virgínia ela não aparecerá no dashboard de Ohio.
+
+                    Primeiro passo para subirmos nossa intância e escolher o tipo de máquina que queremos criar.
+                    (Step 1: Choose an Amazon Machine Image (AMI))
+                    Caso tenhamos alguma aplicação que deva rodar num tipo de máquina específica, devemos escolher o tipo de máquina apropriado. Se não, é melhor escolhermos a máquina
+                    "Amazon Linux", que é o ubunto já compilado com ferramentas e recursos apropriados que facilitará muita coisa.
+
+                    A segunda etapa é escolher o tipo de instância. O free tier nos permite criar apenas instância com 1 CPU e 1GB de memória.
+                    Step 2: Choose an Instance Type
+
+                    General purpose
+                    t2.micro Free tier eligible 1 CPU 1 GB RAM
+
+                    Terceira etapa a quantidade de instâncias a serem criadas
+                    Step 3: Configure Instance Details
+                    Obs: Nesta parte do curso não alteramos nada nesta etapa.
+
+                    Quarta etapa: Armazenamento...
+                    Step 4: Add Storage
+                    Pois, existe a máquina virtual (Que tem sua capacidade de processamento, com memória, CPU etc) e existe o armazenamento. Na Amazon AWS são dois serviços separados e 
+                    também são cobrados separadamente.
+                    Por padrão, nosso espação de armazenamento é de 8GB que atende perfeitamente o propósito do curso.
+
+                    Quarta etapa: Não iremos alterar nem abranger no momento:
+                    Step 5: Add Tags
+
+                    A sexta etapa é importante:
+                    Step 6: Configure Security Group
+                    É o grupo seguro dentro da AWS que faz com que somente nós acessemos nossas instâncias, como se fosse um firewall.
+
+                    Um nome de grupo e uma descrição nos é solicitada. Inserimos acesso-remoto nos dois campos.
+
+                        Security group name: acesso-remoto
+                        Description:         acesso-remoto
+
+                    Port Range: 22
+
+                    Source, ou origem do acesso, podemos escolher o nosso IP atual "My IP", lembrando que se o IP for dinâmico isto irá parar de funcionar.
+                    Podemos escolher Custom, que é quando definimos um IP fixo ou um range que terá acesso à instância.
+                    Anywhere, como o nome já diz, de qualquer lugar.
+
+                    Sétima etapa, review:
+                    Step 7: Review Instance Launch
+                    Ele nos dá uma revisão das opções que escolhemos.
+
+                    Lançamos a máquina...
+                    Porém, por default, a AWS não deixar utilizarmos usuário e senha para acessarmos a instância, precisaremos criar uma chave SSH.
+
+                    Devemos escolher criar a chave, caso não tenhamos uma, e escolher um nome para esta chave.
+                    Realizamos o download da chave e guardamos num local seguro, pois sem o arquivo extensão PEM perdemos o acesso à nossa máquina virtual.
+
+                    Agora sim conseguimos lançar a nossa instância EC2.
+
+                    E agora: Como acessamos, utilizamos etc?
+
+            
+            Nesta aula, vimos:
+
+                - Como criar uma nova conta na Amazon AWS, para usar o Free Tier
+                - Os detalhes do nível gratuito da AWS
+                - Como garantir a segurança da sua conta AWS
+                - Como criar uma instância no EC2
+                - As diferentes imagens da Amazon
+                - Os tipos de instância
+                - Como configurar o acesso SSH à nossa instância
+                - Como criar o par de chaves para acessar a nossa instância
+
+
+    Questões aula 01:
+
+        1 - Dentre as alternativas abaixo, quais são características do nível gratuito da AWS?
+
+            Selecione 2 alternativas
+
+            A - Alguns serviços são sempre gratuitos, mesmo após os 12 primeiros meses
+
+                Alternativa correta! Limitado a um determinado escopo (capacidade/tempo de uso), o serviço é gratuito mesmo após os 12 meses (free tier).
+
+            B - Alguns serviços são categorizados como testes, ou seja, tem um tempo limitado para uso gratuito
+
+                Alternativa correta! Mesmo no período gratuito, alguns serviços estão disponíveis na forma de teste, e após este período são cobrados.
+
+        
+        2 - As instâncias EC2 tem algumas características relacionadas aos tipos de máquinas e suas respectivas imagens. Sobre isso, marque as alternativas corretas:
+
+            Selecione 2 alternativas
+
+            A - Na AWS Marketplace, existem várias imagens pré-configuradas (WordPress, MySQL, etc)
+                Alternativa correta! Através destas imagens, é possível subir uma instância EC2 com os softwares pré-instalados e configurados.
+
+            B - t2.micro corresponde a uma instância free tier
+                Alternativa correta! As instâncias do tipo t2.micro é a opção de uso dentro do free tier. Lembrando que você pode utilizar qualquer tipo de instância. Consulte os valores 
+                em: Definição de preço do Amazon EC2.
+
+        
+Aula 02: Gerenciando instâncias EC2 -------
+
+    Teoria:
+
+        Informações e acesso remoto:
+
+            Primeira coisa que fizemos após criar a instância EC2 foi dar uma nome a ela: primeira-ec2-curso
+
+            Na primeira página da Amazon AWS, podemos visuzalizar um mapa para entender como funciona suas regiões: https://aws.amazon.com/pt/
+            Cada ponto no mapa é um datacenter e se passarmos o mouse sobre veremos quantas zonas de disponibilidade cada uma tem.
+            Do ponto de vista de infraestrutura todas as zonas são isoladas (Elétrica, lógica, etc).
+
+            Podemos verificar informações mais detalhadas sobre este assunto em: https://docs.aws.amazon.com/general/latest/gr/rande.html
+
+            As zonas de disponibilidades são definidas por letras a frente da região que escolhemos: a, b, c, d, etc...
+
+            A do Brasil por exemplo é sa-east-1. É o datacenter em São Paulo e temos três zonas de disponibilidade.
+
+            Nas informações da máquina ou instância que criamos, é relevante o IP público de acesso.
+
+            Ao clicarmos em "Connect" teremos instruções de como conectar a nossa máquina criada. Inclusive a linha de comando para iniciar utilizando o protocolo SSH.
+            Obs: O ideal é que utilizemos um terminal Linux para conectar a nossa máquina na Amazon AWS pois o Linux já oferece suporte ao SSH.
+
+            Acessando o diretório local do WSL: \\wsl$
+            Obs: Tivemos que criar um diretório para os arquivos das nossas aulas.
+
+            Utilizaremos o seguinte comando: ssh -i "minha-ssh.pem" ec2-user@ec2-54-80-197-130.compute-1.amazonaws.com
+            Onde: ssh -i (Chave de acesso) Caso a chave esteja em outro diretório informar qual é o diretório, no meu caso deixei a chave dentro do diretório do laboratório das aulas.
+                    Nome do usuário: ec2-user@
+                    Entrada no DNS: ec2-54-80-197-130.compute-1.amazonaws.com (Que nada mais é que a informação que temos da nossa ec2 criada: "Public DNS (IPv4)")
+                    Obs: É um IP dinâmico, se pararmos a máquina e subirmos novamente ele mudará.
+
+            Utilizando o comando:
+
+                ssh -i "minha-ssh.pem" ec2-user@ec2-54-80-197-130.compute-1.amazonaws.com
+
+                Saída:
+
+                    The authenticity of host 'ec2-54-80-197-130.compute-1.amazonaws.com (54.80.197.130)' can't be established.
+                    ECDSA key fingerprint is SHA256:ZFiffSzOtn8xwaTNjvv1t1v0SAIdt4huj458WUMQd2k.
+                    Are you sure you want to continue connecting (yes/no)?
+
+                Inserimos: yes
+
+                Saída:
+
+                    Warning: Permanently added 'ec2-54-80-197-130.compute-1.amazonaws.com,54.80.197.130' (ECDSA) to the list of known hosts.
+
+                        __|  __|_  )
+                        _|  (     /   Amazon Linux 2 AMI
+                        ___|\___|___|
+
+                    https://aws.amazon.com/amazon-linux-2/
+                    1 package(s) needed for security, out of 7 available
+                    Run "sudo yum update" to apply all updates.
+                    [ec2-user@ip-172-31-40-102 ~]$ 
+
+                Pronto! Já estamos conectados na máquina.
+
+                Conectamos utilizando o IP externo e agora temos a informação do IP interno.
+
+                No console das nossas instâncias na AWS clicamos com o botão direito para verificar as opções que temos.
+                Na aula acabamos que por deletar a nossa máquina.
+
+                Recriaremos outras para os próximos vídeos.
+            
+        
+        Proteção contra exclusão e comunicação das instâncias -------
+
+            No último vídeo destruímos a nossa máquina e seu status ficou como "terminated", logo ela desaparece, pois nos ciclos de atualização da AWS toda máquina com o status terminated desaparecem.
+            Como já háviamos criado o security group, não precisaríamos criar um grupo novamente, porém, desligamos a máquina, qual o problema disto? Criamos nosso grupo baseado no nosso endereço IP Local,
+            que é dinâmico, desligar a máquina e religá-la fez com quel ela buscasse um novo IP na rede, por isso tivemos que recriar o grupo.
+
+            Os ID's de grupo e máquina na AWS são uma sequência de caracteres muito extensos, por isso é importante sempre nomear nossas máquinas e grupos.
+
+            Recriamos nossa máquina, e por sorte, ela foi criada na mesma zona de disponibilidade (d), pois não forçamos a zona que queriamos que ela fosse criado. Esta parte é aleatória mesmo, poderia ter
+            sido criada em qualquer uma das zonas de disponibilidade: a, b, c, etc... pois normalmente escolhemos apenas a região mesmo.
+
+            Veremos alguns detalhes interessantes a serem configurados no nosso dia a dia na AWS:
+
+                > Instance Settings > Change Termination Protection >: 
+
+                    Are you sure that you would like to enable termination protection for the instance with the following details:
+                                                    Instance ID:	i-03f3b98e054ee3adf
+                                                    Current Setting:	Disabled
+
+                        Com isso inibimos que a máquina seja terminada.
+
+            Criamos uma terceira máquina com as mesmas características com o nome: terceira-ec2-curso-aws-alura.
+
+            Equanto e criada nossa terceira máquina fizemos conexão com a segunda máquina.
+                - Clicando na máquina.
+                - Botão "Connect"
+                - Executa o comando: ssh -i "minha-ssh.pem" ec2-user@ec2-18-232-83-20.compute-1.amazonaws.com 
+                    Obs: Dentro do diretório onde está a nossa chave através do terminal.
+
+                Utilizamos o comando:
+
+                    $ sudo yum update : Atualizar os pacotes da máquina...
+
+                        Dois detalhes importantes para serem lembrados:
+                            Primeiro é que dentro da máquina que criamos, por default, já tem o mirror do repositório para os pacotes do linux.
+                            Segundo que, também por default, o disco da máquina que criamos é SSD, então o processo é bem rápido.
+
+            Sobre comunição:
+
+                Quando criamos uma EC2 ela é criada de forma isolada, apesar de estar na mesma subrede de outras máquinas que fomos criando, elas não conseguem enviar o ping nem entre elas mesmas.
+                A configuração que vai permitir que elas se comuniquem está no security group que criamos.
+
+                Primeiro: Para verificarmos em qual security group a instância que queremos mudar a comunicação está, vemos em detalhes, logo abaixo após clicarmos na EC2 desejada.
+
+                Se, após isto, a intenção for alterar o secutiry group, clicamos com o botão direito na máquina (Mesmo menu do Instance Settings), vamos em "Networking" e depois em "Change Secutiry Groups".
+
+                Se está tudo certo, partimos para a configuração do security groups no EC2 Dashboard > Secutiry Groups.
+
+                    Após clicarmos no grupo desejado vemos algumas informações abaixo, como por exemplo: Details, Inbound rules (Regras de entrada), Outbound rules (Regras de saída), Tags...
+
+                        Em "Inbound rules" podemos perceber que não tem nenhuma regra que nos permite chegar por ICMP (Ping) ou outra porta que não seja a 22.
+
+                        Edit inbound rules
+                        
+                        Type    Protocol    Port range      Source              Description - optional
+                        SSH	    TCP	        22	            177.1.196.72/32     -
+
+        Associando security groups às instâncias:
+
+            Um detalhe antes de começarmos as configurações do security group criado por nós, são os detalhes do security group default que tem na AWS.
+            Se olharmos na descrição veremos que está escrito "default VPC security group", esta é a questão das redes dentro da AWS.
+                Obs: Se quisermos saber mais sobre VPC tem um curso exclusivo na Alura.
+
+            Nele podemos olhar as seguintes regras de entrada ou "Inbound rules":
+
+                Type            Protocol    Port range      Source                  Description - optional
+                All traffic	    All         All	            sg-6c9d1144 (default)   -
+
+                Esta mostrando que todos os protocolos para todas as portas estão permitidos.
+                A origem (Source) nada mais que a rede na qual ela foi criada. Ou seja, o que estiver na mesma rede deve ter livre comunicação.
+
+            Como neste grupo default da AWS já temos as configurações necessárias para que as nossas máquinas se comuniquem, vamos inseri-las neste grupo.
+            Lembrando que colocar apenas uma das máquinas no grupo não fará com que o protocolo ping funcione, pois o pacote precisa ir e voltar, se uma das duas não estiverem com as regras de saída e entrada
+            permitindo isto não funcionará.
+
+            Sobre preços:
+
+                Foi mencionado no começo do curso o preço da instância, preço do espaço e o que estava incluído no free tier, porém, qual é a precificação do disco?
+                O nome dos discos na AWS se chamam EBS, podemos verificar os preços em:
+
+                    https://aws.amazon.com/pt/ebs/pricing/
+
+                    O nível gratuito da AWS inclui 30gb, ou seja, você pode ir criando máquinas de 8gb até alcançar 30gb ou criar apenas uma de 30gb.
+                    Porém somos cobrados pelo espaço e pelo disco.
+                    As vezes pensamos que por as máquinas estarem "paradas" não estamos ocupando recursos, talvez não os recursos computacionais de processamento e memória, mas o espaço está alocado para
+                    atender a nossa instância mesmo que ela esteja desligada.
+
+                    Abaixo um trecho da página citada acima exemplificando a cobrança:
+
+                        "Exemplos de definição de preço
+                        
+                            Volumes General Purpose SSD (GP2) do EBS
+
+                            O armazenamento de volumes General Purpose SSD (gp2) é cobrado pela quantidade provisionada em GB por mês até a liberação do armazenamento. O armazenamento provisionado de volumes 
+                            GP2 será cobrado em incrementos de um segundo, com um limite mínimo de 60 segundos. A E/S está incluída no preço dos volumes, portanto, você paga apenas por GB de armazenamento 
+                            provisionado.
+
+                            Por exemplo, digamos que você provisione um volume de 2.000 GB por 12 horas (43.200 segundos) em um mês de 30 dias. Em uma região que cobra 0,10 USD por GB por mês, serão cobrados
+                            3,33 USD pelo volume (0,10 USD por GB por mês * 2.000 GB * 43.200 segundos/(86.400 segundos/dia * 30 dias no mês))."
+
+                Podemos usar uma calculadora da própria AWS para verificarmos qual seria o preço para deixar a infraestrutura desejada rodando.
+                Podemos acessa-la através do seguinte link:
+
+                    https://calculator.s3.amazonaws.com/index.html
+
+        Nesta aula, aprendemos:
+
+            - Um pouco do EC2 Dashboard
+            - Como acessar remotamente a instância, através do SSH
+            - Como configurar as permissões da nossa chave
+            - Como encerrar a instância
+            - Como proteger a instância de um encerramento
+            - Como configurar as portas das nossas instâncias, estabelecendo a comunicação entre elas
+            - Que cada instância possui um disco associado a ela
+
+       
+    Questões aula 02:
+
+        1 - Para gerenciar as instâncias Amazon Linux, utilizamos:
+
+            Selecione 2 alternativas
+
+            A - Par de chaves
+
+            Alternativa correta! O uso do par de chaves para autenticação, além de ser a opção padrão para o gerenciamento, também reforça ainda mais os aspectos de segurança.
+
+        
+            B - SSH
+
+            Alternativa correta! O SSH é o protocolo padrão para o gerenciamento remoto deste tipo de instância.
+
+        
+        2 - Para proteger as instâncias EC2, está disponível o recurso Terminate Protection, que tem como características:
+
+            Selecione uma alternativa
+
+            R: Ser um recurso opcional
+
+            Alternativa correta! Apesar de ser opcional, é recomendável que você ative este recurso, evitando assim a exclusão indevida da instância em questão.
+
+
+Aula 03: Automatizando a instância EC2 -------
+
+    Teoria:
+
+        Criando uma instância customizada:
+
+            Já vimos como criar uma instância padrão dentro da AWS. Para funcionar, tinhamos o básico de um sistema operacional dentro das nossas máquinas virtuais criadas basicamente em 7 passos.
+            Mas, e se quisermos subir uma máquina já preparada, com um ambiente que tenha as ferramentas que atendesse determinada ferramenta? É possível! Assim que começamos a criar a nossa máquina virtual, 
+            no primeiro passo, vemos no menu no canto esquerdo a opção:
+            >> AWS Marketplace, onde podemos escolher diversas versões de máquinas já pré-definidas.
+
+            Existem vários tipos de imagens prontas. Pegamos como exemplo na aula uma toda preparada, com as ferramentas necessárias para rodar o Wordpress. Após selecionarmos vemos os preços de tabela da
+            AWS, mostrando o recurso computacional, o valor do software (Caso existisse) e o valor por hora desta instância EC2.
+
+            Se caso quisessemos customizar uma imagem. Poderíamos ir em "Launch instance" escolher uma máquina Linux e todo o resto da instalação fazer na mão. Porém não é algo tão simples.
+            Sigamos então os passos normais até o passo 3, aqui neste passo temos bastante opções interessantes, como a de lançar 5 instâncias de uma vez. Poderíamos mudar também:
+
+                - A rede
+                - Protect against accidental termination: Aquela proteção que habilitamos manualmente para que não terminassemos nossa instância acidentalmente.
+
+                Porém, neste caso, a opção mais interessante se encontra em "Advanced Details", em User data, onde podemos utilizar um script para que seja rodado e deixe nossa máquina pronta, de acordo
+                com as nossas necessidades. O script pode ser escrito linha a linha no campo de texto disponível nesta opção ou podemos enviar um arquivo pronto com nosso script.
+
+                Na aula criaremos nosso próprio arquivo com o script desejado, o arquivo se chama script.sh (Shell script). O ambiente que deixaremos pronto é um ambiente para um desenvolvedor que necessita
+                utilizar um Apache, PHP e um banco de dados.
+
+                Script com meus comentários:
+
+                    # !/bin/bash
+                    # Primeira providência: Atualizar conteúdo...
+                    # Obs: Não precisamos colocar "sudo" pois o script executa como root.
+                    # Obs2: Lembrando sempre que muitas instalações pedem o "yes", sendo assim já deixamos na linha de comando o -y, para confirmar todas as instalações.
+                    yum update -y
+
+                    # Segunda providência: Adicionaremos repositórios...
+                    # Obs: A máquina por padrão aponta para alguns repositórios da AWS, porém temos outros que gostariamos que nossa máquina esteja utilizando
+                    amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+
+                    # Terceira providência: Instalar o Apache e o Banco de Dados...
+                    yum install -y httpd mariadb-server
+
+                    # Quarta providência: Inicializar o httpd (Apache) e ativar a opção para que ele seja iniciado toda vez que a máquina for reinicializada...
+                    systemctl start httpd
+                    systemctl enable httpd
+
+                    # Quinta providência: Inicializar o mariadb (MySQL) e ativar a opção para que ele seja iniciado toda vez que a máquina for reinicializada...
+                    systemctl start mariadb
+                    systemctl enable mariadb
+
+                    # Sexta providência: Configurações iniciais que devem ser feitas no httpd (Apache)...
+                    # Obs: usermod -a -G apache ec2-user (Pegamos o usuário ec2-user e colocamos no grupo "apache" para que possamos com este usuário criar uma página ou conteúdo)
+                    # Obs2: chown -R ec2-user:apache /var/www ("chmod" -R para ajustar as permissões para que tudo que esteja dentro do /var/www/ vai passar para o usuário ec2-user e para o grupo apache)
+                    usermod -a -G apache ec2-user
+                    chown -R ec2-user:apache /var/www
+
+
+        Testando a instância e ajustando as regras de acesso:
+
+            Vamos ver agora se tudo funcionou como deveria...
+            Um opção interessante que não vimos anteriormente é "Get System Log" para ver se algo de errado aconteceu durante a criação da instância:
+            Para encontrar esta opção, clicamos sobre a máquina que desejamos ver o log e depois em:
+
+                > Actions > Instance Settings > Get System Log
+
+            Vamos tentar conectar na máquina:
+                Clicando em "Connect" e copiando a linha de comando para conectar...
+
+                ssh -i "minha-ssh.pem" ec2-user@ec2-3-89-35-91.compute-1.amazonaws.com
+
+                No primeiro momento verificarmos se o Apache e o Banco de dados estão respondendo (Rodando)...
+
+                    $ netstat -ltun
+
+                    Verificamos que a porta 80 está funcionando, e a 3306 também, que é a porta do Apache.
+
+                    Colocamos o comando:
+
+                        $ cd /var/
+
+                        e depois...
+
+                        $ ls -l
+
+                        verificamos a permissão que alteramos na pasta www, para o usuário ec2-user e o grupo apache.
+
+                Mesmo com o IP da nossa máquina ainda não conseguimos o acesso através do navegador. Por que?
+                Precisamos coloca-lá em um grupo com as regras de Entrada e Saída corretas para que usuários possam acessá-las.
+
+                Adicionando as permissões:
+
+                    Criamos o grupo: acesso-web
+
+                    E adicionamos as seguintes permissões:
+
+                        Inbound rules
+
+                        Edit inbound rules      
+                        
+                        Type        Protocol        Port range      Source      Description - optional
+                        HTTP	    TCP	            80	            0.0.0.0/0	http
+                        HTTP	    TCP	            80	            ::/0	    http
+                        HTTPS	    TCP	            443	            0.0.0.0/0	https
+                        HTTPS	    TCP	            443	            ::/0	    https
+
+                        São permissões para o protocolo HTTP e HTTPs, para todas as origens de IPv4 e IPv6.
+
+        Nesta aula, aprendemos:
+
+            - A criar instâncias com imagens já existentes
+            - Como criar uma instância customizada, a partir de um script
+            - Como ajustar as regras de acesso da nossa instância
+
+
+    Questões aula 03:
+
+        1 - Para criar instâncias com software pré-instalado, podemos:
+
+            Selecione uma alternativa
+
+            R: Usar uma AMI da AWS Marketplace ou configurar os softwares a serem instalados no processo de criação da EC2
+
+            Alternativa correta! Sim, temos estas duas formas de customizar a nossa instância e lançá-la já pré-configurada.
+
+
+        2 - Duas máquinas, criadas na mesma VPC, comportam-se de qual maneira?
+
+            Selecione uma alternativa
+
+            R: Mesmo estando na mesma rede, é preciso autorizar o acesso através do Security Group
+
+            Alternativa correta! É pré-requisito a autorização, para que seja estabelecida a comunicação.
+
+
+Aula 04: Imagens e Elastic IP -------
+
+    Teoria:
+
+        Trabalhando com Imagens:
+
+            Pra criar uma imagem de uma instância nossa que já existe, primeiro precisamos parar a instância para que não fique nada aberto em memória e seja criada uma imagem corrompida.
+            A opção de criar imagem está em:
+
+                Botão direito sobre a instância desejada > Image > Create Image
+
+            Damos um nome pra nossa imagem: web-dev-template
+            E uma descrição: "Template da nossa instancia web-dev"
+            Obs: Na descrição da imagem não é aceito acentos.
+            Obs2: Não alteramos tamanho do disco e nem outra característica da instância nesta nova imagem.
+
+
+            É interessante notar a velocidade que a imagem é criada.
+            Se formos na guia "Images" do lado esquerdo e depois em "AMI's" veremos que a nossa imagem está pendente (pending) e logo estará disponível (available).
+
+            E agora...com a imagem pronta....como provisionamos uma instância?
+
+            Launch instance > My AMIs (Do lado esquerdo do painel)
+
+            Daí basta escolher a imagem que será usada pra criar uma nova instância e o resto é como já fizemos em outras aulas, escolher recurso computacional disco, tamanho do disco, security group, 
+            chave ssh etc.
+
+        
+        IP dedicado:
+
+            Quando provisionamos uma máquina para que o time possa desenvolver as aplicações, temos ciência de que o desenvolvimento não é feito 24h por dia e, por isso, não há razão para que a máquina
+            (instância) fique sempre disponível. Porém, se deixarmos nossa máquina programada para desligar em determinado horário e religar em outro, quando a equipe tentar acessar novamente nossa máquina
+            não irá conseguir, pois estamos com IP dinâmico, caso não corrirmos isso na criação da instância.
+
+            Temos a possibilidade de fixarmos um IP para nossa máquina que, na AWS, terá um custo adicional, veremos isso mais a frente.
+
+            Os passos para associarmos um IP estático a nossa máquina é bem simples. Basta irmos na guia do lado esquerdo do painel em "NETWORK & SECURITY", depois em "Elastic IP".
+
+                - Escolhemos a opção: "Allocate Elastic IP address"
+                - Depois pegamos um endereço IPv4 do pool da Amazon (Que nesta época do curso já fica pré-seleciona) "Amazon's pool of IPv4 address"
+                - Clicar em Allocate
+                    Após isto a Amazon deixará um IP disponível para que possamos utilizar em uma das nossas máquinas.
+                    No meu caso o IP disponibilizado foi: 3.217.42.120
+
+                - Basta selecionar o IP que foi disponibilizado e clicar em "Actions" e então em "Associate Elastic IP address"
+                    Podemos associá-lo a uma interface de rede ou então a uma instância nossa já criada. 
+
+                - Selecionamos o que desejamos (No meu caso foi a instance web-dev-imagem-curso-alura-aws)
+                    Temos a opção de associar o IP privado da nossa instância ao elastic ip que foi disponibilizado.
+
+                - Por fim, clicar em "Associate"
+
+            Entendendo o que é um Elastic IP
+
+                Endereços Elastic IP: 
+             
+                Um Endereço IP elástico é um endereço IPv4 estático projetado para computação em nuvem dinâmica. Um endereço IP elástico está associado à conta da AWS. Com um endereço IP elástico, você pode 
+                mascarar a falha de uma instância ou software remapeando rapidamente o endereço para outra instância em sua conta.
+                Um endereço IP elástico é um endereço IPv4 público, que é acessível pela Internet. Se a instância não tiver um endereço IPv4 público, você poderá associar um endereço IP elástico a ela para 
+                permitir a comunicação com a Internet. Por exemplo, isso permite que você se conecte à instância do computador local.
+                No momento, não oferecemos suporte a endereços IP elásticos para IPv6.
+
+                    Para saber mais: https://docs.aws.amazon.com/pt_br/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
+
+            Sobre a cobrança:
+
+                - Se a máquina estiver no ar, ou rodando (running) podemos ter um IP estático associado a ela, neste modo, não seremos cobrados.
+
+                    Obs: Ficasse entendido que se desligarmos a nossa máquina com o Elastic IP associado seremos cobrados por isso.
+
+                Para tirarmos todas as dúvidas sobre cobranças do Elastic IP da Amazon temos o seguinte link: 
+                
+                    https://aws.amazon.com/pt/premiumsupport/knowledge-center/elastic-ip-charges/
+
+                Por máquina, podemos ter 1 IP associado que não seremos cobrados. Ou seja, as vezes precisamos de mais de um IP associado a mesma instância, no caso, o primeiro não é cobrado, seremos cobrados
+                pelos demais IP's associados.
+
+                Tabela de preços:
+
+                    https://aws.amazon.com/pt/ec2/pricing/on-demand/#Elastic_IP_Addresses
+
+            Esta questão de preços é muito importante, não só sobre Elastic IP mas sobre cada recurso da AWS que é cobrado individualmente. Tem muitas reclamações de pessoas que após migrarem para nuvem 
+            tiveram supresas nos valores que foram cobrados. Isto pode estar acontecendo por não entenderem sobre os recursos que realmente necessitam, e também por não conhecerem a forma de cobrança da 
+            Amazon AWS.
+
+        Nesta aula, aprendemos:
+
+            - Como criar uma imagem da nossa instância
+            - A usar a nosso própria imagem para a criação de uma nova instância
+            - Como aplicar security groups já existentes à nova instância
+            - Como atribuir um IP fixo para a nossa instância, através do Elastic IP
+            - O funcionamento e os custos do Elastic IP
+
+
+    Questões aula 04:
+
+        1 - Para criarmos uma imagem a partir de uma instância, o que devemos fazer?
+
+            Selecione uma alternativa
+
+            R: Parar a instância e criar a imagem
+
+            Alternativa correta! Independente da plataforma, esta sempre é a recomendação. Desta forma, garantimos a integridade dos dados.
+
+
+        2 - O uso do Elastic IP garante que a sua máquina mantenha um IP único, mesmo que seja desligada, ou mesmo reiniciada. Como este recurso funciona em relação à cobrança?
+
+            Selecione uma alternativa
+
+            R: Um IP por EC2 é gratuito, caso a máquina mantenha-se ligada
+
+            Alternativa correta! Esta é a condição para que você tenha o Elastic IP de forma gratuita.
+
+
+Aula 05: Banco de dados no Amazon RDS -------
+
+    Teoria:
+
+        Instância para o banco de dados:
+
+            Até o momento, trabalhamos com diversos recursos, criamos máquinas para testes de conexão, criamos máquinas para desenvolvimento com algumas aplicações, porém, tudo na mesma instância.
+            O ideal já sabemos que é, ter uma máquina para rodar a nossa aplicação separada do banco de dados. Para isso temos outro serviço da AWS que se chama RDS (Relational Database Service).
+            Sobre a cobrança deste serviço, temos 750 horas por mês durante o free tier se estivermos utilizando uma EC2 comum (t2.micro).
+
+                Obs: Agora que vamos começar a navegar por diversos serviços diferentes, podemos utilizar o "thunbtack" (tachinha ou persevejo) para fixarmos na nossa barra de serviços.
+                    Basta clicar na tcha na barra superior e arrastar os serviços que mais vão ser utilizados.
+
+            RDS nada mais é que uma máquina com um SGBD (Sistema Gerenciador de Banco de Dados) administrada pela Amazon. Só iremos precisar administrar o nosso banco de dados.
+
+            Criação do banco de dados:
+
+                - Dashboard do Amazon RDS
+                - Create database
+                    Dentro teramos algumas opções. Veremos somente as mais importantes por enquanto.
+
+                        - Criação padrão ou Criação fácil 
+                            (Aqui escolhemos a criação padrão onde nós mesmos definimos os atributos do nosso banco de dados)
+
+                        - Engine Options ou Opções da "máquina ou motor" (Aqui temos opções de alguns SGBDs como Amazon Aurora, MySQL, MariaDB, PostgreeSQL, Oracle, Microsoft SQL Server)
+                            Escolhemos MySQL.
+
+                        - Edição
+                            Ficamos com a opção de versão sugerida pela Amazon que foi MySQL 5.7.22
+
+                        - Template (Da máquina na qual o banco de dados ficará hospedado)
+                            Escolhemos a Free Tier pois atende ao propósito do estudo.
+
+                        - Settings ou Definições (Aqui podemos escolher atributos como nome do banco, username do administrador, password etc)
+                            Deixamos o nome do banco o mesmo sugerido (database-1), username sugerido (admin), password foi escolhido por mim..Confirmação do password também é necessária.
+
+                        - DB Instance Size (Poder de processamento que utilizará o banco, lembrando que este poder de processamento está limitado ao poder de processamento da máquina que escolhemos para
+                            hospedar o banco)
+                            Por causa do motivo citado acima, escolhemos uma máquina db.t2.micro (1 vCPUs 1GiB RAM)
+
+                        - Storage (Deixamos padrão o SSD e alocação de 20 GiB)
+                            A opção "Enable storage autoscaling", que nada mais é do que o nosso banco de dados escalando conforme a necessidade.
+                            "Maximum storage threshold", tamanho limite para quando o banco começar a escalar.
+
+                        - Database authentication
+                            Esolhemos a forma de autenticação por password
+
+                        - Additional configuration
+                            Configurações adicionais para o nosso banco de dados. Uma opção é bem interessante...
+
+                            * Backup, "Enable automatic backups 
+                                Habilita o backup automático, a partir disto, escolhemos a quantidade de dias de um backup para outro.
+                                Nas opções padrões ficam marcados: 7 dias, sem preferência para janela de backup, cópia de tags para os snapshots
+                            
+
+                        Ao final temos a estimativa de custo por mês que já vimos o básico anteriormente no que diz respeito ao RDS.
+                            "Estimated monthly costs"
+
+
+        Criando o banco de dados:
+
+            Uma observação importante a se fazer é que, até o momento não mudamos a região para nenhum dos serviços que utilizamos, estamos sempre em us-east-1 (Norte da Virgínia).
+            Por que isso é importante? Temos a possibilidade sim, de criar a nossa EC2 em uma região e o nosso RDS em outra região, porém teríamos que nos preocupar com as regras de comunicação.
+
+            Todos serviço da Amazon AWS tem o seu dashboard. Assim como no dashboard do EC2, podemos explorar as intâncias criadas para nosso banco de dados no dashboard do serviço RDS.
+            É importante lembrar, pois já vimos antes, que a máquina na qual está o nosso SGBD não pode ser mexida, não gerenciamos ela, gerenciamos somente nosso banco de dados através do Endpoint ou, em
+            outras palavras, um terminal de comunicação, um tipo de nó da rede de comunicação, ou mais simples ainda, o Host, que no meu caso foi gerado o banco que tem o identificador
+            
+                database-1.c5hhrpn6ap46.us-east-1.rds.amazonaws.com
+
+            e a porta disponibilizada foi 3306 (Porta que na ocasião foi definida pela própria amazon).
+
+            Podemos verificar também no sumário da nossa instância em "Connectivity & Security" a VPC, que também, como visto anteriormente, é a mesma da nossa EC2 por não termos em momento nenhum mudado a região.
+
+            Adicionamos à nossa EC2 criada anteriormente (web-dev-imagem-curso-aws-alura), o secutiry group default da amazon, que não tinhamos feito anteriormente.
+            Iremos nos conectar a ela copiando a linha de comando disponibilizada:
+
+                $ ssh -i "minha-ssh.pem" root@ec2-3-217-42-120.compute-1.amazonaws.com
+
+                Verificamos que agora aparece "root", isso porque é uma instância criada a partir de uma imagem, porem o usuário é o ec2-user. Então realizamos a troca de root para o usuário ec2-user:
+
+                $ ssh -i "minha-ssh.pem" ec2-user@ec2-3-217-42-120.compute-1.amazonaws.com
+
+
+                Obs: Um erro besta que cometi...
+
+                    Ao ficar fuçando nos grupos, editando etc para nao precisar ficar recriando, acabei editando e criando um novo grupo manualmente, onde eu permiti que meu IP acessasse a máquina, porém
+                    não liberei a porta 22 para que tivesse acesso...Muita atenção....
+
+                    Devida as tentativas cegas de correção, acabei criando um novo arquivo PEM para autenticação SSH: aws-marlon.pem, também recriei a instância a partir da imagem que tinhamos
+                    agora o nome ficou: web-dev-imagem-curso-aws-alura3
+
+                    Verifiquei também que ao tentar logar com a linha de comando:
+
+                        $ ssh -i "aws-marlon.pem" root@ec2-34-207-160-78.compute-1.amazonaws.com
+
+                        O erro apresentado é que ele solicita que seja feita autenticação com o ec2-user, pois criamos o grupo e demos a permissão pra ele.
+                        Então a linha de comando ficou assim:
+
+                        $ ssh -i "aws-marlon.pem" ec2-user@ec2-34-207-160-78.compute-1.amazonaws.com
+
+            Agora já estamos conectados a nossa máquina "web-dev-imagem-curso-aws-alura3", vamos agora testar a conectividade com o nosso banco, já verificando a eficácia da máquina do banco estar dentro da
+            mesma VPC
+
+                $ mysql -u admin -h database-1.c5hhrpn6ap46.us-east-1.rds.amazonaws.com -p
+
+                Onde: 
+                
+                    $ mysql: Chamando o nosso serviço MySQL já instalado na nossa máquina...
+
+                        -u admin: ...utilizando o usuário "admin"
+
+                            -h database-1.c5hhrpn6ap46.us-east-1.rds.amazonaws.com: ...no host do banco de dados (endpoint)
+
+                                -p: ...solicitando password.
+
+                                insira o password criado para o RDS.
+
+                    Se tudo der certo a saída que será apresentada será:
+
+                        Welcome to the MariaDB monitor.  Commands end with ; or \g.
+                        Your MySQL connection id is 20
+                        Server version: 5.7.22-log Source distribution
+
+                        Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.
+
+                        Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+            
+            Pronto! Conseguimos conectar a máquina RDS que hospeda nosso SGBD...
+            Vamos criar nosso banco de dados agora...
+
+                Executamos o comando:
+
+                    MySQL [(none)]> show databases; ...Para mostrar os databases presentes no host
+
+                    Teremos uma saída parecida com esta:
+
+                        +--------------------+
+                        | Database           |
+                        +--------------------+
+                        | information_schema |
+                        | innodb             |
+                        | mysql              |
+                        | performance_schema |
+                        | sys                |
+                        +--------------------+
+                        5 rows in set (0.00 sec)
+
+                    Agora vamos criar o nosso database...
+                    Executamos a linha de comando:
+
+                        MySQL [(none)]> create database cadastro;
+
+                        Teremos a saída:
+
+                            Query OK, 1 row affected (0.00 sec)
+
+                        Executamos mais uma vez o comando:
+
+                            MySQL [(none)]> show databases;
+
+                            E vemos nosso banco criado na saída:
+
+                                +--------------------+
+                                | Database           |
+                                +--------------------+
+                                | information_schema |
+                                | cadastro           |
+                                | innodb             |
+                                | mysql              |
+                                | performance_schema |
+                                | sys                |
+                                +--------------------+
+                                6 rows in set (0.00 sec)
+
+
+        Nesta aula, aprendemos:
+
+            - O serviço Amazon RDS
+            - Como criar e configurar um database no Amazon RDS, utilizando o Free Tier
+            - Como separar a nossa aplicação em uma instância para o servidor e uma para o banco de dados
+            - Como configurar a nossa instância EC2 para se comunicar com o database do RDS
+
+    
+    Questões aula 05:
+
+        1 - Utilizar um banco de dados como serviço traz grandes vantagens ao projeto. Dentre as alternativas abaixo, qual é uma característica do Amazon RDS (Amazon Relational Database Service):
+
+            Selecione uma alternativa
+
+            R: É possível utilizar vários tipos de bancos de dados, como MySQL, MariaDB, Oracle, etc
+
+            Alternativa correta! Podem ser utilizados vários bancos de dados, mas nem todos estão na categoria Free tier.
+
+        
+        2 - Para que haja conectividade entre o serviço RDS e as instâncias EC2, é necessário:
+
+            Selecione uma alternativa
+
+            R: Além da VPC, é obrigatório criar uma regra no Security Group
+
+            Alternativa correta! É pré-requisito a autorização, para que seja estabelecida a comunicação.
+
+
+Aula 06: Infraestrutura para alta disponibilidade -------
+
+    Teoria:
+
+        Preparando para o Auto Scaling:
+
+            Precisamos de uma ideal desta máquina. Como agora temos nossa base de dados separada, vamos parar, tanto o banco de dados mariadb, quanto o serviço que o inicia automaticamente.
+            Executamos os seguintes comandos dentro de nossa instância "web-dev-imagem-curso-aws-alura3".
+
+                $ sudo systemctl stop mariadb // Para o serviço do banco de dados
+                $ sudo systemctl disable mariadb // Cancela o serviço que o inicia automaticamente
+
+            Agora vamos para a pasta /var/www para que possamos criar a nossa página.
+            Criamos uma pasta com o nome cadastro para o nosso projeto dentro desta pasta (www):
+
+                [ec2-user@ip-172-31-83-200 www]$ mkdir cadastro
+
+                Obs: Poderíamos ter criado o arquivo com o conteúdo do banco dentro da pasta HTML, mas por opção de segurança preferimos criar esta nova pasta cadastro.
+
+            Entramos na pasta "cadastro":
+
+                [ec2-user@ip-172-31-83-200 www]$ cd cadastro/
+
+            E criamos um arquivo com o conteúdo PHP da nossa página:
+
+                [ec2-user@ip-172-31-83-200 cadastro]$ vi dbinfo.cadastro
+
+            O conteúdo do arquivo é o seguinte:
+
+                <?php
+
+                define('DB_SERVER', 'database-1.c5hhrpn6ap46.us-east-1.rds.amazonaws.com');
+                define('DB_USERNAME', 'admin');
+                define('DB_PASSWORD', '2444666668888888');
+                define('DB_DATABASE', 'cadastro');
+
+                ?>
+
+            Agora vamos para a pasta HTML criar o nosso front:
+
+                [ec2-user@ip-172-31-83-200 cadastro]$ cd ..
+                [ec2-user@ip-172-31-83-200 www]$ cd html/
+
+            Criaremos o index.php:
+
+                [Arquivo e conteúdo disponibilizado e inserido na pasta da aula 06]
+
+                Comandos para criar o arquivo...
+
+                $ vim index.php
+
+                Aperta a tecla "i" para inserir o conteúdo, cola lá dentro, e então "ESC" e depois :wq para salvar e sair do arquivo.
+
+            Fazemos o teste com o IP publico da nossa instância no navegador pra ver se tudo funcionou.
+            A página de cadastro apareceu com campo para nome e e-mail.
+            Realizamos dois registros.
+
+                Obs: Interessante notar que com a pasta html vazia temos uma página padrão do Apache, se colocarmos algum arquivo index.php é este que será mostrado.
+                    A tanto tempo que não mexia com PHP que não lembrava mais.
+
+            Agora temos uma instância ou template prontinho para replicar, isto é o que temos que pensar quando falamos em alta disponibilidade.
+            Por exemplo: Precisamos que se escale para 15 instâncias, o autoscale olha para o template e cria 15 instâncias.
+            Não existe esta estória de deixar um template para replicação de instâncias ou máquinas que assim que ela sobe precisamos fazer uns ajustes.
+
+            Abaixo o ultimo ajuste para que à partir da pasta /www todas as outras pastas ou arquivos sejam do usuário que criamos anteriormente: ec2-user.
+
+                $ chown -R ec2-user:apache www/
+
+            Agora o que falta é pausarmos nossa máquina para criar uma imagem.
+
+                $ sudo shutdown -h now
+
+            Está é a nossa saída:
+
+                Connection to ec2-3-86-244-174.compute-1.amazonaws.com closed by remote host.
+                Connection to ec2-3-86-244-174.compute-1.amazonaws.com closed.
+
+            Assim que ela parar prosseguiremos com a criação do nosso template.
+
+
+        Imagem final para o ambiente de produção:
+
+            Mesmo procedimento que fizemos antes para a criação de imagens:
+
+                Actions > Image > Create image
+                
+                    Obs: Sempre a partir de uma instância parada para que não criemos um template corrompido.
+                    Obs2: Lembrando também que as imagens ocupam um ebs (espaço para armazenamento) cada uma, por isso é importante administrar para quem está no free tier.
+
+                Depois basta escolher um nome para nossa imagem e uma descrição, lembrando que não pode ter acentos.
+
+                Após criar a nossa imagem/template e esta já estar disponível, vamos criar uma nova instância a partir da imagem.
+                Seguimos os mesmo passos já visto diversas vezes, lembrando de associar aos 3 grupos criados (Para acesso remoto, para acesso entre as instâncias e o grupo para acesso web) e também da chave.
+
+                Após a nossa nova instância criada a nomeamos de "webCadastro" e fazemos o teste com seu IP Público no navegador.
+
+                Como está nova instância esta utilizando a mesma base de dados da outra, vemos os mesmo registros feitos na página da outra instância.
+
+                Agora nosso template está pronto!
+
+                Agora está apto a ser colocado em produção para anexar Load balance (Balanceamento de carga), escalabilidade que veremos nos próximos vídeos.
+
+
+        Nesta aula, aprendemos:
+
+            - Como definir as variáveis de ambiente
+            - Como funciona a página de cadastro
+            - A gerar e testar a imagem final da nossa instância, para o ambiente de produção
+
+
+Aula 07: Escalabilidade e alta disponibilidade -------
+
+    Teoria:
+
+        Diagrama da solução e Load Balancing:
+
+            Agora é o momento que vamos juntar todos os conceitos que vimos até o momento.
+            Vimos no vídeo um imagem onde da pra ter uma noção de como é a estrutura da AWS. Claro que, se usássemos uma lupa cada serviço teria mais detalhes, mas
+            como o que foi exibido, da pra gerar um bom entendimento.
+
+            Cloud AWS_______________________
+            |  _______________    |         |
+            |   Load Balance   <->| Internet| <-> 80/443 - Users (Para que os usuários ingressem no Load Balance)
+            |        ↓ 80/443     |   GTW   | <-> 22 - DevOps
+            | ____________________|_________| 
+            | App Server Instances|         
+            |        ↓ 3306       |         
+            |  ___________________|         
+            |       RDS         |           
+            |___________________|
+
+            Load Balance: É um serviço que ativamos que recebe todo o tráfego que chega e redistribui para as instâncias...
+                            As instâncias que nos referimos nada mais são que cópias da imagem que criamos para escalonamento como já vimos anteriormente.
+
+                            Iremos configurar as instâncias para que façam a escala automática, por exemplo:
+                            Começamos com duas instãncias, caso o tráfego suba, sobe mais uma instância automáticamente. Podemos fazer diversas configurações.
+
+                            Por fim, todas as instâncias apontam para o mesmo RDS (Base de dados).
+
+                            Podemos realizar o acesso de duas formas, porta 22 ou pelo dashboard.
+
+            Vamos realizar a configuração do Load Balance...
+
+                - Começamos desligando todas as instâncias que estiverem ligadas.
+
+                - Vamos até o menu lateral (esquerdo) e na treeview Load Balancing escolhemos Load Balancers.
+                    Dentro da tela que aparecer, clicar no botão "Create Load Balancer".
+                
+                - Temos três tipos de Load Balancer:
+                    
+                    - Application Load Balancer: Como o nome diz: Para aplicações...Basicamente ele fica "ouvindo" as portas HTTP e HTTPs
+                        e fica distribuindo o tráfego.
+
+                    - Network Load Balancer: Específico por protocolo....TCP, TLS, UDP.
+
+                    - Classic Load Balancer: Que abrangia os dois acima mas que provavelmente logo será exinto.
+
+                    Obs: Escolhemos HTTP/HTTPS
+
+                - Step 1: Configure Load Balancer
+
+                    * Name: LB-webCadastro
+                    * Scheme: internet-facing
+                        Obs: interessante notar que neste atributo temos a opção de criar um Load Balancer interno, para testes.
+                                Um Load Balancer com IP interno, onde a aplicação acessa ele e utiliza da mesma forma.
+
+                    * IP address type: IPv4
+
+                    * Load Balancer Protocol: HTTP/HTTPS
+                        Basicamente o acesso que ele irá "ouvir". Podemos adicionar o HTTPS.
+
+                    * Availability Zones
+                        ' VPC: A VPC default que estamos
+                        ' Availability Zones: temos que escolher pelo menos duas zonas. Como orientado no curso, escolhi as zonas: us-east-1a e us-east-1b
+
+                - Step 2: Configure Security Settings
+                    Nos é avisado que não estamos utilizando HTTPS.
+
+                - Step 3: Configure Security Groups
+                    Aqui temos que escolher o security group...Sim, já temos o acesso-web, mas no caso do Load Balancer é interessante criar um grupo exclusivo.
+
+                        * Security group name: LB-acesso-web
+                        * Description: Security Group do Load Balancer
+
+                        Type        Protocol        Port Range      Source      
+                        HTTP        TCP             80              0.0.0.0/0
+
+                - Step 4: Configure Routing
+
+                    * Target group: Para onde o Load Balancer olha...
+                        Obs: Podemos lembrar o diagrama e pensar: Mas ele não olha para as instâncias? Sim! Mas estas instâncias precisam estar agrupadas no que 
+                                ele chama de "Target Group"
+
+                        ' Targe Group: New target group    
+                        ' Name: TG-cadastroWeb
+
+                    * Health checks: Ele pega o "root" (/) de onde estamos apontando e checa para ver se ele traz alguma resposta.
+                        ' Protocol: HTTP
+                        ' Path: /
+
+                    *  Advanced health check settings: Detalhes de como irá trabalhar o "Health checks"
+                        ' Healthy Threshold: 5 (Uma instância antes ruim, que depois de 5 tentativas consecutivas responde todas, passa a ser considerada boa)
+                        ' Unhealthy threshold: 2 (Uma instância boa que não responde depois de 2 tentativas consecutivas de comunicação, passa a ser considerada ruim)
+                        ' Timeout: 5 (seconds) (Se não responder em 5 segundos ele considera falha)
+                        ' Interval: 30 (seconds) (Tempo de intervalo entre os "checks") Se a instância estiver boa ele disponibiliza, se não, descarta. 
+                        ' Success codes: 200 (Retorno de sucesso do HTTP)
+
+                - Step 5: Register Targets
+
+                    Já vimos antes que precisamos associar nossas instâncias ao nosso Target Group.
+                    Porém neste passo, um erro é normalmente cometido...O administrador já tem instâncias rodando e nesta parte já relacionam com o grupo.
+                    Mais a frente faremos este trabalho em ordem inversa. Criaremos o grupo e então o grupo irá gerenciar as nossas instâncias.
+                    Voltaremos para esta parte e veremos que ele registrou sozinho o grupo que criamos.
+
+                    Em outras palavras, não apontamos para a instância pronta, mas para o serviço que escala as máquinas.
+
+                    Nesta parte poderíamos sim fazer o load balance sem o serviço de auto-scaling, bastaria pegar nossas instâncias e apontar direto aqui.
+                    Mas não é isto que queremos, queremos os dois serviços juntos.
+
+                - Step 6: Review
+
+                    Apenas o review das nossas configurações.
+
+        
+        Configurando o Auto Scaling Group:
+
+            Agora que já criamos o Load Balance vamos realizar as configurações do Launch do Auto Scaling.
+
+            As configurações de lançamento do Auto Scaling estão no menu na lateral esquerda logo abaixo dos menus do Load Balancer.
+
+                Auto Scaling > Launch Configurations...
+
+                - No primeiro menu já clicamos no botão: "Create Launch Configurations"
+
+                    - Escolhemos "My AMIs" para ver os templates que já criamos.
+
+                        - Escolhemos então o tipo de micro (Configuração que já vimos muitas vezes antes, escolhemos sempre o livre do free tier)
+
+                            - Na "Configuração dos detalhes" em "Create Launch Configuration" escolhemos o nome: AS-config-webCadastro
+
+                                - Storage: Mesmo tamanho de disco que já estavamos usando: 8gb
+
+                                    - Security Group: Aqui podemos amarrar o grupo que já utilizamos na imagem. Lembrando que a imagem vai precisar receber acesso na
+                                        porta 80 pois o Load Balance vai "falar" com ela na porta 80.
+
+                                            Por isso adicionamos os grupos:
+                                                *acesso-web: Para que o Load Balancer acesse ela através da porta 80 
+                                                *default: Para acesso ao banco (RDS)(Comunicação na mesma rede) 
+                                                *acesso-remoto (Para gerenciarmos a máquina)
+
+                                        - Verificar o resumo das configurações...
+
+                                            - E finalmente botão: "Create launch configuration"
+
+                Por fim escolhemos a chave que estamos utilizando. Vai criar a nossa "Launch config", clicamos em close...
+
+                Próximo passo é criar o "Auto Scaling Group"
+
+                    - Novamente no menu do lado esquerdo clicamos em "Grupos Auto Scaling"
+
+                        - Agora "Create Auto Scaling Group"
+
+                            - Nest menu podemos notar que temos uma nova opção: "Launch Template" por ora, iremos pelo padrão: "Launch Configuration" e escolhemos,
+                                é claro, a configuração que acabamos de criar. Clicamos em "next"...
+
+                                - Neste menu escolheremos o "Group Name", que será: AS-Group-cadastroWeb
+                                                                                    * Group size: Queremos que o nosso escalonamento comece com duas máquinas, podemos
+                                                                                        ir alterando este atributo depois conforme a necessidade.
+                                                                                    * Network: Escolhemos a nossa rede default
+                                                                                    * Subnet: Aquelas duas que escolhemos do Load Balancer, por isso restringimos o 
+                                                                                        grupo a elas: 1a e 1b.
+
+                                        **Advanced Details: Esta parte é bem importante e não pode ser ignorada...
+                                            A opção: 
+                                            * Load Balancing: Receive traffic from one or more load balancers, deve ficar marcada.
+                                                Este grupo, receberá tráfego do Load Balancer, temos que marcar está opção para que na hora que retornaremos para o 
+                                                Load Balancer possamos associar um grupo ao Load Balancer. Caso esta opção não esteja marcada, teremos somente a 
+                                                possibilidade de relacionar o Load Balancer as instâncias.
+
+                                            * Classic Load Balancers: Deixamos este campo vazio pois não estamos usando o Load Balancer Clássico.
+
+                                            * Target Groups: Escolhemos o que já está disponível, estamos apenas fazendo "amarração"
+                                                Obs: Está opção não apareceu pra mim na época que eu estava fazendo o curso 03/2020...
+
+                                            * Health Check Type: ELB (Elastic Load Balancer) ou EC2. Vamos associar ao ELB.
+                                                O EB verifica a integridade da máquina,  se está running, stop, ligando ou desligando.
+                                                Obs: Está opção não apareceu pra mim na época que eu estava fazendo o curso 03/2020...
+
+                                            * Health Check Grace Period: Modificamos de 300 para 30 segundos apenas para efeito de testes.
+
+                                            * subnet 
+                            
+                            Menu de Politicas de escalonamento do grupo...
+
+                                Deixamos a opção "Keep this group at its initial size" (Para manter o grupo com o tamanho inicial, 2 máquina como vimos antes)
+
+                            Próximo menu, menu de notificações, se queremos que o grupo gere alguma. Não veremos isto neste momento.
+
+                            Menu para ver se queremos criar alguma tag...Também não mudaremos isso neste momento.
+
+                            Por ultimo, o resumos das nossas configurações...
+                                Obs: Depois poderemos ajustar as opções, por ora, iremos entender como realizamos a criação do grupo de auto scaling.
+
+                            Finalmente..."Create Auto Scaling Group"...
+
+                            Ele começa a subir as instâncias e no próximo vídeo veremos como será feita a ultima amarração...
+
+        
+        Testando ambiente de produção:
+
+            Em "Auto Scaling Groups", temos na tela do lado direito a área "Auto Scaling Group: AS-Group-cadastroWeb". Podemos ver na aba "Instances" que subiram 
+            duas instâncias e estão com o "Health Status" em "Healthy", ou seja, status saldável. Ele subiu estas duas instâncias baseadas na nossa imagem. Podemos
+            verificar que estão ativas na tree view do lado esquerdo no menu "Instances".
+
+            Temos também em "Auto Scaling Group" a guia "Monitoring" que nos mostra os dados detalhados sobre a instâncias, como ainda não temos fluxo de dados não
+            podemos ainda visualizar a utilidade real deste painel.
+
+            Vamos agora testar o Auto Scaling:
+
+                O IP de chegada agora não é mais o IP da instância, mas sim do Load Balancer.
+
+                Utilizaremos o DNS name: LB-webCadastro-976530896.us-east-1.elb.amazonaws.com
+                Obs: Podemos mudar este endereço, mas isto não é assunto para esta aula.
+
+                Verificamos que aparece a mesma página de cadastro de antes. Realizamos um cadastro pra testar.
+                Quando a requisição chega no link do Load Balancer, ele manda para uma das instâncias. Não interessa para o usuário final que instância é esta.
+
+                É bem legal isso porque a ideia de criar uma estrutura assim é realmente disponibilizar algo pronto para produção, com escalabilidade e com alta
+                disponibilidade combinando o serviço.
+                Podemos realizar outros testes. Como por exemplo, terminar uma das instâncias.
+
+                Obs: Tomar cuidado sempre com o Free Tier, por causa dele não da pra testar em grande escala estes recursos.
+
+        Domínio e politicas de Auto Scaling:
+        
+            Mais duas coisas antes de irmos pro próximo vídeo...
+
+                A primeira: Alterar nosso DNS name para que não seja um nome tão esquisito para colocar na barra de endereço do browser...
+
+                    -  Criar uma conta no Freenom: Domínio Web gratuito para estudos...É lento, mas é gratuito rsrsrs
+                        Obs: Não consegui, nas tentativas que fiz, um domínio para testar. Não consegui nem ao menos fazer o cadastro, estava dando erro.
+                    
+                    - Auto Scaling Group: No nosso grupo de auto scaling temos a definição de quantas instâncias estão rodando, minimas instâncias, máximas, etc.
+                        Da forma que configuramos, caso tenhamos um problema com a porta 80, pois podemos estar com a máquina funcionando, mas a porta 80 não,
+                        então, ele mantém o cenário, duas máquinas. 
+                        
+                        Se caso, por exemplo, tenhamos um evento como o Black Fraude se aproximando, é interessante que aumentemos o número de instâncias rodando.
+
+                        Podemos fazer as alterações em Scaling Polices, como o instrutor do curso disse: Ali que fazemos a mágica acontecer...rsrsrsr
+                        Neste menu temos várias opções e combinações que podemos fazer.
+
+                        Para exemplo, criamos uma "Scaling policy"
+
+                            *Name: CPU
+                            *Metric type: Average CPU Utilization (O tipo de métrica que estaremos utilizando)
+                            *Target value: 60 (Em porcentagem) (Como o "Metric type" é "CPU Utilization" então aqui diz que será criada uma nova instância quando
+                                                                        60% do CPU da instância estiver utilizado).
+                                
+                            *Intances need: 60 (seconds to warm up after scaling) (Tempo para subir após escalonamento)
+
+                            Politica criada...agora dependendo da utilização da CPU baseada nos 60% que definimos ele vai criar ou remover uma instância.
+                                Ou seja, assim como ele subiu uma instância esta politica também tem a capacidade de derrubar.
+
+                            Mas ainda temos que clicar sobre nosso scaling group, ir em actions > edit e verificar nossa capacidade desejada (Desired Capacity).
+                            Verificamos que ele continuará trabalhando normalmente com duas, caso aconteça uma carga inesperada de CPU que aumentará o número de 
+                            instâncias. Para permitir isso, colocaremos que a capacidade máxima é 6.
+                                
+                            É interessante fazer o "tuning" (afinação) conforme nosso ambiente de produção e trabalhar nele conforme a sazonalidade, e nada melhor
+                            do que a coleta de dados para fazer isso.
+            
+            Obs: Detalhe interessante da deleção do Auto Scaling Group...Quando estavam sendo deletado as instâncias que subiram por causa de sua configuração
+                    foram terminadas automaticamente.
+
+            Nesta aula, aprendemos:
+
+                - Um pouco do funcionamento do Load Balancing
+                - O que é e como criar um Application Load Balancer
+                - O que é e como criar Target Groups
+                - O que é e como criar uma Launch Configuration
+                - Com a Launch Configuration criada, como criar e configurar um Auto Scaling Group
+                - A testar o ambiente com o Load Balancing e Auto Scaling
+                - Como associar um domínio ao nosso Load Balancer, com o Freenom
+                - Políticas de Auto Scaling
+
+
+    Questões:
+
+        1 - O serviço ELB (Elastic Load Balance) apresenta as seguintes particularidades:
+
+            a) Distribuição de tráfego entre diferentes destinos
+
+            b) É possível utilizar o ELB para balancear tráfego TCP (por exemplo, portas diferentes da 80 e 443)
+
+            Qual(is) está(ão) correta(s)?
+
+            Selecione uma alternativa
+
+            R: As particularidades 1 e 2 estão corretas
+
+            Alternativa correta! Tanto pode ser criado o modelo baseado em aplicação (HTTP e HTTPS), como o modelo baseado em rede (TCP, UDP e TLS).
+
+        
+        2 - Para criarmos grupos de auto scaling para as instâncias EC2, é necessário:
+
+            Selecione 2 alternativas
+
+            a) Definir pelo menos duas sub-redes
+
+            Alternativa correta! É necessário selecionar pelo menos duas sub-redes. Lembrando ainda que as sub-redes devem coincidir com o ELB.
+
+            b) Criar primeiro um template configuração
+
+            Alternativa correta! Antes da criação do grupo de auto scaling, o serviço exige que seja criado um template de configuração (launch config).
+
+        
+        3 - Para adicionar ou remover instâncias dentro do grupo de auto scaling, são utilizados como referência:
+
+            a) Estado da EC2 (stopping, terminated, etc)
+
+            b) Aplicação, por exemplo se a porta 80 (HTTP) está respondendo
+
+            Qual(is) está(ão) correta(s)?
+
+            Selecione uma alternativa
+
+            As referências a e b estão corretas
+
+            Alternativa correta! Nas configurações do grupo, você pode definir ELB (teste da aplicação) ou EC2 (estado da instância).
+
+
+Aula 08: AWS Command Line Interface -------
+
+    Teoria:
+
+        Instalando a AWS CLI:
+
+            Primeiro passo é instalar o AWS CLI. Podemos fazer isso pelo seguinte link:
+
+                https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-install.html
+
+            Ou podemos seguir como ensina o curso, instalando via "pip".
+            Obs: Estamos instalando a versão 1 do AWS CLI, hoje temos a opção da versão 2, mas para não ficarmos presos a problemas que teremos que pesquisar fora
+            do material do curso, seguiremos a risca o que está sendo ensinado.
+
+                1 - Ir no link: https://docs.aws.amazon.com/pt_br/cli/latest/userguide/install-cliv1.html#install-tool-pip (Instalação da versão CLI 1).
+                2 - Ir até a parte: "Instalar a AWS CLI usando o pip".
+                3 - Copiamos a referência: $ pip3 install awscli --upgrade --user
+
+                    Obs: Caso ainda não tenhamos o Python 3 instalado ou o pip, deveremos utilizar os seguintes comandos antes:
+
+                        a) # apt-get update
+                        b) # apt install python3-pip
+
+                4 - Depois de feita a instalação deveremos colocar a ferramenta no nosso path:
+
+                    Obs: Quando fazemos esta instalação no nosso usuário ele instala em \home\usuario\.local\bin...
+                    Podemos adiciona-la ao path, mas para não perder tempo, trabalharemos com ela a partir do seu local de instalação mesmo.
+
+                5 - Primeiro comando a ser executado: ./aws configure
+
+                6 - Precisamos agora, através do console da AWS criar um usuário para trabalhar com a AWS CLI.
+
+                    Vamos até o menu IAM do console da AWS.
+
+                    a) Users
+                    b) Add user: Demos o nome de aws-cli
+                        Obs: Nesta parte podemos escolher que recurso este usuário irá utilizar.
+
+                            Acesso ao console ou Um access key ID e secret access key para trabalhar com AWS API, CLI, SDK, e outras ferramentas de desenvolvimento.
+                            O primeiro é chamdo de "AWS Management Console access" e o segundo "Programmatic access"
+
+                            Criaremos o segundo...(Programmatic access)
+
+                    c) Avançamos para criar o grupo do nosso usuário...
+                        Obs: Caso ainda não tenhamos um grupo, poderemos criar um.
+
+                            No meu caso, eu não tinha, clicamos em "Create Group"
+
+                            a) Devemos dar um nome para o nosso grupo, no caso do curso utilizei o sugerido pelo professor: admin
+                            b) Devemos vincular uma política a este grupo. No caso vinculei a politica: AdministratorAccess
+                            c) Criamos o grupo e avançamos até finalizar e fazemos o download do arquivo .csv, e então fechar.
+
+                            Obs: A príncipio, criamos um grupo com políticas administrativas que da acesso a qualquer serviço da AWS.
+                                    Isto foi feito para conhecermos o AWS CLI e por ser o curso. No dia a dia de trabalho, quando as coisas requerem mais segurança
+                                    Podemos criar usuários e colocálos em grupos com políticas bem mais restritivas, por exemplo:
+
+                                        Um grupo com políticas para mexer apenas com EC2.
+                                        Um grupo com políticas apenas para os administradores de banco de dados RDS.
+
+                    d) Agora partimos para o shell do nosso sistema operacional para terminar a parte da configuração do AWS CLI:
+
+                        AWS Access Key ID: aws-cli
+                        AWS Secret Access Key: "senha"
+                        Default region name: us-east-1 (Isto depende da região que estamos trabalhando)
+                        Default output format: json (O formato que as informações serão imprimidas na tela)
+
+            7 - Agora com o nosso AWS CLI instalado e configurado podemos fazer algumas coisas.
+
+        
+        Utilizando a AWS CLI com os serviços EC2:
+
+            Obs: O instrutor não mostrou na ultima aula como alterar o .local/bin porque dependendo do que estivermos utilizando ele muda.
+
+            Podemos adiciona-la agora:
+
+                1 - Executamos no diretório raiz o comando: cat .profile (Para ver como estão os caminhos do PATH)
+
+                2 - Adicionamos o PATH com o seguinte comando: # export PATH=$PATH:/home/nezzonarcizo/.local/bin
+                    Obs: Este método funcionará somente na seção atual, é temporário...
+                            Para deixar em modo permanente temos que inserir o PATH no arquivo: etc/profile ... PATH= export PATH=/home/nezzonarcizo/.local/bin
+
+                3 - Caso tenhamos configurado o PATH corretamente em qualquer lugar que digitarmos o comando: aws teremos a seguinte saída:
+
+                    usage: aws [options] <command> <subcommand> [<subcommand> ...] [parameters]
+                    To see help text, you can run:
+
+                    aws help
+                    aws <command> help
+                    aws <command> <subcommand> help
+                    aws: error: the following arguments are required: command
+
+                4 - É importante termos sempre como referência a documentação, então segue a documentação do AWS CLI: https://docs.aws.amazon.com/cli/index.html
+                        A parte da referência é a mais importante para nós: https://docs.aws.amazon.com/pt_br/cli/latest/reference/
+                        Obs: Para cada serviço da Amazon AWS teremos um link aqui, no corpo desta página, exemplo: ec2, dynamodb, rds etc
+
+                        Ou seja, podemos notar que devemos usar de inicio, por exemplo, os comandos: # aws ec2 describe-instances
+                        Este comando vai descrever as instâncias que temos...
+
+                        Para detalhar mais: # aws ec2 describe-instances | more
+
+                        Aqui teremos todas as informações das nossas instâncias, o tipo de máquina (t2.micro), security groups, regras, redes etc
+                        Basta criarmos um script com estes comandos aws para fazermos o que quisermos na administração da nuvem.
+                
+                        O atributo "State" é o status da máquina, se está rodando, se não, etc: 80 parada, 16 rodando etc
+
+                        # aws ec2 describe-instances | grep PublicDnsName: Nos mostra o IP das máquinas.
+
+                        # aws ec2 describe-instances --query "Reservations[*].Instances[*]: Para definirmos que instâncias queremos detalhar.
+
+                        # aws ec2 describe-instances --query "Reservation[*].Instances[*].{Instance:[InstanceId, State]}"
+                            Nos trás o id da instância, o código do status, no caso veio o 16, e o status de forma nominal ("running").
+
+                            Obs: Caso a query esteja com a sintaxe errada teremos o retorno "null" 
+
+                        # aws ec2 describe-instances --instance-id i-XXXXXXXXXX
+                            Nos trás todas as informações da instância com o ID indicado.
+
+        Controlando a instância com a AWS CLI:
+
+            Podemos ligar ou desligar instâncias baseados no id ou outro atributo das máquinas:
+
+                # aws ec2 stop-instances --instance-id i-XXXXXXXXXX : Para a instância
+
+                # aws ec2 start-instances --instance-id i-XXXXXXXXXX : Inicia a instância
+
+        
+        Nesta aula, aprendemos:
+
+            - Como instalar a AWS CLI
+            - Como criar e configurar um usuário para a AWS CLI
+            - Como utilizar a AWS CLI com os serviços EC2, inclusive parando e iniciando instâncias
+
+
+    Questões aula 08:
+
+        1 - Sobre o uso e as características da AWS CLI, podemos dizer que:
+
+            Selecione uma alternativa
+
+            b) É uma ferramenta integrada, para gerenciamento de todos os serviços da AWS
+
+            Alternativa correta! A partir dela, você pode gerenciar todo o seu ambiente AWS, inclusive, em muitos casos, ela tem mais opções do que as apresentadas 
+            no console de gerenciamento (Dashboard).
+
+        
+        2 - Ao executar o seguinte comando:
+
+            aws ec2 describe-instances
+            O que ele apresentará?
+
+            Selecione uma alternativa
+
+            c) As instâncias em um região específica
+
+            Alternativa correta! Quando utilizamos a CLI, ela baseia-se nas configurações (aws configure) pré-definidas, sendo assim, será exibido um informe somente desta 
+            região. Para alterar a região, basta utilizar o parâmetro --region.
+
+
+            
+
+            
+
+
+
+
+            
+
+
+
+
+
+
+
+    
+
+
+
+
+        
+
+        

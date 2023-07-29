@@ -1,0 +1,191 @@
+-*- Aula 01: Criando um ambiente de desenvolvimento na AWS -------
+
+-*- Questões aula 01:
+
+    01 - Marque o que considerar verdadeiro em relação às características do serviço Amazon EKS:
+
+        R1: O Amazon EKS executa a mais recente versão de produção do Kubernetes. Sendo assim, os aplicativos gerenciados pelo Amazon EKS são totalmente compatíveis 
+            com os aplicativos gerenciados por qualquer ambiente padrão do Kubernetes.
+        
+        R2: O cluster é construído com base em instâncias EC2.
+
+
+    02 - Para rodarmos localmente o Minikube, é pré-requisito ter instalado o:
+
+        R1: É necessário ter instalado um Hypervisor para rodar o Minikube.
+
+        R2: Para gerenciar o seu cluster (Minikube), você vai precisar utilizar o kubectl.
+
+
+    03 - Para sabermos qual IP está associado ao nosso cluster, é necessário executar o seguinte comando:
+
+        R: Executando o comando minikube ip, você obtém o endereço IP associado ao seu cluster.
+    
+-*- Teoria - 01
+
+- Instalar AWS CLI
+- Instalar Docker
+- Instalar Kubectl
+- Instalar Minikube
+
+
+Desativar o driver do VirtualBox para que funcione na EC2 (Que é uma máquina virtual)
+
+# minikube start --vm-driver=none
+
+Aplicação utilizada de exemplo após instalar o Minikube
+
+# kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+
+Expondo a aplicação com NodePort
+
+# kubectl expose deployment hello-minikube --type=NodePort
+
+-*- (Resumo aula 01) Nesta aula, aprendemos:
+
+    - O que é EKS e por que utilizá-lo
+    - Como preparar o ambiente de homologação
+    - Criação de uma instância EC2
+    - Instalação do Kubernetes command-line tool (kubectl), Docker e Minikube
+    - Inicialização do Minikube
+    - Teste do ambiente com o hello-minikube de exemplo
+    - Exposição da porta do hello-minikube
+
+
+-*- Aula 02: Publicando a aplicação guestbook -------
+
+
+-*- Questões aula 02:
+
+    01 - Considerando que o arquivo xpto-deploy.yaml contém as configurações para deploy da aplicação XPTO, verifique a sintaxe abaixo:
+
+        kubectl apply -f https://example.com/xpto-deploy.yaml
+
+        R:  Tendo um arquivo devidamente configurado, a sintaxe está correta.
+
+    
+    02 - As aplicações que rodam em instâncias EC2 devem ter suas portas liberadas para acesso externo. Esta liberação é feita:
+
+        R: Sempre que desejar conceder acesso externo à sua aplicação, é necessário fazer a liberação da porta no Security Group associado à sua instância.
+
+    
+-*- (Resumo aula 02) Nesta aula, aprendemos:
+
+    - Uma introdução à aplicação guestbook
+    - Como fazer o deploy e criar o serviço do Redis Master
+    - Como fazer o deploy e criar o serviço do Redis Slave
+    - Como fazer o deploy e criar o serviço do front-end da aplicação
+    - O teste da aplicação
+
+
+-*- Aula 03: Criando o Cluster EKS -------
+
+-*- Questões aula 03:
+
+    01 - Quando precisamos que serviços da AWS "chamem" (utilizem) outros serviços, é necessário criarmos algumas regras (roles). Isto deve ser configurado no:
+
+        R: O IAM é o serviço responsável pela gestão das chaves e políticas.
+
+    
+    02 - Para criarmos o nosso cluster na AWS, podemos utilizar o:
+
+        R1: Sim, com poucos cliques é possível criar rapidamente o cluster através do console.
+
+        R2: Reunindo as informações de VPC e Security Group, o cluster pode ser criado através de uma única linha de comando.
+
+    
+    03 - Para visualizar as informações do cluster pela AWS CLI, devemos utilizar a seguinte linha de comando:
+
+        aws eks describe-cluster
+
+        A sintaxe do comando acima está correta?
+
+        R1: Não, a sintaxe contém 1 erro. Faltou especificar o nome do cluster, através do parâmetro --name NomeDoCluster.
+
+
+-*- Teoria - 03
+
+Template do CloudFormation da VPC utilizada daqui pra frente
+
+https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2018-12-10/amazon-eks-vpc-sample.yaml
+
+Na parte do CloudFormation importamos o template.
+
+Comando para criar o cluster dentro da VPC criada pelo template...
+
+# aws eks create-cluster --name Alura-EKS --role-arn arn:aws:iam::089350267643:role/EKS-course-role --resources-vpc-config subnetIds=subnet-07c7b08de43c6317c,
+    #subnet-0408f993d036fb508,subnet-028fba1b4af467cdd,securityGroupIds=sg-06930c18518f27311
+
+Nesta aula, aprendemos:
+
+    - Como criar uma role no AWS IAM
+    - Como criar uma VPC separada
+    - AWS CloudFormation
+    - Como criar o nosso cluster
+    - Como visualizar o cluster pela AWS CLI e pelo console
+
+
+-*- Aula 04: Criando os Nodes -------
+
+    01 - Para utilizarmos o kubectl, é preciso que o mesmo se autentique na AWS. Para isso, é necessário:
+
+        Selecione 2 alternativas
+    
+        R1: Atualizar as configurações em ~/.kube, através da AWS CLI, um jeito rápido de atualizar as configurações é utilizando a AWS CLI:
+            # aws eks update-kubeconfig --name NomeDoCluster
+
+        R2: Instalar o aws-iam-authenticator, o aws-iam-authenticator é utilizado pelo kubectl para fazer a autenticação na AWS.
+
+    
+    02 - Em nosso cluster EKS, os nodes são:
+
+        Selecione uma alternativa
+
+        R: Instâncias EC2. As instâncias EC2 funcionam como os nodes do cluster EKS.
+
+-*- Questões aula 04:
+
+
+-*- Teoria - 04
+
+- Configurando a autenticação do Kubectl
+
+Instalar aws-iam-authenticator to EKS
+
+https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
+
+Depois podemos configurar no .bashrc para que aws-iam-authenticator seja enxergado de qualquer lugar do computador
+
+O comando para mudarmos o contexto é:
+
+# aws eks update-kubeconfig --name "Nome-do-Cluster"
+
+
+- Criando o NodeGroup
+
+https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2018-12-10/amazon-eks-nodegroup.yaml.
+
+ami-0440e4f6b9713faf6
+
+- Adicionando os nodes ao cluster
+
+curl -o https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2018-08-30/aws-auth-cm.yaml
+
+Editar o arquivo incluindo a role encontrada no cloudformation dos nodes...
+
+Depois aplicar com:
+
+# kubectl apply -f aws-auth-cm.yaml
+
+Verficiar se os Nodes estão prontos...
+
+# kubectl get nodes --watch
+
+
+Nesta aula, aprendemos:
+
+- Como instalar e configurar o aws-iam-authenticator
+- Como criar os nodes
+- Como adicionar os nodes no cluster
+
+

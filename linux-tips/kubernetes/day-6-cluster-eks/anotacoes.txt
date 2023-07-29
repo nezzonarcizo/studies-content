@@ -1,0 +1,598 @@
+-*- Parte 01 - Criando um cluster com eksctl
+
+Precisamos instalar o eksctl, awscli e ter as credencias na conta.
+
+Apenas acompanhando a criação do cluster...VPC, Subnets, NodeGroups, etc...
+
+Entramos no link https://eksctl.io e copiamos o conteudo de exemplo para criação do cluster...
+
+# sudo vim cluster.yaml
+
+"
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: basic-cluster
+  region: eu-north-1
+
+nodeGroups:
+  - name: ng-1
+    instanceType: m5.large
+    desiredCapacity: 10
+  - name: ng-2
+    instanceType: m5.xlarge
+    desiredCapacity: 2
+"
+
+m5.large: 2 vCPU e 8 GiB memória
+m5.xlarge: 4 vCPU e 16 GiB memória
+
+Temos uma documentação bem completa da WeaveWorks de como personalizar nosso cluster: https://eksctl.io/usage/creating-and-managing-clusters/
+
+Também temos um repositório com vários exemplos de arquivos de configuração do cluster: https://github.com/weaveworks/eksctl/tree/main/examples
+Ex: Logs CloudWatch, VPC e subnets personalizadas, NodeGroups mistos etc
+
+
+Obs: Mesmo que o cluster não foi criado com 'eksctl' conseguiremos personaliza-los com os arquivos...
+
+Obs: Quando vamos criar um cluster EKS, precisamos de algumas roles e policies, porém o eksctl facilita muito
+esta parte para nós, a única coisa que teremos que criar é um usuário, no meu caso criei o marlon.lab
+
+As permissões que adicionei a este usuário...
+
+- AmazonEKS_CNI_Policy
+- AmazonEKSClusterPolicy
+- AmazonEKSFargatePodExecutionRolePolicy
+- AmazonEKSServicePolicy
+- AmazonEKSVPCResourceController
+- AmazonEKSWorkerNodePolicy
+
+- AmazonEC2ContainerRegistryFullAccess
+- AmazonS3FullAccess
+- AdministratorAccess
+- AWSCloudFormationFullAccess
+
+
+
+Agora devemos criar o cluster...
+
+Para ver tudo que podemos criar com o eksctl...
+# eksctl create --help
+
+Com este comando abaixo verificamos que podemos criar o nosso cluster todo parametrizado...
+# eksctl create cluster --help
+
+Para criar um cluster utilizando um manifesto...
+# eksctl create cluster -f cluster.yaml
+
+O cluster começará a ser criado...
+
+2022-05-14 11:53:32 [ℹ]  eksctl version 0.90.0
+2022-05-14 11:53:32 [ℹ]  using region us-east-1
+2022-05-14 11:53:33 [ℹ]  setting availability zones to [us-east-1d us-east-1e]
+2022-05-14 11:53:33 [ℹ]  subnets for us-east-1d - public:192.168.0.0/19 private:192.168.64.0/19
+2022-05-14 11:53:33 [ℹ]  subnets for us-east-1e - public:192.168.32.0/19 private:192.168.96.0/19
+2022-05-14 11:53:34 [ℹ]  nodegroup "ng-1" will use "ami-0fb604efcd6aaf3d5" [AmazonLinux2/1.21]
+2022-05-14 11:53:34 [ℹ]  nodegroup "ng-2" will use "ami-0fb604efcd6aaf3d5" [AmazonLinux2/1.21]
+2022-05-14 11:53:35 [ℹ]  using Kubernetes version 1.21
+
+-*- Parte 02 - Criando um cluster com eksctl
+
+A criação do cluster demora, e durante ela poderemos ver difersas fases no status da criação...
+
+A criação do control-plane e dos nodegroups workers por exemplo...
+
+"
+2022-05-14 11:56:46 [ℹ]  nodegroup "ng-1" will use "ami-0fb604efcd6aaf3d5" [AmazonLinux2/1.21]
+2022-05-14 11:56:46 [ℹ]  nodegroup "ng-2" will use "ami-0fb604efcd6aaf3d5" [AmazonLinux2/1.21]
+"
+
+"
+2 sequential tasks: { create cluster control plane "eks-lab", 
+    2 sequential sub-tasks: { 
+        wait for control plane to become ready,
+        2 parallel sub-tasks: { 
+            create nodegroup "ng-1",
+            create nodegroup "ng-2",
+        },
+    } 
+}
+
+"
+
+-*- Parte 03 - Criando um cluster com eksctl
+
+Após terminar de criar o cluster, executamos alguns comandos com kubectl para verificar se todos os recursos foram criados
+
+# kubectl get nodes
+NAME                             STATUS   ROLES    AGE    VERSION
+ip-192-168-10-94.ec2.internal    Ready    <none>   78s    v1.21.5-eks-9017834
+ip-192-168-30-43.ec2.internal    Ready    <none>   2m7s   v1.21.5-eks-9017834
+ip-192-168-45-94.ec2.internal    Ready    <none>   79s    v1.21.5-eks-9017834
+ip-192-168-61-151.ec2.internal   Ready    <none>   2m6s   v1.21.5-eks-9017834
+
+# kubectl get pods -A
+NAMESPACE     NAME                       READY   STATUS    RESTARTS   AGE
+kube-system   aws-node-bsnbn             1/1     Running   0          93s
+kube-system   aws-node-f5zvf             1/1     Running   0          2m21s
+kube-system   aws-node-tk5zw             1/1     Running   0          92s
+kube-system   aws-node-vdmjx             1/1     Running   0          2m20s
+kube-system   coredns-66cb55d4f4-gs6rt   1/1     Running   0          12m
+kube-system   coredns-66cb55d4f4-lc4fb   1/1     Running   0          12m
+kube-system   kube-proxy-6c5j5           1/1     Running   0          2m20s
+kube-system   kube-proxy-gh9d2           1/1     Running   0          2m21s
+kube-system   kube-proxy-r6479           1/1     Running   0          92s
+kube-system   kube-proxy-sdkst           1/1     Running   0          93s
+
+# kubectl get services -A
+NAMESPACE     NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)         AGE
+default       kubernetes   ClusterIP   10.100.0.1    <none>        443/TCP         13m
+kube-system   kube-dns     ClusterIP   10.100.0.10   <none>        53/UDP,53/TCP   13m
+
+Precisamos criar uma role para que seja utilizada quando configurarmos o 'external-dns'...
+
+Nome da role: 'eks-lab-external-dns'
+
+Policies
+
+- AmazonRoute53FullAccess
+- AmazonEKSClusterPolicy
+
+-*- Parte 04 - Configurando o ExternalDNS
+
+Precisamos do 'ExternalDNS' para ter uma URL com o dommínio customizado....
+
+Ou seja, "Para todo serviço que colocarmos no EKS ele vai ter que colocar o determinado DNS"...
+
+Um exemplo é se caso queiramos configurar um GitLab dentro do cluster, quando configurarmos seu serviço ele vai ficar por exemplo:
+
+"gitlab.meudominio.com"
+
+
+Antes de tudo temos que conectar o nosso domínio, o Route53...
+
+Temos que criar a nossa 'Hosted Zone'....
+
+Para que utilizemos a mesma role que utilizamos para criar o cluster, podemos fazer a criar a nossa hosted zone pela linha de comando
+
+"aws route53 create-hosted-zone --name "eks.nezzonarcizo.com.br." --caller-reference "external-dns-test-$(date +%s)""
+Obs: Criar a hosted zone e depois inserir o "Value/Route traffic to" dentro do domínio principal, no caso acima, "nezzonarcizo.com.br"
+
+Precisamos de uma policy para que a 'iamserviceaccount' no cluster tenha permissões para fazer alterações na nossa HostedZone
+
+Criei uma politica com o nome 'eks-lab-route53'
+
+Obs: O arquivo json com o código da politica esta na pasta 'day-6-cluster-eks'
+
+
+
+Criando a 'iamserviceaccount'
+
+# eksctl create iamserviceaccount --name external-dns --namespace default --cluster eks-lab --attach-policy-arn "arn da policy" --approve
+
+No caso deste lab...
+
+# eksctl create iamserviceaccount --name external-dns --namespace default --cluster eks-lab --attach-policy-arn arn:aws:iam::335902315655:policy/eks-lab-route53 --approve
+
+Este comando imprimirá um erro na tela...
+
+"Error: unable to create iamserviceaccount(s) without IAM OIDC provider enabled"
+
+Precisamos ativar o OIDC junto ao cluster. Porém na impressão do erro normalmente já virá a solução para este problema...
+
+"eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=eks-lab" ...Isto emitirá o "plan"
+
+Para aplicar adicionamos o flag "--approve" na frente do comando...
+
+# eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=eks-lab --approve
+
+Agora sim podemos voltar para a criação da conta:
+
+# eksctl create iamserviceaccount --name external-dns --namespace default --cluster eks-lab --attach-policy-arn arn:aws:iam::335902315655:policy/eks-lab-route53 --approve
+
+Teremos uma mensagem de que a serviceaccount foi criada...
+
+2022-05-14 14:01:20 [ℹ]  created serviceaccount "default/external-dns"
+
+Podemos realizar o comando # kubectl get serviceaccount ou kubectl get sa
+
+NAME           SECRETS   AGE
+default        1         122m
+external-dns   1         5m11s
+
+Agora podemos fazer o deploy do 'External-DNS'...
+
+Obs: Os arquivos para fazer o deploy do ExternalDNS estão na pasta 'day-6-cluster-eks/external-dns'
+
+Agora podemos fazer o deploy dos arquivos do ExternalDNS...
+
+# kubectl create -f clusterrole.yaml
+# kubectl create -f clusterrolebinding.yaml
+# kubectl create -f deployment.yaml
+
+Para verificarmos se o ExternalDNS está rodando...
+
+# kubectl get deploy
+
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+external-dns   1/1     1            1           5s
+
+# kubectl get pods
+
+external-dns-8cb45c9d5-8wvzg
+
+Para vermos o log do pod do ExternalDNS...
+
+# kubectl logs -f external-dns-c5d486d-pdx6v
+
+time="2022-05-14T18:53:52Z" level=info msg="Instantiating new Kubernetes client"
+time="2022-05-14T18:53:52Z" level=info msg="Using inCluster-config based on serviceaccount-token"
+time="2022-05-14T18:53:52Z" level=info msg="Created Kubernetes client https://10.100.0.1:443"
+time="2022-05-14T18:53:59Z" level=info msg="All records are already up to date"
+time="2022-05-14T18:54:59Z" level=info msg="All records are already up to date"
+time="2022-05-14T18:55:59Z" level=info msg="All records are already up to date"
+time="2022-05-14T18:56:59Z" level=info msg="All records are already up to date"
+
+
+-*- Parte 05 - Configurando o CertManager e testando o ExternalDNS
+
+Para instalação do CertManager utilizando o Helm, podemos acessar a documentação...
+
+https://cert-manager.io/docs/installation/helm/
+
+Obs: Caso ainda não tenhamos, devemos instalar o Helm...
+
+Download your desired version: https://github.com/helm/helm/releases
+Unpack it (tar -zxvf helm-version.tar.gz)
+Find the helm binary in the unpacked directory, and move it to its desired destination (mv linux-amd64/helm /usr/local/bin/helm)
+
+
+- Primeiro devemos adicionar o repositório Helm do CertManager
+
+# helm repo add jetstack https://charts.jetstack.io
+
+Obs: Se não tiver ainda instalado o Helm neste comando ele oferecerá a oportunidade de instalar...
+Depois de instalado tente adicionar o repo novamente, provavelmente ele já estará instalado dependendo da versão do Helm.
+
+Cado ainda nao tiver, e for adicionado neste momento...
+
+# helm repo update
+
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "jetstack" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+Agora podemos instalar o o CertManager
+
+# helm upgrade cert-manager jetstack/cert-manager --install --namespace cert-manager --create-namespace --values "cert-manager-values.yaml" --wait
+
+  - helm upgrade cert-manager
+  - jetstack/cert-manager "Local da instalação"
+  - --install "O que queremos fazer"
+  - --namespace cert-manager "Namespace que queremos instala-lo"
+  - --create-namespace "Para garantir que se caso o namespace nao exista seja criado, para nao dar erro"
+  - --values "cert-manager-values.yml" "Para onde irão os valores do CertManager"
+  - --wait "Vai ficar esperando a instalação acontecer"
+
+Mas antes de executarmos este comando, temos que criar o arquivo que receberá os valores do CertManager (cert-manager-values.yml)
+
+# vim cert-manager-values.yml
+
+Passaremos para o Helm alguns valores que já queremos que ele traga como default...
+
+"
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::335902315655:role/eks-lab-external-dns
+
+installCRDs: true # Resources extras 'Custom Resource Definition'
+
+# the securityContext is required, so the pod can access files required to assume the IAM role
+securityContext:
+  enabled: true
+  fsGroup: 1001
+"
+
+Estes dados servem como parametros para o nosso Helm...
+
+Então executamos o comando...
+
+# helm upgrade cert-manager jetstack/cert-manager --install --namespace cert-manager --create-namespace --values "cert-manager-values.yaml" --wait
+
+Se deu tudo certo...
+
+"
+Release "cert-manager" does not exist. Installing it now.
+NAME: cert-manager
+LAST DEPLOYED: Sun May 15 14:00:43 2022
+NAMESPACE: cert-manager
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+cert-manager v1.8.0 has been deployed successfully!
+
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
+
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
+
+https://cert-manager.io/docs/configuration/
+
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
+
+https://cert-manager.io/docs/usage/ingress/
+"
+
+Vamos rodar o comando para ver os logs do external-dns novamente...
+
+# kubectl logs -f external-dns-8cb45c9d5-cxb4m
+
+Vamos pegar o exemplo de uma aplicação para ver se está tudo funcionando corretamente...
+
+Obs: Este arquivo se encontra na pasta "day-6-cluster-eks/cert-manager"
+
+Vamos deployar este arquivo no nosso cluster...
+
+# kubectl create -f eks-dns-service.yaml
+
+service/nginx created
+deployment.apps/nginx created
+
+Vamos verificar se foi criado mesmo...
+
+[nezzonarcizo@fedora cert-manager]$ kubectl get deploy
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+external-dns   1/1     1            1           23h
+nginx          1/1     1            1           19s
+
+Vamos verificar tambem se o service foi criado tambem...
+
+
+[nezzonarcizo@fedora cert-manager]$ kubectl get svc
+NAME         TYPE           CLUSTER-IP    EXTERNAL-IP                                                               PORT(S)        AGE
+kubernetes   ClusterIP      10.100.0.1    <none>                                                                    443/TCP        72m
+nginx        LoadBalancer   10.100.5.11   ab4ad1dc552ec4f16a8c747ae9dacf1a-1596657861.us-east-1.elb.amazonaws.com   80:31853/TCP   74s
+
+Agora se olharmos os logs do external-dns veremos que o hook pegou o novo deploy de aplicação...
+
+time="2022-06-25T19:51:18Z" level=info msg="Desired change: CREATE cname-nginx.eks.nezzonarcizo.com.br TXT [Id: /hostedzone/Z006186234ZM9GYEDKHNR]"
+time="2022-06-25T19:51:18Z" level=info msg="Desired change: CREATE nginx.eks.nezzonarcizo.com.br A [Id: /hostedzone/Z006186234ZM9GYEDKHNR]"
+time="2022-06-25T19:51:18Z" level=info msg="Desired change: CREATE nginx.eks.nezzonarcizo.com.br TXT [Id: /hostedzone/Z006186234ZM9GYEDKHNR]"
+time="2022-06-25T19:51:19Z" level=info msg="3 record(s) in zone eks.nezzonarcizo.com.br. [Id: /hostedzone/Z006186234ZM9GYEDKHNR] were successfully updated"
+time="2022-06-25T19:52:19Z" level=info msg="Applying provider record filter for domains: [eks.nezzonarcizo.com.br. .eks.nezzonarcizo.com.br.]"
+time="2022-06-25T19:52:19Z" level=info msg="All records are already up to date"
+
+Se formos no serviço Route53 na AWS veremos que foi criado os registros...
+
+cname-nginx.eks.nezzonarcizo.com.br	TXT	Simple	-	
+"heritage=external-dns,external-dns/owner=Z006186234ZM9GYEDKHNR,external-dns/resource=s...
+
+nginx.eks.nezzonarcizo.com.br	A	Simple	-	
+ab4ad1dc552ec4f16a8c747ae9dacf1a-1596657861.us-east-1.elb.amazonaws.com.
+
+nginx.eks.nezzonarcizo.com.br	TXT	Simple	-	
+"heritage=external-dns,external-dns/owner=Z006186234ZM9GYEDKHNR,external-dns/resource=service/default/nginx"
+
+
+Porém ele vai ser criado sem certificado, devemos indicar pra ele quem será o nosso issuer...
+
+# vim cert-issuer.yaml
+"
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    email: marlon.nezzo@grupomytec.com.br
+    privateKeySercretRef:
+      name: letsencrypt
+    server: https://acme-v02.api.letsencrypt.org/directory # Endereco de quem vai responder o certificado
+    solvers:
+      - dns01:
+          route53: # Fara verificacao diretamente no Route53 para criacao do certificado
+            region: us-east-1
+            hostedZoneID: Z006186234ZM9GYEDKHNR
+
+
+# kubectl create -f cert-issuer.yaml
+
+clusterissuer.cert-manager.io/letsencrypt created
+
+# kubectl get certificate
+
+No resources found in default namespace.
+
+# kubectl get issuers.cert-manager.io
+
+No resources found in default namespace.
+
+Obs: Isto acontece porque ja deployamos o nginx, temos que deployar novamente para conseguir trazer...
+
+Para vermos os ClusterIssuers...
+
+# kubectl get clusterissuers.cert-manager.io
+
+NAME          READY   AGE
+letsencrypt   True    3m30s
+
+
+# kubectl delete -f eks-dns-service.yaml
+service "nginx" deleted
+deployment.apps "nginx" deleted
+
+
+# kubectl create -f eks-dns-service.yaml
+
+-*- Parte 06 - Deploy do Gitlab usando o Helm
+
+Página GitLab da documentação para instalação do mesmo num cluster EKS: docs.gitlab.com/charts/installation/cloud/eks.html
+
+Next steps...https://docs.gitlab.com/charts/installation/deployment.html
+
+Adicionando o repositorio Helm do GitLab
+# helm repo add gitlab https://charts.gitlab.io/
+
+Atualizando o repositório Helm
+# helm repo update
+
+helm upgrade --install gitlab gitlab/gitlab \
+  --timeout 600s \
+  --set global.hosts.domain=eks.nezzonarcizo.com.br \
+  --set certmanager-issuer.email=nezzo.narcizo@hotmail.com \
+
+Obs: Na documentação teremos dois comandos a mais, o global.hosts.externalIP e o postgresql.image.tag, nas aulas nao utilizamos estes comandos
+
+Se der erro por causa do cert-manager, teremos que utilizar o Helm para desinstala-lo...
+# helm uninstall cert-manager -n cert-manager
+
+E então criar o cert-manager via comandos do gitlab, ou, podemos criar um cert-manager-values.yaml passando os valores pro gitlab igual fizemos anteriormente...
+
+[nezzonarcizo@fedora cert-manager]$ kubectl get certificates
+NAME                  READY   SECRET                AGE
+gitlab-gitlab-tls     False   gitlab-gitlab-tls     12m
+gitlab-kas-tls        False   gitlab-kas-tls        12m
+gitlab-minio-tls      False   gitlab-minio-tls      12m
+gitlab-registry-tls   False   gitlab-registry-tls   12m
+[nezzonarcizo@fedora cert-manager]$ 
+
+[nezzonarcizo@fedora cert-manager]$ kubectl get certificaterequest
+NAME                        APPROVED   DENIED   READY   ISSUER          REQUESTOR                                          AGE
+gitlab-gitlab-tls-d8tvl     True                False   gitlab-issuer   system:serviceaccount:default:gitlab-certmanager   12m
+gitlab-kas-tls-xv2ks        True                False   gitlab-issuer   system:serviceaccount:default:gitlab-certmanager   12m
+gitlab-minio-tls-vn2qz      True                False   gitlab-issuer   system:serviceaccount:default:gitlab-certmanager   12m
+gitlab-registry-tls-4jn4w   True                False   gitlab-issuer   system:serviceaccount:default:gitlab-certmanager   12m
+[nezzonarcizo@fedora cert-manager]$
+
+[nezzonarcizo@fedora cert-manager]$ kubectl describe certificaterequest gitlab-gitlab-tls-d8tvl
+Name:         gitlab-gitlab-tls-d8tvl
+Namespace:    default
+Labels:       app=webservice
+              app.kubernetes.io/managed-by=Helm
+              chart=webservice-6.1.2
+              gitlab.com/webservice-name=default
+              heritage=Helm
+              release=gitlab
+Annotations:  cert-manager.io/certificate-name: gitlab-gitlab-tls
+              cert-manager.io/certificate-revision: 1
+              cert-manager.io/private-key-secret-name: gitlab-gitlab-tls-4tpkn
+API Version:  cert-manager.io/v1
+Kind:         CertificateRequest
+Metadata:
+  Creation Timestamp:  2022-07-09T19:41:13Z
+  Generate Name:       gitlab-gitlab-tls-
+  Generation:          1
+  Managed Fields:
+    API Version:  cert-manager.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        f:conditions:
+    Manager:    controller
+    Operation:  Update
+    Time:       2022-07-09T19:41:16Z
+  Owner References:
+    API Version:           cert-manager.io/v1
+    Block Owner Deletion:  true
+    Controller:            true
+    Kind:                  Certificate
+    Name:                  gitlab-gitlab-tls
+    UID:                   0f1b3205-09fe-4c09-9f97-8c394499dea9
+  Resource Version:        19943
+  UID:                     c9dde445-7dab-46e9-9131-1cabf039fe0f
+Spec:
+  Extra:
+    authentication.kubernetes.io/pod-name:
+      gitlab-certmanager-57c4557849-tv8hl
+    authentication.kubernetes.io/pod-uid:
+      9601a31f-2765-448e-99ac-7f07347660c5
+  Groups:
+    system:serviceaccounts
+    system:serviceaccounts:default
+    system:authenticated
+  Issuer Ref:
+    Group:  cert-manager.io
+    Kind:   Issuer
+    Name:   gitlab-issuer
+  Request:  LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ2pqQ0NBWFlDQVFBd0FEQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQU53Vwp3QkhCRDMyM3RLQ1V0ZExSc2o5T3VXVi8zSFJCdGJETGM5M0dKbm4rczhkdTBsTWtGQS9RbGg4TVg1Y2RjNHorCnVGNjN3cmczdmY1UEJuVlVTMDg0ZG96U1I4UkNmR2xJNFM0eEUxZWFJL3lXVFNjbnNqSGN1cXNqT0NGbE13aHgKSUlZL1h2RkFHUWxuTmxoQ2xHWnNVblZ2MnpFOWx6NkVwWDNpV2duelhoaTI3UUt4U0RsTG5EZWhEUzJmMFFiZgpuVEdaNXFMbzVuSlFWajdQZGJITkhwRFdKUUErZ2NJUEJnUFRWaWhBb1FnczFrcjZhZVhTNVVOUHdWR2R3T3NBCnRNRTZRQ1NXY0dmK0VLYUllRzFuc1pkU0psc3FWZ05hNnJEa2NMZDJXOHhKeU5PdmZHbDRFcUt6NGpVUFp0QmUKVlVkZnVmdkJsYy9uMzhMTXdCOENBd0VBQWFCSk1FY0dDU3FHU0liM0RRRUpEakU2TURnd0tRWURWUjBSQkNJdwpJSUllWjJsMGJHRmlMbVZyY3k1dVpYcDZiMjVoY21OcGVtOHVZMjl0TG1KeU1Bc0dBMVVkRHdRRUF3SUZvREFOCkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQTE0NWkwZ1lZSjdzNUp0VW1VaXlqVFljQzRSb0dlRUJuRjhKUjJUYTkKOHk5T0YwNjFnMjJNY0VaWDIwYW9naThjSjQ4dmY5Uk9wTnBYdy9GNHNCS0tLNEIyeU10QjN6dEN6TWZmTVFNQwpPamVXU0VZL3BWcmdSaGU1WXpYanNxdDlXK010RTRZTHBSS3pKL2I4cjZFSnM2VmxlamZzai9GNy9ONjRMS3pOCmVjUHZJWDQwSVQwK2doNkhGbDl0V1lMWTRpYm5YS1FGSDJjY1JHbHRLS3ZmdzFTTmJEMHgwdHRrcGgvb3JwKzYKL2Z1VkxWRTZycHQvK2RpamcxZ0Y4QXQ2OGFzVVN1QzFIaDR4NGw2RnVqYTk2M0M4NHdjTXNmUmNDL2RsaGMzRgovTFVOakdIcUJmVGFYdnFOOGp2dFZROS94ak1XcU15TjBhN0s1OFpmSE1rc3NRPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==
+  UID:      9005cbb3-d391-48f9-8009-2f6cbaaf7a38
+  Usages:
+    digital signature
+    key encipherment
+  Username:  system:serviceaccount:default:gitlab-certmanager
+Status:
+  Conditions:
+    Last Transition Time:  2022-07-09T19:41:14Z
+    Message:               Certificate request has been approved by cert-manager.io
+    Reason:                cert-manager.io
+    Status:                True
+    Type:                  Approved
+    Last Transition Time:  2022-07-09T19:41:15Z
+    Message:               Waiting on certificate issuance from order default/gitlab-gitlab-tls-d8tvl-4086165975: "pending"
+    Reason:                Pending
+    Status:                False
+    Type:                  Ready
+Events:
+  Type    Reason           Age   From          Message
+  ----    ------           ----  ----          -------
+  Normal  cert-manager.io  13m   cert-manager  Certificate request has been approved by cert-manager.io
+  Normal  OrderCreated     13m   cert-manager  Created Order resource default/gitlab-gitlab-tls-d8tvl-4086165975
+  Normal  OrderPending     13m   cert-manager  Waiting on certificate issuance from order default/gitlab-gitlab-tls-d8tvl-4086165975: ""
+
+[nezzonarcizo@fedora day-6-cluster-eks]$ kubectl get order gitlab-gitlab-tls-d8tvl-4086165975
+NAME                                 STATE     AGE
+gitlab-gitlab-tls-d8tvl-4086165975   pending   37m
+
+-*- Ultimas observações GitLab
+
+1 - Precisamos pegar a secret "gitlab-gitlab-initial-root-password"
+# kubectl get secrets
+
+[nezzonarcizo@fedora day-6-cluster-eks]$ kubectl get secrets
+NAME                                        TYPE                                  DATA   AGE
+default-token-pmwkg                         kubernetes.io/service-account-token   3      129m
+external-dns-token-bsd49                    kubernetes.io/service-account-token   3      87m
+gitlab-acme-key                             Opaque                                1      33m
+gitlab-certmanager-cainjector-token-zqkff   kubernetes.io/service-account-token   3      35m
+gitlab-certmanager-issuer-token-vzn4z       kubernetes.io/service-account-token   3      35m
+gitlab-certmanager-token-q9tgg              kubernetes.io/service-account-token   3      35m
+gitlab-certmanager-webhook-ca               Opaque                                3      35m
+gitlab-certmanager-webhook-token-7cqpd      kubernetes.io/service-account-token   3      35m
+gitlab-gitaly-secret                        Opaque                                1      35m
+"gitlab-gitlab-initial-root-password         Opaque                                1      35m"
+
+
+Na página de documentação: docs.gitlab.com/chart/installation/deployment.html
+temos a parte "initial login", nesta parte temos um comando para fazer o decode da senha do root do GitLab que está em base64
+
+# kubectl get secret <name>-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
+
+Nosso comando ficaria...
+
+# kubectl get secret gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
+
+"senha decodificada"
+
+Utilizar esta senha para configurar como root o GitLab
+
+
+-*- Persistencia GitLab
+
+Nosso deploy do Helm automaticamente criou os PV's...
+# kubectl get pv
+
+Temos os PV's para os seguintes serviços...
+
+ - Prometheus
+ - Postgres
+ - Redis
+ - Minio
+ - GitLab - gitaly
+
+Temos para cada um destes PV's os PVC's

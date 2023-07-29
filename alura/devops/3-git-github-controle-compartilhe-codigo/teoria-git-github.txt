@@ -1,0 +1,493 @@
+
+Git e Github: Controle e compartilhe seu código Git e Github: Controle e compartilhe seu código - Teoria do curso -------
+
+-----------------------------
+git version 2.24.0.windows.2
+-----------------------------
+
+
+Teoria completa do Git: https://git-scm.com/book/pt-br/v2
+
+Problemas com Graph Feature -- Solução
+
+	git config --global core.commitGraph true: Isso permite que todo repositório Git use o arquivo de gráfico de confirmação, se presente.
+	
+	git config --global gc.writeCommitGraph true: Essa configuração informa ao comando git gc para gravar o arquivo commit-graph sempre que você fizer uma coleta de lixo não trivial. Reescrever o arquivo commit-graph é 
+													uma operação relativamente pequena em comparação com uma operação completa do GC.
+	
+	git commit-graph write --reachable: Este comando atualizará seu arquivo commit-graph para conter todas as confirmações alcançáveis. Você pode executar isso para criar o arquivo de gráfico de confirmação imediatamente, 
+										em vez de aguardar sua primeira operação do GC.
+										
+										Fonte: https://devblogs.microsoft.com/devops/updates-to-the-git-commit-graph-feature/
+	
+
+Comandos que podem deixar o git bash mais rápido no Windows:
+
+	git config core.preloadindex true: Faz operações do sistema de arquivos em paralelo para ocultar a latência (atualização: ativada por padrão no Git 2.1)
+	
+	git config core.fscache true: Corrige problemas do UAC para que você não precise executar o Git como administrador (atualização: ativada por padrão no Git para Windows 2.8)
+	
+	git config --global gc.auto 256: Minimiza o número de arquivos em .git /
+	
+	git config --global status.submoduleSummary false: Se o git status demora, esta opção sendo definida, o comando é imediato.
+
+Aula 1 - O que é Git? -------
+
+	Teoria -------
+		
+		Controle de versões: Se temos várias versões de um mesmo código, precisaremos de um controle destas versões, pois modificações estão sendo feitas em paralelo.
+			Um servidor de arquivos preparado para receber as alterações de cada pessoa envolvida no projeto resolve este problema.
+			Neste servidor deve haver alguma ferramenta capaz de identificar que a versão enviada não é a mais recente, e portanto não deixe o arquivo ser enviado.				Portanto para realizar alterações no código que já está neste servidor, devemos baixar sua versão, realizar alterações e então enviar uma alteração mais nova que aquela.
+			E é isto que o Git faz para nós.
+	
+	
+		Temos outras alternativas além do Git, alguma delas são:
+				
+			CVS
+			SVN
+			Mercurial
+					
+		Uma das vantagens do Git sobre estas ferramentas é: Permitir uma cópia do projeto, um repositório do projeto em sua máquina, para que se possa trabalhar em cima dela e então enviá-lo para outro repositório, o que se denomina repositórios distribuídos. Isto permite o trabalho Offline antes do envio de sua versão.
+				
+					
+	Comandos:
+	
+		git init = Inicia um repositório onde o Git irá monitorar todos os arquivos e pastas.
+			Obs: Comando deve ser executado dentro da pasta desejada através do terminal.
+			Obs2: Atráves do Git bash normalmente a pasta ficará com a indicação "Master" a frente do pasta que foi escolhida como repositório.
+		
+		git status = Informa qual a situação atual de cada arquivo ou pasta. O que precisa ser adicionado, o que foi modificado etc.
+			Informa que está rodando no Branch Master: On Branch Master...
+			Que não tem nenhum comit ainda: No commits yet...
+			Os arquivos que ainda não estão sendo monitorados: Untracked Files...
+			
+			Informações extras que podem estar juntas com o git status:
+			
+				HEAD: Estado atual do código.
+				
+				Working tree: Local onde os arquivos realmente estão sendo armazenados e editados.
+				
+				index: Local onde o Git armazena o que será commitado, ou seja, o local entre a working tree e o repositório Git em si.
+		
+	
+	Questões:
+	
+		1 - Agora que nós já entendemos para que serve um VCS (Version Control System), ou sistema de controle de versões, podemos dar continuidade com este treinamento, mas só para garantir...
+		Quais das afirmações a seguir sobre o Git estão corretas?
+
+		Selecione 2 alternativas
+		
+		R1: Nos deixa organizar o trabalho em equipe, mantendo as alterações nos arquivos em um servidor específico para isso.
+		Alternativa correta! O Git permite que a gente armazene as modificações feitas em cada arquivo em um servidor próprio para isso. Toda a gestão de alterações é feita pelo Git e nós só precisamos nos preocupar em criar código que funciona, e não em quem alterou o que antes.
+		
+		R2: Permite armazenamento e acesso a um histórico de modificações.
+		Alternativa correta! Cada alteração que você faz fica gravada em um histórico, podendo ser visualizada e restaurada a qualquer instante.
+		
+		2 - Já entendemos o motivo para utilizar o Git. Começamos também a entender como o Git funciona. Sabemos que o Git faz a gestão de repositórios, e cada pessoa na equipe pode ter o seu repositório.
+
+		Como fazemos para o Git passar a enxergar determinada pasta como um repositório e a observar as mudanças em seus arquivos?
+
+		Selecione uma alternativa
+		
+		R: Através do comando git init
+		
+		Alternativa correta! O git init inicializa um repositório no diretório em que o comando for executado. A partir deste comando, o Git poderá gerenciar as modificações realizadas nos arquivos.
+		
+		
+Aula 2 - Iniciando os trabalhos -------
+
+	Comandos:
+		
+		git add "arquivo ou pasta" = Adiciona o arquivo ou pasta informada ao monitoramento do Git.
+			Obs: Muitas vezes o nome do arquivo ou diretório é muito grande, portanto uma informação de quebra de linha será exibida.
+				CR - MacOS, LF - Linux e CR+LF - Windows.
+				
+		Criando um ".gitignore" global:
+
+			No terminal executar o seguinte comando: $ git config --global core.excludesfile ~/.gitignore_global
+			
+			O arquivo estará em: .git/info/exclude
+			
+			Adicione toda pasta ou arquivo que deseja que seja ignorado sem utilizar barra no ínicio (Isto se quiser que todos os arquivos com este nome ou extensão em todas as pastas no repositório sejam afetados).
+			
+			A vantagem é que não precisamos de um .gitignore que será comitado junto mostrando a outras pessoas o que estamos ignorando em nosso repositório.
+			
+				Obs: Caso já tenha adicionado alguma pasta que não deve ser compartilhada antes de configurar o arquivo exclude, será necessário remove-la via linha de comando...
+				
+					git rm --cached -r /."diretorio"
+					
+			git add .gitignore = Adiciona um arquivo .gitignore local.
+		
+		git commit -m "Mensagem do commit": Realiza o commit e adiciona a mensagem relacionada ao mesmo.
+		
+			Primeiro commit: nesso@DESKTOP-L8HE2GA MINGW64 ~/Dropbox/Estudos (master)
+								$ git commit -m "Ínicio repositório Estudos"
+								[master (root-commit) 3c36730] Ínicio repositório Estudos
+								1905 files changed, 203360 insertions(+)
+		
+			Obs: Nunca devemos commitar um código que não esteja funcionando.
+		
+		git rm "arquivo ou diretorio" = Para que este seja ignorado pelo Git não sendo mais monitorado.
+		
+		git log = Mostra o histórico dos commits feitos, hash (Não existem commits com o mesmo hash), branch (Ramo em que o commit se encontra), autor, e-mail configurado, mensagem e data.
+		
+			HEAD = Local onde nos encontramos no nosso código. A informação a frente na seta é qual ramo estamos (No primeiro momento é normal estarmos no ramo denominado "Master).
+		
+			git log --oneline = Visualizar todos os commits resumidos em uma linha cada.
+			
+			git log -p = Visualizar os commits com muito mais informações.
+			
+				Obs: Neste formato as versões anteriores serão exibidas em vermelho e a versão modificada em verde.
+				
+			git log --pretty="format:%h %s" = Formatos específicos:
+			
+				h = Hash resumido.
+				
+				s = Mensagem completa.
+				
+				H = Hash completo.
+				
+				S = Mensagem resumida.
+				
+				ae = email.
+				
+					Podemos encontrar mais formatos para exibição de informações do git log no git log cheatsheet: https://devhints.io/git-log em https://devhints.io/git-log-format
+					
+				git log --help = Ver algumas opções possíveis para o comando git log.
+		
+		git config:
+		
+			git config --local = Para alterarmos as configurações locais, ou seja, do projeto atual do Git como nome, email etc.
+			
+			git config --global = Para alterarmos as configurações de qualquer repositório na máquina.
+			
+				git config --"local ou global" user.name "Nome Sobrenome" = Altera o nome do autor nas configurações do Git.
+				
+				git config --"local ou global" user.email "Email" = Altera o email nas configurações do Git.
+				
+				
+	
+	Questões:
+	
+		1 - Para que o Git saiba quem está realizando as alterações, ele precisa de algumas configurações. Na primeira vez que você tentar realizar um commit em uma máquina, ele pedirá que você o configure.
+
+		Como podemos definir o nome da pessoa que executa commits no repositório local atual?
+
+		Selecione uma alternativa
+		
+		R: git config --local user.name "Nome da pessoa"
+
+		Alternativa correta! Assim todos os commits executados neste repositório serão atribuídos à pessoa com nome Nome da pessoa. Para mais detalhes e outras configurações possíveis (até algumas mais avançadas), você pode conferir este link: https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration.
+		
+		
+Aula 3 - Compartilhando o trabalho -------
+
+	Comandos:
+	
+		mkdir "Nome do diretório" = Cria um diretório com o nome informado (Assim como no Linux).
+		
+		git init --bare = Informa que será um servidor de arquivos e modificações não um diretório de trabalho (Em outras palavras, diretório puro).
+		
+		git remote = Todos os repositórios remotos que o repositório local conhece são listados pelo nome.
+		
+			git remote add "Nome do repositório remoto" "URL, caminho de rede ou lugar no localhost do servidor" = Faz nossa pasta de trabalho conhecer um repositório remoto e insere o nome que informamos para identificação.
+		
+			git remote -v = Faz com que o endereço do repositório principal (servidor) seja exibido.
+			
+				Além disso, é indicado que os dados deste caminho serão buscados (fetch), e enviados para este mesmo caminho (push).
+				
+				Obs: A busca pode ser feita de um local e o envio para outro.
+		
+			git remote rename "Nome atual" "Novo nome" = Substituí o nome atual que indica o servidor de arquivos pelo novo nome.
+		
+		git clone "Endereço repositório" "Nome da pasta de trabalho" = Para que sejam trazidos os dados do repositório localizado neste endereço para nossa pasta de trabalho.
+		
+			Obs: Se não colocarmos o nome na frente do endereço para esolhermos o nome da pasta no nosso ambiente de trabalho, o nome que será definido automaticamente será o nome da pasta onde se encontram os dados clonados.
+
+		git push "Destino (nome)" "Origem (nome)" = Envia para o servidor remoto (Destino) nossas alterações (Ou todo o projeto caso ainda não tenhamos enviado nada) que estão na pasta de trabalho (Origem).
+
+			Obs: Após isto, teremos uma mensagem de que uma nova branch (ramo) foi criada la no servidor remoto.
+			
+		git pull "Origem (nome)" "Destino (nome)" = Traz os dados ou projeto completo do servidor (Origem) remoto para pasta atual de trabalho (Destino).
+
+			Obs: Para não se perder na hora de usar os comandos push e pull basta lembrar que nosso local (Master por exemplo) é sempre a segunda informação, e o repositório remoto a primeira.
+		
+	Questões:
+	
+		1 - No último vídeo, nós trabalhamos bastante. Nossa primeira tarefa foi criar um novo repositório, que será utilizado como o nosso "servidor" Git, ou seja, todos os membros da equipe o acessarão para compartilhar suas mudanças.
+
+		Como fizemos para definir um repositório Git neste caso?
+
+		Selecione uma alternativa
+		
+		R: git init --bare
+
+		Alternativa correta! Com este comando nós criamos um repositório que não terá a working tree, ou seja, não conterá uma cópia dos nossos arquivos. Como o repositório servirá apenas como servidor, para que outros membros da equipe sincronizem seus trabalhos, poupamos espaço de armazenamento desta forma.
+		
+		
+		2 - Antes de sincronizar as nossas mudanças no código com algum repositório remoto, precisamos antes adicioná-lo ao nosso repositório local.
+
+		Como adicionamos esta ligação entre os repositórios?
+
+		Selecione uma alternativa
+		
+		R: git remote add nome-repositorio caminho/para/o/repositorio
+
+		Alternativa correta! Desta forma teremos um link do nosso repositório local com o repositório remoto, que chamamos de nome-repositorio, que está armazenado em caminho/para/o/repositorio.
+		
+		
+		3 - Além de adicionar repositórios remotos para sincronizar os dados, vimos que o git clone traz um repositório remoto para o nosso computador, criando um repositório local.
+
+		Ao alterar os códigos em nosso repositório local, como enviar as alterações para o repositório remoto?
+
+		Selecione uma alternativa
+		
+		R: git push [repositorio] master
+
+		Alternativa correta! Desta forma, nós enviamos as alterações em nosso branch master (falaremos mais sobre branches já já) para o repositório remoto. Basta substituir [repositorio] pelo nome que demos ao repositório ao adicioná-lo. Já para trazer os dados que estiverem no repositório remoto, podemos utilizar o git pull [repositorio] master.
+		
+		
+Aula 4 - Trabalhando em equipe -------
+
+	Teoria:
+	
+		Branches:
+		
+			Programa para entender melhor o Git vizualiando como ele trabalha com Branches: https://git-school.github.io/visualizing-git/
+			
+			Branches servem para deixar bem definido em qual parte do projeto estamos trabalhando. Na página de exemplo do curso, index.html, poderíamos por exemplo deixar um desenvolvedor trabalhando no título enquanto outro desenvolvedor trabalharia na lista de cursos.
+			
+			Criando assim os branches, titulo e lista para que somente mais tarde quando os trabalhos estivessem realmente terminado adicionaríamos as modificações no branch master.
+			
+			Isto ajuda muito, pois cada desenvolvedor trabalha no seu ramo, deixando claro a outras pessoas do projeto onde está trabalhando. Outra vantagem é que as pessoas envolvidas no projeto não estariam mexendo no mesmo código ao mesmo tempo.
+			
+			Obs: O branch master é o branch padrão.
+			
+		Merge:
+		
+			Utilizamos o merge para fazer os ramos do projeto se encontrar novamente depois que os ramos que partiram do master estiverem prontos, porém os commits dos ramos secundários não serão vistos.
+			
+				
+		Rebase:
+
+			Utilizamos o rebase para literalmente unir o projeto, seus commits etc, gerando uma unica linha novamente, diferente do merge que parte de um ponto totalmente novo.
+			
+		
+		Obs: Quando temos um erro ou bug que estava na master, não devemos corrigi-lo se estivermos no branch titulo, por exemplo. Devemos retornar para branch master, resolver seus conflitos e problemas, commitar e então voltar trabalhar na nossa branch título. Em outras palavras, as alterações de um branch secundário não podem influenciar no branch primário.
+	
+	Comandos:
+	
+		git branch = Mostra em qual branch estamos atualmente.
+		
+			git branch "Nome do branch" = Cria um novo branch com o nome informado, porém contínua no branch atual. Por convenção é bom que o nome informado tenha o nome da parte do projeto que estamos trabalhando.
+			
+			Obs: Tudo realizado em determinado branch, ficará somente naquele branch até que realizemos o rebase ou merge.
+		
+		git checkout "Nome do branch" = Muda para outro ramo do projeto com o nome informado, a partir daí não realizaremos mais mudanças diretamente no branch master (A não ser que façamos Checkout de volta para o Master).
+			
+			git checkout -b "Nome do branch" = Cria um novo branch e já muda o ambiente de trabalho para o mesmo.
+		
+		git merge "Nome do branch" = Cria um novo ponto onde o branch informado se encontra novamente com o nosso branch master.
+		
+			Obs: Após realizarmos o merge, será criado um commit de merge (merge commit) referenciando a junção que fizemos. Temos a possibilidade de editar a mensagem exibida, caso não queiramos podemos savar e confirmar a mensagem com ":x + Enter".
+			
+			Obs 2: Se executarmos o git log veremos que não temos dois commits diferentes, mas sim, apenas um do merge.
+			
+			Obs 3: O merge deve ser executado da branch mais antiga pegando a hash mais nova da branch que fez as alterações. Ou seja, a branch que tiver as alterações mais recentes não reconhecerá o merge da branch mais antiga.
+			
+		git rebase "Nome do branch" = Pega os commits do branch secundário atualiza o master ordenando seus commits junto com o do branch secundário gerando uma única linha.
+			
+			Obs: O último log será do commit da master, pois ela se torna a ponta do ramo mas não gera um commit único como o merge faz.
+			
+		git log --graph = Mostra atráves de linhas gráficas no terminal o histórico de cada branch.
+			
+			Obs: Está é uma alternativa ao uso do Visualizing Git.
+			
+		Obs: Se houver conflitos de versões eles devem ser resolvidos antes de realizar o rebase ou merge.
+		
+			Current Changes: São dados do commit atual, na master.
+			
+			Incoming Changes: São os dados da nossa branch, os dados do ramo secundário.
+			
+			Depois de corrigirmos as divergências podemos o git status para verificar. Então adicionaremos o arquivo para ser commitado (git add "arquivo") então git commit para que o commit de merge seja realizado.
+			
+		Obs2: Pode acontecer de enquanto estivermos trabalhando em um projeto alguém enviou modificações para a branch master tornando o código que estamos trabalhando desatualizado.
+				Para que isso não ocorra é necessário que, toda vez que formos enviar modificações realizemos um git pull origin master, isto atualizará o nosso código, impedindo que sebrescrevamos alguma alteração de outra pessoa.
+			
+	Questões:
+	
+		1 - Agora que entendemos como separar o desenvolvimento em linhas ("ramos") diferentes, é hora de trazer estas modificações para a master, que é a nossa branch "padrão".
+
+		Como podemos fazer o merge da branch titulo para a branch master?
+
+		Selecione uma alternativa
+		
+		R: git checkout master e git merge titulo
+		
+		Alternativa correta! Desta forma colocaremos o HEAD na branch master, ou seja, faremos com que o nosso código esteja no estado que o deixamos com o último commit na master. Depois, uniremos o trabalho da branch titulo com a branch atual (master).
+		
+		
+		2 - Já sabemos como trazer o trabalho de outra branch e unir com a branch atual. Conhecemos duas formas de fazer isso: merge e rebase.
+
+		Neste cenário, qual a diferença entre os comandos rebase e merge?
+
+		Selecione uma alternativa
+		
+		R: O merge junta os trabalhos e gera um merge commit. O rebase aplica os commits de outra branch na branch atual.
+		
+		Alternativa correta! Com isso, evitamos os commits de merge. Há uma longa discussão sobre o que é "melhor": rebase ou merge. Estude, pesquise, e tire suas próprias conclusões. Aqui tem um artigo (de milhares outros) que cita o assunto: https://medium.com/datadriveninvestor/git-rebase-vs-merge-cc5199edd77c.
+		
+		
+Aula 5 - Manipulando as versões -------
+
+	
+	Comandos:
+	
+		git checkout -- "arquivo" = Descarta as alterações do arquivo antes do git add.
+		
+			Obs: Observamos que o git checkout serve também para navegarmos em estados do repositório, seja por meio de branches ou desfazendo modificações em arquivos.
+			
+			git restore "arquivo" = Realiza a mesma função.
+
+		git reset HEAD "arquivo" = Volta para a fase de trabalho (desfaz o git add).
+		
+			git restore --staged "arquivo" = Realiza a mesma função.
+			
+		git revert "Hash do commit" = Desfaz tudo que foi feito no ultimo commit e realiza um novo commit com a versão antiga.
+
+			Obs: Utilizamos o git log para que possamos verificar qual é o hash do commit e copiá-lo. 
+			
+			Obs2: Será aberta uma tela para mudarmos a mensagem se quisermos informando o que aconteceu. Para salvar e sair utilizamos ":x".
+			
+			Obs3: Se utilizarmos o git log mais uma vez poderemos verificar que existem dois commits novamente um com as alterações que realizamos antes e outro informando que elas foram revertidas.
+			
+		git stash = Salvar as alterações de um código sem commitar. Após o comando git stash o código volta para o estado logo após o ultimo commit.
+		
+			git stash list = Para vermos quais foram as ultima alterações salvas no git stash com seus respectivos ids.
+			
+			git stash apply "id" = Aplica as alterações do git stash referentes ao id informado.
+			
+			git stash drop "id" = Remove da lista do git stash as alterações salvas referentes ao id informado.
+			
+			git stash pop = Aplica as ultimas alterações realizadas do git stash e já remove de sua lista.
+			
+			git checkout "hash" = Retorna ao estado do commit do hash indicado.
+			
+				git switch - = Desfaz o último comando git checkout.
+			
+				Obs: O hash utilizado nesta atividade é aquele do git log --oneline.
+				
+				Obs2: Desta forma ficaremos foram dos branchs, ficaremos num estado chamado de "detached", ou desanexado. Assim podemos fazer umas alterações experimentais ou também descartar qualquer elemento do branch sem fazer mais nada. Se voltarmos a master tudo que commitarmos aqui será ignorado. Para que as alterações aqui sejam salvas, teremos que criar um novo branch.
+				
+				Obs3: Após voltarmos para um ponto específico no "tempo", qualquer alteração será descartada, incluindo os commits, será um ponto perdido onde não poderemos mais voltar, caso voltemos a branch master sem criar uma nova branch onde estavamos.
+				
+				Podemos usar: git checkout -b "Nome Novo Branch" = Para que possamos a partir do ponto no tempo que estamos, criar um novo branch, estando assim associados a linha de desenvolvimento, conservando as alterações.
+				
+					git switch -c "Nome novo branch" = Tem a mesma função do git checkout -b "Nome novo branch".
+					
+				Assim sendo, podemos utilizar o git checkout para navegar no "tempo" do projeto, indo em cada um dos commits e realizando testes ou novos branchs com versões anteriores do projeto, bastando ter o número hash.
+				
+				Obs4: Algo que me pareceu bem seguro com o git na questão dos checkouts, é que não conseguimos realizá-lo caso não tenhamos já commitado as alterações atuais, impedindo que percamos trabalhos que deveriam ser salvos.
+			
+			
+	
+	Questões:
+	
+		1 - No último vídeo, nós aprendemos a desfazer alterações das quais não vamos precisar mais.
+
+		Quais os comandos, respectivamente, desfazem alterações antes de adicioná-las (1), depois de adicioná-las, mas antes de commitá-las (2), e após realizar o commit (3)?
+
+		Selecione uma alternativa
+		
+		R: 1 - git checkout
+
+			2 - git reset
+
+			3 - git revert
+
+
+		Alternativa correta! Com o git checkout nós desfazemos uma alteração que ainda não foi adicionada ao index ou stage, ou seja, antes do git add. Depois de adicionar com git add, para desfazer uma alteração, precisamos tirá-la deste estado, com git reset. Agora, se já realizamos o commit, o comando git revert pode nos salvar.
+		
+		
+		2 - Vimos como podemos utilizar git stash para armazenar temporariamente algumas de nossas alterações.
+
+		Em que momento o stash parece útil?
+
+		Selecione uma alternativa
+		
+		R: Quando precisamos parar o desenvolvimento de algo no meio para trabalhar em outra coisa
+
+		Alternativa correta! Quando precisamos pausar o desenvolvimento de alguma funcionalidade, ou correção, antes de finalizar, talvez não seja interessante realizar um commit, pois o nosso código pode não estar funcionando ainda. Nesse caso é interessante salvar o trabalho para podermos voltar a ele depois.
+		
+		
+		3 - Já utilizamos em mais de uma ocasião o comando git checkout.
+
+		Resumidamente, para que serve o comando git checkout?
+
+		Selecione uma alternativa
+		
+		R: Para deixar o nosso código em determinado estado
+		
+		Alternativa correta! A descrição do comando git checkout --help, em uma tradução livre é: "Atualizar os arquivos na working tree para ficarem na versão especificada. [...]". Basicamente, podemos deixar o nosso código no estado do último commit de uma branch, de um commit específico, ou mesmo tags (que veremos adiante).
+		
+
+Aula 6 - Gerando entregas -------
+
+	Comandos:
+	
+		Lembrando que, com git log -p poderemos ver o que foi alterado commit a commit.
+		
+			Obs: O que está em verde foi adicionado e o que está em vermelho foi removido.
+			
+		git diff = Para mostrar diferenças entre commits, porém, ele sem parâmetros, mostra apenas a diferenças do ultimo commit até o momento. Para verificarmos entre commits ou branches diferentes devemos fazer como o exemplo à seguir:
+		
+			Ex: git diff "Hash 1" "Hash 2" ou git diff "Branch 1" "Branch 2"
+			
+		git tag -a "Nome da tag" -m "Mensagem da versão" = Indica que criaremos uma tag (git tag -a) na versão ("Nome da tag") com a mensagem (-m "Mensagem da versão")
+		
+			git tag = (Sem parâmetros) Irá exibir todas as tags (marcos) criadas até o momento.
+			
+		Para verificarmos qual é o nome e link do nosso servidor remoto, utilizamos "git remote -v"
+		
+			Sabendo qual é, podemos atualizar nosso código com "git push origin master" e depois, enviar para esta versão do código um nome de tag, para que o código fique sempre disponível neste estado como uma release.
+			Para isto utilizaremos o comando:
+			
+			 "git push origin "Nome da Tag".
+			
+				Obs: Está tag informada no comando acima, já tem que estar definida na nossa branch. Utilize "git tag" para confirmar que ela existe.
+				
+				Obs2: Verifique no GitHub se nossa release está pronta, se realmente está disponível para download.
+				
+				Obs3: A release poderá ser compartilhada com outras pessoas, por meio da URL correspondente, possibilitando o acompanhamento das releases do projeto.
+			
+		
+
+		
+	Questões:
+	
+		
+		Com o comando git diff, nós vimos que é possível visualizarmos as mudanças realizadas em determinado código. Podemos ver as diferenças entre commits, branches, etc.
+
+		1 - Como o git diff exibe as mudanças no código?
+
+		Selecione uma alternativa
+		
+		R: + linha adicionada
+		   - linha removida
+		   - linha modificada (versão antiga)
+		   + linha modificada (nova versão)
+
+		   Alternativa correta! O sinal de subtração (-) antes da linha indica que ela não está mais presente no arquivo. Já o sinal de adição (+) mostra que é uma linha nova. Alterações são representadas por uma remoção e uma adição de linha.
+		   
+		  
+		Vimos no último vídeo como gerar versões, ou marcos interessantes em nosso sistema de controle de versões.
+
+		2 - Que resultado gera o envio de uma tag para o GitHub?
+
+		Selecione uma alternativa 
+		
+		R: Gera uma Release, ou seja, conseguimos baixar um arquivo compactado com o nosso código neste ponto
+
+		Alternativa correta! O GitHub nos dá a possibilidade de baixar um arquivo compactado contendo o código no estado em que a tag foi gerada.
+	
+		

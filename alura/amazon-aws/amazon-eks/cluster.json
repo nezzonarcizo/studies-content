@@ -1,0 +1,46 @@
+{
+    "cluster": {
+        "name": "Alura-EKS",
+        "arn": "arn:aws:eks:us-east-1:089350267643:cluster/Alura-EKS",
+        "createdAt": "2021-08-24T19:09:08.259000-04:00",
+        "version": "1.20",
+        "roleArn": "arn:aws:iam::089350267643:role/EKS-course-role",
+        "resourcesVpcConfig": {
+            "subnetIds": [
+                "subnet-07c7b08de43c6317c",
+                "subnet-0408f993d036fb508",
+                "subnet-028fba1b4af467cdd"
+            ],
+            "securityGroupIds": [
+                "sg-06930c18518f27311"
+            ],
+            "vpcId": "vpc-0bd7d8f6d0b3234eb",
+            "endpointPublicAccess": true,
+            "endpointPrivateAccess": false,
+            "publicAccessCidrs": [
+                "0.0.0.0/0"
+            ]
+        },
+        "kubernetesNetworkConfig": {
+            "serviceIpv4Cidr": "10.100.0.0/16"
+        },
+        "logging": {
+            "clusterLogging": [
+                {
+                    "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                    ],
+                    "enabled": false
+                }
+            ]
+        },
+        "status": "CREATING",
+        "certificateAuthority": {},
+        "platformVersion": "eks.2",
+        "tags": {}
+    }
+}

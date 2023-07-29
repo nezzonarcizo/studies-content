@@ -1,0 +1,432 @@
+CKA Simulator Preview Kubernetes 1.25
+https://killer.sh
+
+This is a preview of the full CKA Simulator course content.
+
+The full course contains 25 scenarios from all the CKA areas. The course also provides a browser terminal which is a very close replica of the original one. This is great to get used and comfortable before the real exam. After the test session (120 minutes), or if you stop it early, you'll get access to all questions and their detailed solutions. You'll have 36 hours cluster access in total which means even after the session, once you have the solutions, you can still play around.
+
+The following preview will give you an idea of what the full course will provide. These preview questions are in addition to the 25 of the full course. But the preview questions are part of the same CKA simulation environment which we setup for you, so with access to the full course you can solve these too.
+
+The answers provided here assume that you did run the initial terminal setup suggestions as provided in the tips section, but especially:
+
+alias k=kubectl
+
+export do="-o yaml --dry-run=client"
+ 
+
+These questions can be solved in the test environment provided through the CKA Simulator
+
+ 
+
+Preview Question 1
+Use context: kubectl config use-context k8s-c2-AC
+
+The cluster admin asked you to find out the following information about etcd running on cluster2-master1:
+
+Server private key location
+Server certificate expiration date
+Is client certificate authentication enabled
+Write these information into /opt/course/p1/etcd-info.txt
+
+Finally you're asked to save an etcd snapshot at /etc/etcd-snapshot.db on cluster2-master1 and display its status.
+
+ 
+
+Answer:
+Find out etcd information
+Let's check the nodes:
+
+➜ k get node
+NAME               STATUS   ROLES    AGE    VERSION
+cluster2-master1   Ready    master   89m   v1.23.1
+cluster2-worker1   Ready    <none>   87m   v1.23.1
+
+➜ ssh cluster2-master1
+First we check how etcd is setup in this cluster:
+
+➜ root@cluster2-master1:~# kubectl -n kube-system get pod
+NAME                                       READY   STATUS    RESTARTS   AGE
+coredns-66bff467f8-k8f48                   1/1     Running   0          26h
+coredns-66bff467f8-rn8tr                   1/1     Running   0          26h
+etcd-cluster2-master1                      1/1     Running   0          26h
+kube-apiserver-cluster2-master1            1/1     Running   0          26h
+kube-controller-manager-cluster2-master1   1/1     Running   0          26h
+kube-proxy-qthfg                           1/1     Running   0          25h
+kube-proxy-z55lp                           1/1     Running   0          26h
+kube-scheduler-cluster2-master1            1/1     Running   1          26h
+weave-net-cqdvt                            2/2     Running   0          26h
+weave-net-dxzgh                            2/2     Running   1          25h
+We see its running as a Pod, more specific a static Pod. So we check for the default kubelet directory for static manifests:
+
+➜ root@cluster2-master1:~# find /etc/kubernetes/manifests/
+/etc/kubernetes/manifests/
+/etc/kubernetes/manifests/kube-controller-manager.yaml
+/etc/kubernetes/manifests/kube-apiserver.yaml
+/etc/kubernetes/manifests/etcd.yaml
+/etc/kubernetes/manifests/kube-scheduler.yaml
+
+➜ root@cluster2-master1:~# vim /etc/kubernetes/manifests/etcd.yaml
+So we look at the yaml and the parameters with which etcd is started:
+
+# /etc/kubernetes/manifests/etcd.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: etcd
+    tier: control-plane
+  name: etcd
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - etcd
+    - --advertise-client-urls=https://192.168.102.11:2379
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt              # server certificate
+    - --client-cert-auth=true                                      # enabled
+    - --data-dir=/var/lib/etcd
+    - --initial-advertise-peer-urls=https://192.168.102.11:2380
+    - --initial-cluster=cluster2-master1=https://192.168.102.11:2380
+    - --key-file=/etc/kubernetes/pki/etcd/server.key               # server private key
+    - --listen-client-urls=https://127.0.0.1:2379,https://192.168.102.11:2379
+    - --listen-metrics-urls=http://127.0.0.1:2381
+    - --listen-peer-urls=https://192.168.102.11:2380
+    - --name=cluster2-master1
+    - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
+    - --peer-client-cert-auth=true
+    - --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
+    - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --snapshot-count=10000
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+...
+We see that client authentication is enabled and also the requested path to the server private key, now let's find out the expiration of the server certificate:
+
+➜ root@cluster2-master1:~# openssl x509  -noout -text -in /etc/kubernetes/pki/etcd/server.crt | grep Validity -A2
+        Validity
+            Not Before: Sep 13 13:01:31 2021 GMT
+            Not After : Sep 13 13:01:31 2022 GMT
+There we have it. Let's write the information into the requested file:
+
+# /opt/course/p1/etcd-info.txt
+Server private key location: /etc/kubernetes/pki/etcd/server.key
+Server certificate expiration date: Sep 13 13:01:31 2022 GMT
+Is client certificate authentication enabled: yes
+ 
+
+Create etcd snapshot
+First we try:
+
+ETCDCTL_API=3 etcdctl snapshot save /etc/etcd-snapshot.db
+We get the endpoint also from the yaml. But we need to specify more parameters, all of which we can find the yaml declaration above:
+
+ETCDCTL_API=3 etcdctl snapshot save /etc/etcd-snapshot.db \
+--cacert /etc/kubernetes/pki/etcd/ca.crt \
+--cert /etc/kubernetes/pki/etcd/server.crt \
+--key /etc/kubernetes/pki/etcd/server.key
+This worked. Now we can output the status of the backup file:
+
+➜ root@cluster2-master1:~# ETCDCTL_API=3 etcdctl snapshot status /etc/etcd-snapshot.db
+4d4e953, 7213, 1291, 2.7 MB
+The status shows:
+
+Hash: 4d4e953
+Revision: 7213
+Total Keys: 1291
+Total Size: 2.7 MB
+ 
+
+ 
+
+Preview Question 2
+Use context: kubectl config use-context k8s-c1-H
+
+ 
+
+You're asked to confirm that kube-proxy is running correctly on all nodes. For this perform the following in Namespace project-hamster:
+
+Create a new Pod named p2-pod with two containers, one of image nginx:1.21.3-alpine and one of image busybox:1.31. Make sure the busybox container keeps running for some time.
+
+Create a new Service named p2-service which exposes that Pod internally in the cluster on port 3000->80.
+
+Find the kube-proxy container on all nodes cluster1-master1, cluster1-worker1 and cluster1-worker2 and make sure that it's using iptables. Use command crictl for this.
+
+Write the iptables rules of all nodes belonging the created Service p2-service into file /opt/course/p2/iptables.txt.
+
+Finally delete the Service and confirm that the iptables rules are gone from all nodes.
+
+ 
+
+Answer:
+Create the Pod
+First we create the Pod:
+
+# check out export statement on top which allows us to use $do
+k run p2-pod --image=nginx:1.21.3-alpine $do > p2.yaml
+
+vim p2.yaml
+Next we add the requested second container:
+
+# p2.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: p2-pod
+  name: p2-pod
+  namespace: project-hamster             # add
+spec:
+  containers:
+  - image: nginx:1.21.3-alpine
+    name: p2-pod
+  - image: busybox:1.31                  # add
+    name: c2                             # add
+    command: ["sh", "-c", "sleep 1d"]    # add
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+And we create the Pod:
+
+k -f p2.yaml create
+ 
+
+Create the Service
+Next we create the Service:
+
+k -n project-hamster expose pod p2-pod --name p2-service --port 3000 --target-port 80
+This will create a yaml like:
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2020-04-30T20:58:14Z"
+  labels:
+    run: p2-pod
+  managedFields:
+...
+    operation: Update
+    time: "2020-04-30T20:58:14Z"
+  name: p2-service
+  namespace: project-hamster
+  resourceVersion: "11071"
+  selfLink: /api/v1/namespaces/project-hamster/services/p2-service
+  uid: 2a1c0842-7fb6-4e94-8cdb-1602a3b1e7d2
+spec:
+  clusterIP: 10.97.45.18
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: p2-pod
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+We should confirm Pods and Services are connected, hence the Service should have Endpoints.
+
+k -n project-hamster get pod,svc,ep
+ 
+
+Confirm kube-proxy is running and is using iptables
+First we get nodes in the cluster:
+
+➜ k get node
+NAME               STATUS   ROLES    AGE   VERSION
+cluster1-master1   Ready    master   98m   v1.23.1
+cluster1-worker1   Ready    <none>   96m   v1.23.1
+cluster1-worker2   Ready    <none>   95m   v1.23.1
+The idea here is to log into every node, find the kube-proxy container and check its logs:
+
+➜ ssh cluster1-master1
+
+➜ root@cluster1-master1$ crictl ps | grep kube-proxy
+27b6a18c0f89c       36c4ebbc9d979       3 hours ago         Running             kube-proxy
+
+➜ root@cluster1-master1~# crictl logs 27b6a18c0f89c
+...
+I0913 12:53:03.096620       1 server_others.go:212] Using iptables Proxier.
+...
+This should be repeated on every node and result in the same output Using iptables Proxier.
+
+ 
+
+Check kube-proxy is creating iptables rules
+Now we check the iptables rules on every node first manually:
+
+➜ ssh cluster1-master1 iptables-save | grep p2-service
+-A KUBE-SEP-6U447UXLLQIKP7BB -s 10.44.0.20/32 -m comment --comment "project-hamster/p2-service:" -j KUBE-MARK-MASQ
+-A KUBE-SEP-6U447UXLLQIKP7BB -p tcp -m comment --comment "project-hamster/p2-service:" -m tcp -j DNAT --to-destination 10.44.0.20:80
+-A KUBE-SERVICES ! -s 10.244.0.0/16 -d 10.97.45.18/32 -p tcp -m comment --comment "project-hamster/p2-service: cluster IP" -m tcp --dport 3000 -j KUBE-MARK-MASQ
+-A KUBE-SERVICES -d 10.97.45.18/32 -p tcp -m comment --comment "project-hamster/p2-service: cluster IP" -m tcp --dport 3000 -j KUBE-SVC-2A6FNMCK6FDH7PJH
+-A KUBE-SVC-2A6FNMCK6FDH7PJH -m comment --comment "project-hamster/p2-service:" -j KUBE-SEP-6U447UXLLQIKP7BB
+
+➜ ssh cluster1-worker1 iptables-save | grep p2-service
+-A KUBE-SEP-6U447UXLLQIKP7BB -s 10.44.0.20/32 -m comment --comment "project-hamster/p2-service:" -j KUBE-MARK-MASQ
+-A KUBE-SEP-6U447UXLLQIKP7BB -p tcp -m comment --comment "project-hamster/p2-service:" -m tcp -j DNAT --to-destination 10.44.0.20:80
+-A KUBE-SERVICES ! -s 10.244.0.0/16 -d 10.97.45.18/32 -p tcp -m comment --comment "project-hamster/p2-service: cluster IP" -m tcp --dport 3000 -j KUBE-MARK-MASQ
+-A KUBE-SERVICES -d 10.97.45.18/32 -p tcp -m comment --comment "project-hamster/p2-service: cluster IP" -m tcp --dport 3000 -j KUBE-SVC-2A6FNMCK6FDH7PJH
+-A KUBE-SVC-2A6FNMCK6FDH7PJH -m comment --comment "project-hamster/p2-service:" -j KUBE-SEP-6U447UXLLQIKP7BB
+
+➜ ssh cluster1-worker2 iptables-save | grep p2-service
+-A KUBE-SEP-6U447UXLLQIKP7BB -s 10.44.0.20/32 -m comment --comment "project-hamster/p2-service:" -j KUBE-MARK-MASQ
+-A KUBE-SEP-6U447UXLLQIKP7BB -p tcp -m comment --comment "project-hamster/p2-service:" -m tcp -j DNAT --to-destination 10.44.0.20:80
+-A KUBE-SERVICES ! -s 10.244.0.0/16 -d 10.97.45.18/32 -p tcp -m comment --comment "project-hamster/p2-service: cluster IP" -m tcp --dport 3000 -j KUBE-MARK-MASQ
+-A KUBE-SERVICES -d 10.97.45.18/32 -p tcp -m comment --comment "project-hamster/p2-service: cluster IP" -m tcp --dport 3000 -j KUBE-SVC-2A6FNMCK6FDH7PJH
+-A KUBE-SVC-2A6FNMCK6FDH7PJH -m comment --comment "project-hamster/p2-service:" -j KUBE-SEP-6U447UXLLQIKP7BB
+Great. Now let's write these logs into the requested file:
+
+➜ ssh cluster1-master1 iptables-save | grep p2-service >> /opt/course/p2/iptables.txt
+➜ ssh cluster1-worker1 iptables-save | grep p2-service >> /opt/course/p2/iptables.txt
+➜ ssh cluster1-worker2 iptables-save | grep p2-service >> /opt/course/p2/iptables.txt
+ 
+
+Delete the Service and confirm iptables rules are gone
+Delete the Service:
+
+k -n project-hamster delete svc p2-service
+And confirm the iptables rules are gone:
+
+➜ ssh cluster1-master1 iptables-save | grep p2-service
+➜ ssh cluster1-worker1 iptables-save | grep p2-service
+➜ ssh cluster1-worker2 iptables-save | grep p2-service
+Done.
+
+Kubernetes Services are implemented using iptables rules (with default config) on all nodes. Every time a Service has been altered, created, deleted or Endpoints of a Service have changed, the kube-apiserver contacts every node's kube-proxy to update the iptables rules according to the current state.
+
+ 
+
+ 
+
+Preview Question 3
+Use context: kubectl config use-context k8s-c2-AC
+
+ 
+
+Create a Pod named check-ip in Namespace default using image httpd:2.4.41-alpine. Expose it on port 80 as a ClusterIP Service named check-ip-service. Remember/output the IP of that Service.
+
+Change the Service CIDR to 11.96.0.0/12 for the cluster.
+
+Then create a second Service named check-ip-service2 pointing to the same Pod to check if your settings did take effect. Finally check if the IP of the first Service has changed.
+
+ 
+
+Answer:
+Let's create the Pod and expose it:
+
+k run check-ip --image=httpd:2.4.41-alpine
+
+k expose pod check-ip --name check-ip-service --port 80
+And check the Pod and Service ips:
+
+➜ k get svc,ep -l run=check-ip
+NAME                       TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/check-ip-service   ClusterIP   10.104.3.45   <none>        80/TCP    8s
+
+NAME                         ENDPOINTS      AGE
+endpoints/check-ip-service   10.44.0.3:80   7s
+Now we change the Service CIDR on the kube-apiserver:
+
+➜ ssh cluster2-master1
+
+➜ root@cluster2-master1:~# vim /etc/kubernetes/manifests/kube-apiserver.yaml
+# /etc/kubernetes/manifests/kube-apiserver.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --advertise-address=192.168.100.21
+...
+    - --service-account-key-file=/etc/kubernetes/pki/sa.pub
+    - --service-cluster-ip-range=11.96.0.0/12             # change
+    - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
+    - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+...
+Give it a bit for the kube-apiserver and controller-manager to restart
+
+Wait for the api to be up again:
+
+➜ root@cluster2-master1:~# kubectl -n kube-system get pod | grep api
+kube-apiserver-cluster2-master1            1/1     Running   0              49s
+ 
+
+ 
+
+Now we do the same for the controller manager:
+
+➜ root@cluster2-master1:~# vim /etc/kubernetes/manifests/kube-controller-manager.yaml
+# /etc/kubernetes/manifests/kube-controller-manager.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-controller-manager
+    tier: control-plane
+  name: kube-controller-manager
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-controller-manager
+    - --allocate-node-cidrs=true
+    - --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --bind-address=127.0.0.1
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --cluster-cidr=10.244.0.0/16
+    - --cluster-name=kubernetes
+    - --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt
+    - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
+    - --controllers=*,bootstrapsigner,tokencleaner
+    - --kubeconfig=/etc/kubernetes/controller-manager.conf
+    - --leader-elect=true
+    - --node-cidr-mask-size=24
+    - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
+    - --root-ca-file=/etc/kubernetes/pki/ca.crt
+    - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
+    - --service-cluster-ip-range=11.96.0.0/12         # change
+    - --use-service-account-credentials=true
+Give it a bit for the scheduler to restart.
+
+We can check if it was restarted using crictl:
+
+➜ root@cluster2-master1:~# crictl ps | grep scheduler
+3d258934b9fd6    aca5ededae9c8    About a minute ago   Running    kube-scheduler ...
+ 
+
+ 
+
+Checking our existing Pod and Service again:
+
+➜ k get pod,svc -l run=check-ip
+NAME           READY   STATUS    RESTARTS   AGE
+pod/check-ip   1/1     Running   0          21m
+
+NAME                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/check-ip-service   ClusterIP   10.99.32.177   <none>        80/TCP    21m
+Nothing changed so far. Now we create another Service like before:
+
+k expose pod check-ip --name check-ip-service2 --port 80
+And check again:
+
+➜ k get svc,ep -l run=check-ip
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/check-ip-service    ClusterIP   10.109.222.111   <none>        80/TCP    8m
+service/check-ip-service2   ClusterIP   11.111.108.194   <none>        80/TCP    6m32s
+
+NAME                          ENDPOINTS      AGE
+endpoints/check-ip-service    10.44.0.1:80   8m
+endpoints/check-ip-service2   10.44.0.1:80   6m13s
+There we go, the new Service got an ip of the new specified range assigned. We also see that both Services have our Pod as endpoint.

@@ -1,0 +1,501 @@
+-*- Aula 01: O que é integração contínua? -------
+
+    A emenda do curso será:
+
+    - Controle de versão
+    - Organização
+    - Modelos de ramificação
+    - Builds e testes automatizados
+    - Build pipeline
+    - Continuous Delivery e Deploy
+
+    Bibliografia e links externos:
+
+    Devido a sua importância, a 'Integração COntínua' é um tópico bastante discutido na literatura e na Web. Seguem algumas fontes que
+    usamos para criar este curso:
+
+    - Livro: Continuous Integration, de Paul M. Duvall
+    - Artigo da ThoughtWorks: Continuous Integration: https://www.thoughtworks.com/pt/continuous-integration
+    - Artigo do Martin Fowler: Continuous Delivery: https://martinfowler.com/bliki/ContinuousDelivery.html
+
+    - Série de artigos da Caelum:
+
+        Branches e Integração Contínua: O Problema de Feature Branches
+            https://blog.caelum.com.br/branches-e-integracao-continua-o-problema-de-feature-branches/
+
+        Integração Contínua: Builds rápidos com Grids e Paralelismo
+            https://blog.caelum.com.br/integracao-continua-builds-rapidos-com-grids-e-paralelismo/
+
+        Integração Contínua: Deploys e Aprovações sem dor de cabeça para o cliente
+            https://blog.caelum.com.br/integracao-continua-deploys-e-aprovacoes-sem-dores-de-cabeca-para-o-cliente/
+
+        Artigo no CodeBetter: Check in Dance
+            http://codebetter.com/jeremymiller/2005/07/25/using-continuous-integration-better-do-the-check-in-dance/
+
+
+    Entendendo o problema:
+
+        "Continuous Integration (CI) is a development practice that requires
+            developers to integrate code into a shared repository several times a day"
+
+        Antes da integração contínua (e pra ser sincero até hoje rss) tínhamos o problema de o desenvolvedor fazer o clone do 
+        repositório em sua máquina local e desenvolver por muitos dias, até meses, antes de empurrar o código para a branche master.
+
+        Num projeto onde muitos desenvolvedores estão mexendo, isso causava diversos problemas. A quantidade de código a ser mesclado
+        era enorme, o que fatalmente ocasionava diversas quebras de código, bugs etc.
+
+        Com a CI passamos a ter a prática de realizar "pushs" pequenos para o repositório principal, à fim de que as mudanças sejam
+        constantes, e que, caso ocorra algum problema com a branch principal, a quantidade de código a ser análisada é 
+        significativamente menor.
+
+        Os pushs para a branch principal deixou de ser "um grande evento" para ser algo frequente e rotineiro. O que antes, as vezes,
+        precisava de um desenvolvedor sênior apenas para analisar os códigos que vinham chegando, não se faz mais necessário.
+
+        Menos risco, menos demora, mais entrega, o que consequentemente, prove mais feedback.
+
+    
+    Sistema de controle de versões:
+
+        De modo geral não somos obrigados a utilizar o Git, mas de longe ele é o mais utilizado no meio corporativo.
+        O conceito de versionamento (SVN ou VCS) abriga o conceito de sincronização de arquivos ou documentos, no caso de
+        desenvolvimento de software, a sincronização e manutenção de código.
+
+        É uma boa prática mantermos em nosso sistema de versionamento tudo aquilo que é necessário para a construção do projeto:
+
+            - Código
+            - Scripts
+            - Migrações
+            - Schemas
+            - IDE Configs
+
+        Devemos definir uma formatação de código para a equipe. Para começarmos um projeto é necessário fazer o clone - a cópia
+        local - e o comando unificado.
+
+        Não significa que devemos comitar o artefato de construção, ou seja, no caso de um desenvolvedor Ruby ou Gem não deveria
+        estar dentro do repositório, o mesmo ocorre no mundo Java. Resultados da construção do software não são comitados como gem,
+        jar, image e modules.
+
+
+    Organização dos repositórios:
+
+        Multi-repo:
+
+            A forma de organização mais natural e mais comum nas empresas. Sabendo que em uma empresa teremos vários projetos,
+            normalmente eles terão um tamanho razoável e um escopo bem definido.
+
+        Mono-repo:
+
+            Esta forma de organização de projetos surgiu nos últimos anos nas grandes empresas. Empresas de tecnologia como Google
+            e Facebook não utilizam o esquema Multi-repo, pois são empresas que trabalham em inúmeros projetos de maneira
+            concomitante. Ou seja, Mono-repo nada mais é do que um único e gigantesco repositório que acumula todos os projetos.
+
+            A desvantagem do segundo modelo é que o repositório precisará ser realmente grande, e o build pode ser lento, talvez
+            nem o Git seja mais a ferramenta adequada para fazer o controle de versões para esta situação. Contudo, como temos
+            apenas um grande repositório, temos uma administração relativamente mais simples, então a verificação de padrões é
+            facilitada. As refatorações são globais, afinal estão todos os projetos dentro da mesma base.
+
+        Desvantagens do Mono-repo em relação ao Multi-repo:
+
+            * Dependências entre projetos são complicadas de gerenciar. Como os projetos/módulos estão separados, precisamos ter 
+                um cuidado extra para as versões ficarem sincronizadas, pois incompatibilidades não serão percebidas de imediato.
+
+            * Dificuldade de refatorações globais (entre projetos). o código está em vários repositórios, ou seja, complica ou 
+                impossibilita refatorações globais.
+
+        O curso porém será voltado para o Multi-repo, afinal é o masi comum no dia a dia da maioria dos desenvolvedores.
+
+    
+    Nesta aula, aprendemos que:
+
+        - Integração Contínua (CI) significa integrar as alterações no mainline (master ou trunk) diariamente
+        
+        - Para usar Integração Contínua, é necessário usar um sistema de controle de versão (VCS), e no final integramos o código 
+            - no repositório (usar Git não é obrigatório)
+        
+        - Aplicando Integração Contínua corretamente, diminuímos os problemas de integração (como merge hell), melhoramos a 
+            - comunicação entre desenvolvedores e antecipamos a descoberta de bugs
+        
+        - Os estilos de organização de projeto
+        
+        - Mono-repo possui todos os projetos em um único repositório
+        
+        - Multi-repo separa um repositório para cada projeto
+
+
+-*- Questões aula 01:
+
+    01: Nas alternativas abaixo, quais representam benefícios do uso da prática de Integração Contínua?
+
+        Selecione 2 alternativas
+
+        R1: As falhas são detectadas mais rapidamente
+            Ao integrar o código o tempo todo, diminui a chance de não percebermos uma falha, já que menos código foi integrado 
+            de uma vez só.
+
+        R2: Integrações mais simples
+            Menos código a integrar simplifica muito. Lembrando que não deve ter um evento especial para a integração e sim deve 
+            ser uma prática sólida e diária.     
+
+    02: O que deve ser guardado no repositório?
+
+        Selecione 2 alternativas
+    
+        R1: Scripts de testes
+            Os testes são uma parte essencial da aplicação. Testes também são códigos, e scripts relacionados a eles devem entrar 
+            no repositório.
+        
+        R2: Database Schema
+            Faz parte da aplicação e é preciso para construir e executar o projeto.
+
+    03: Dentre as ferramentas abaixo, quais são obrigatórias para começar com integração contínua no seu projeto?
+
+        Selecione uma alternativa
+
+        R: Sistema de controle de versão, como Git ou SVN
+            Precisamos de uma ferramenta, como SVN ou Git, para manter o histórico e facilitar a colaboração entre desenvolvedores. 
+            Isso serve para qualquer projeto de software!
+    
+
+    04: Em comparação ao Mono-Repo, quais são as vantagens do *Multi-repo? Marque todas as alternativas corretas:
+
+        Selecione 2 alternativas
+
+        R1: Possibilidade de definir permissões de acesso por projeto
+            Já que cada projeto/módulo tem o seu repositório, podemos definir as permissões por projeto!
+
+        R2: Clone, commit e build do projeto simples e rápido
+            A base de código é apenas desse projeto/módulo e não do sistema todo. Isso agiliza na hora de usar o código, pensando 
+            no clone, importação na IDE, no commit e build do projeto.
+
+
+-*- Aula 02: Estratégias de ramificação -------
+
+        TO list git config -- # git config --list
+
+        'Everyone Commits To the Mainline Every Day' - Martin Fowler
+
+    O que são Branching Models?
+
+        No momento em que começamos a desenvolver uma nova funcionalidade, pode fazer sentido que se saia master para focar nessa nova característica. Esse processo é 
+        chamado de ramificação, o fluxo separado do código principal.
+        
+        Poderíamos pensar que existe uma ramificação para o desenvolvimento outra apenas para os releases como homologação.
+
+        Podemos ir muito além, existem modelos mais complexos: para cada feature existirá um ramo específico.
+
+            - Master
+            - Hotfix
+            - Release
+            - Develop
+            - Feature 1
+            - Feature 2
+
+
+        "Everyone Commits To the Mainline Every Day" - Martin Fowler
+
+            - Commits simples e lançáveis, orientado às tarefas
+            - Branches atrasam integração, seguram o código
+            - Branches de vida curta -> merges mais simples
+            - Muitos branches, mais burocracia
+    
+    
+    Comparando Modelos (Do menos complexo para o mais complexo):
+
+        *   Trunk-Based Development
+        "Is a branching model that reduces this distance (between branches) to the minimum."
+
+        *   Feature Branch Workflow
+            (Master + Feature Branches) 
+            -------> Master ------->
+                \___ Feature1   \___Feature2
+
+        *   Github Flow 
+            (Master + Feature Branch + Pull Request) Para realizarmos o merge fazemos uso do Pull Request ||| Obs: Pull Request é o oposto de integração contínua
+            
+                /----> Feature 1
+            -------> Master -------> Master
+                    \___ Feature 2
+
+        *   Gitlab Flow
+            (Feature Branch + Pull Request + ENV Branches)
+            Mesmas branches do Github Flow com mais duas branches/Ambientes - Pre-Production e Production
+
+        *   Git Flow (Mais complexo)
+            (Feature Branches + Pull Request + Maintenance Branches + Historical Branches)
+            Master, Hotfix, Release, Develop, Feature 1, 2, 3...
+
+    
+    Branch by Abstraction:
+
+        Como evitar branches de vida longa...
+
+            - Feature Flag: 
+                Quando temos uma nova funcionalidade que vamos demorar para implementar, algo que não queremos colocar na Master, uma flag que está entre a construção 
+                do código e nossa branch. Isto é ligado para que não deixemos algum recurso que não está pronto ir para produção.    
+                 
+            
+            - Branch by Abstraction:
+                Quando temos um módulo/código legado e precisamos começar a atualizá-lo, porém não podemos ir mexendo enquanto o mesmo está em produção para não 
+                corrermos o risco de quebrá-lo. Para fazermos isso criamos uma camada de abstração, e está servirá como meio intermediário para que seja acessada e que
+                a parte legada não seja acessada diretamente. Então a partir das camadas de abstração que vamos criando os usuários vão acessando os novos recursos.
+
+
+    Merge e Rebase:
+
+        Merge: Com duas branches evoluindo ao mesmo tempo, este modo faz com a branch que veio depois tenha que ser readequada a linha do tempo princial.         
+
+        Rebase: No mesmo caso de duas branches evoluindo ao mesmo tempo, neste modo, temos os ultimos commits da linha principal sendo inseridos antes antes dos commits
+        da linha secundária, como se os commits da linha secundária tivessem sido feitos depois. Ou seja, os commits da linha secundária somem por um tempo e criasse um
+        remendo, colocando os outros commits da linha princial, que poderiam ter sido feitos num mesmo período, atrás da linha secundária. O rebase reescreve a "história".
+    
+    
+    Para saber mais: Rebase
+
+        Ainda ficou com dúvida qual é a diferença entre merge e rebase? Quer saber mais sobre as estratégias específicas do comando merge?
+
+        Preparamos uma série de vídeos curtos sobre Git, que abordam com detalhe o assunto:
+        
+        Git e Github para Sobrevivência (Episódios 02 e 03)
+        Link: https://www.alura.com.br/webseries/git-e-github-para-sobrevivencia
+
+        E claro, temos também os cursos da Alura sobre o assunto:
+        
+        Git e Github: Controle e compartilhe seu código
+        Link: https://cursos.alura.com.br/course/git-github-controle-de-versao
+
+        Git e Github: Estratégias de ramificação, Conflitos e Pull Requests
+        LInk: https://cursos.alura.com.br/course/git-github-branching-conflitos-pull-requests
+
+    
+    Seguem alguns links externos das estratégias mencionadas:
+
+        https://trunkbaseddevelopment.com/
+        https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow
+        https://guides.github.com/introduction/flow/
+        https://docs.gitlab.com/ee/topics/gitlab_flow.html
+        https://danielkummer.github.io/git-flow-cheatsheet/index.pt_BR.html
+
+
+    O que aprendemos?
+
+        Nesta aula, aprendemos que:
+
+        - O Git possui branches leves, que causou a criação de workflows baseado em branches
+        - Existem vários flows ou modelos de ramificação (branching model)
+        - Alguns dos modelos conhecidos são:
+            * Trunk-Based
+            * Feature Branch Flow
+            * GitHub Flow
+            * GitLab Flow
+            * Git Flow
+        - Cada um define a semântica e uso da branch
+        - lembre-se, cada branch deve ser de vida curta para diminuir o risco do merge hell
+        - O comando rebase garante um histórico linear dos commits
+        - Rebase não deve ser usado em branches compartilhadas/públicas  
+
+-*- Questões aula 02:
+
+    01: Aprendemos que, principalmente por causa do Git, surgiram vários modelos/estratégias de ramificação.
+
+        Em relação à estratégia, quais das alternativas abaixo são verdadeiras?
+    
+        Selecione 2 alternativas
+
+        R1: A estratégia de ramificação precisa ser conhecida por toda equipe
+            Todos e todas devem conhecer bem a estratégia, porque o trabalho no dia-a-dia se baseia nisso.
+
+        R2: A estratégia de ramificação define o significado de cada ramo/branch
+            Correto, quais branches existem, duração e sincronização entre eles são definidos pela estratégia.
+
+    
+    02: Você precisa escolher um modelo de ramificação para uma equipe nova. Há duas características que precisam ser seguidas:
+
+        As novas funcionalidades devem ser implementadas em uma nova branch
+        Cada funcionalidade deve ser revisada pela equipe antes de entrar no mainline
+        Qual modelo de ramificação você sugeria?
+        
+        Selecione uma alternativa
+
+        R: GitHub Flow
+        
+           O GitHub Flow é um modelo leve, desde que as features branches sejam de vida curta (poucos dias). Também devemos ter em mente que os pull requests podem ser
+           uma barreira para a integração contínua.
+   
+
+    03: Sobre o comando rebase, do Git, quais das alternativas abaixo são verdadeiras?
+
+        Selecione 2 alternativas
+
+        R1: Elimina o merge commit na integração de duas branches
+            O rebase sincroniza/pega os commits da outra branch e reaplica os novos commits da branch atual. Dessa forma, ele reescreve o histórico da branch atual.
+
+        R2: Ajuda a manter o histórico de commits linear
+            Esse é a grande vantagem do rebase. Os commits aparecem como eles fossem executados um após do outro.
+    
+
+-*- Aula 03: Builds e testes automatizados -------
+
+    Self testing:
+
+        Com tantos deploys sendo demandados a única forma de garantir que tudo esteja funcionando é com testes automatizados.
+
+            - Testes fazem parte da construção
+            - Rodar antes do commit
+            - TDD pode ajudar
+            - Desempenho importa
+
+            Existem testes...
+
+                - Functional tests
+                - Integration tests
+                - Unit tests
+
+                Como quanto maior a quantidade de testes, mais demoraremos fazendo testes, temos uma técnica chamada 'Smoke tests'.
+                É uma seleção de um grupo de testes, dentro das categorias citadas acima, onde se um destes testes específicos não passar o software não vai para 
+                produção.
+
+            Resumindo...
+
+                - Categorizar testes
+                - Rodar testes rápidos primeiro
+                    - Usar Smoke Tests
+                - Testes fazem parte do build
+                - Aplique boas práticas de testes
+                - Feedback
+        
+    
+    Build automatizado:
+
+        Build é a garantia de que de fato nossos primeiros testes na etapa inicial foram de fato eficazes. Construir a aplicação com sucesso significa que nosso
+        commit não quebrou nada.
+
+        No Build temos as seguintes etapas...
+
+        Clean -> Compile -> Unit Tests -> Static Analysis -> Package Software -> Integrate Database ...
+
+        Builds Automatizados...
+
+            - Build a cada commit (continuous!!)
+            - Tudo automatizado / Single command
+            - Build sem depender da IDE
+            - Tudo no repositório
+
+        Build rápido / Feedback rápido
+
+            - Otimize o build, métricas ajudam
+                - Verifique a fase de testes e análise do código
+                - Verifique ordem dessas fases
+                - Verifique a infra do build system
+                - Use cache
+            - Use staged build / pipeline (light build, heavy build)
+            - Regra: "TEN-Minute Build" (XP Programming)
+
+        Resumindo...
+
+            - Use ferramentas para automatizar o seu build
+            - Use commit-build
+            - Build deve ser independente da IDE
+            - Tudo que precisa estar no repositório
+                (install scripts, env settings, build scripts, config files, database files, code)
+            - Estrutura de diretórios bem definidos e conhecidos
+            - Builds rápidos que falham rápido (10 minutos)
+            - Script único que constrói ambientes (parametrizado)
+                - Comando único de build (botão de build)
+            - Use build machine (CI daemon)
+
+    
+    Para saber mais...
+
+        As ferramentas de automação e construção variam muito pois são específicas da linguagem e plataforma mas também variam na área de uso como desenvolvimento web,
+        mobile ou data science. Além disso, existem ferramentas especificas para uma etapa de build como teste ou deploy. Enfim, a lista abaixo representa apenas 
+        alguns exemplos.
+
+        Ferramentas de automação e construção, separado por linguagem/plataforma:
+        
+        Java: Ant, Maven, Gradle
+        Front-end: Gulp, Grunt, Webpack
+        .NET: MSBuild
+        Ruby: Rake
+        Kotlin: Gradle
+        Clojure: Leiningen
+        C/C++: CMake/Make
+        PHP: Composer
+        E alguns frameworks famosos da área de teste:
+        
+        Selenium (automação do navegador)
+        Cucumber (testes de aceitação)
+        Postman e SoapUI (testes de API)
+        JMeter (stress tests)
+        JUnit, xUnit, PHPUnit (automação de testes)
+
+        entre muitos outros frameworks e bibliotecas...
+
+        Para o configuration management e provisioning podemos mencionar:
+        
+        Ansible
+        Puppet
+        Chef
+        Salt
+        Terraform (cloud)
+        
+        O configuration management / provisioning é sobre a instalação e manutenção da máquina.        
+        Na Alura temos cursos específicos para a maioria das ferramentas.
+
+    
+    O que aprendemos?
+
+        Nesta aula, aprendemos que:
+
+        - Para usar integração contínua com sucesso, é preciso ter testes automatizados
+            * Esses testes devem verificar a maior parte do código
+            * TDD é uma metodologia que pode ajudar na criação dos testes
+            * Os testes representam feedback sobre a saúde/qualidade do seu projeto
+        
+        - O desenvolvedor deve rodar os testes antes de enviar as alterações para o repositório
+            * Se não for impossível executar todos os testes (por causa da infraestrutura ou demora da execução), é possível executar apenas os testes de unidade ou 
+                uma suíte de testes mais importantes (smoke testes)
+        
+        - O build do projeto deve ser simples e totalmente automatizado
+            * É boa prática o uso de uma ferramenta especializada para o build do software
+            * Tente usar um "single command build" para executar o build
+        
+        - A execução dos testes e build não deve se tornar uma razão para atrasar o build, para evitar:
+            * Otimize build
+            * Tente respeitar o tempo de 10 minutos para o build (alguns falam de 5 minutos)
+            * Se o build for falhar, a ideia é que ele falhe o mais rápido possível
+
+    
+-*- Questões aula 03:
+
+    01 - Vimos que existem categorias de testes diferentes. Por exemplo:
+
+        Testes de unidade
+        Testes de integração
+        Testes funcionais
+    
+        Entre várias outras... mas categorizar os testes é importante pois:
+
+        R: Podemos rodar os testes em etapas, com base na categoria
+
+        Dessa forma, podemos rodar com facilidade primeiro os testes de unidade, depois os de integração, etc. Os testes de unidade são os mais rápidos e devem 
+        garantir uma boa cobertura de teste.
+
+    
+    02 - Qual técnica é essencial, quando praticamos Integração Contínua?
+
+        R: Testes automatizados
+        As integrações do novo código no repositório precisam ser verificadas o tempo todo. Isso só é possível com uma bateria de testes, executadas de maneira 
+        automatizada. É isso que vai garantir a corretude do código.
+
+    
+    03 - Quais das afirmações abaixo são consideradas boas práticas relacionadas ao build?
+
+        Selecione 2 alternativas
+
+        R1: Otimize o build
+            Builds lentos vão afetar negativamente a integração contínua, atrasando commits e diminuindo o feedback. Otimize o build para receber feedback mais rápido!
+
+        R2: Use um single command build
+            O build deve ser simples de executar, idealmente através de um único comando (single command build).
+    
+    

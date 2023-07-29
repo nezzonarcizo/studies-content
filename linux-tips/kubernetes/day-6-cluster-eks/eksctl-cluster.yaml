@@ -1,0 +1,59 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: basic-test
+  region: us-east-1
+
+nodeGroups:
+- name: linux-ng
+  labels: {
+    kubernetes.io/os: linux,
+    kubernetes.io/arch: amd64,
+    role: worker
+  }
+  instanceType: t3a.medium
+  desiredCapacity: 2
+  maxSize: 2
+  #availabilityZones: ["use1-az2", "use1-az4"]
+  volumeSize: 50
+  privateNetworking: true
+  iam:
+    withAddonPolicies:
+      autoScaler: true
+      externalDNS: true
+      certManager: true
+  ssh:
+    publicKeyName: eks-test-mereo        
+
+- name: windows-ng
+  amiFamily: WindowsServer2019FullContainer
+  labels: { 
+    kubernetes.io/os: windows,
+    kubernetes.io/arch: amd64,
+    role: worker
+  }
+  instanceType: m5a.large
+  desiredCapacity: 2
+  maxSize: 2
+  #availabilityZones: ["use1-az2", "use1-az4"]
+  volumeSize: 50
+  privateNetworking: true
+  iam:
+    withAddonPolicies:
+      autoScaler: true
+      externalDNS: true
+      certManager: true
+  ssh:
+    publicKeyName: eks-test-mereo
+
+cloudWatch:
+  clusterLogging:
+    # Habilita tipos específicos de logs do control plane do cluster
+    enableTypes: ["audit", "authenticator", "controllerManager"]
+    # Todos os tipos suportados: "api", "audit", "authenticator", "controllerManager", "scheduler"
+    # Valores especiais suportados: "*" and "all"
+
+    # Define o número de dias que os logs ficarão retidos (veja [CloudWatch docs](https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutRetentionPolicy.html#API_PutRetentionPolicy_RequestSyntax)).
+    # Por padrão, os dados de log são armazenados no CloudWatch indefinidamente.
+    logRetentionInDays: 60

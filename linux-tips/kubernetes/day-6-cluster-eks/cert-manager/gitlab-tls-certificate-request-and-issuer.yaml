@@ -1,0 +1,142 @@
+apiVersion: cert-manager.io/v1
+kind: CertificateRequest
+metadata:
+  annotations:
+    cert-manager.io/certificate-name: gitlab-gitlab-tls
+    cert-manager.io/certificate-revision: "1"
+    cert-manager.io/private-key-secret-name: gitlab-gitlab-tls-f9zdv
+  creationTimestamp: "2022-07-11T02:54:00Z"
+  generateName: gitlab-gitlab-tls-
+  generation: 1
+  labels:
+    app: webservice
+    app.kubernetes.io/managed-by: Helm
+    chart: webservice-6.1.2
+    gitlab.com/webservice-name: default
+    heritage: Helm
+    release: gitlab
+  name: gitlab-gitlab-tls-cdbcg
+  namespace: default
+  ownerReferences:
+  - apiVersion: cert-manager.io/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Certificate
+    name: gitlab-gitlab-tls
+    uid: cda93f84-aa88-406a-8b23-6658fbd1ad70
+  resourceVersion: "325681"
+  uid: b7d5e703-1361-46da-a942-dcdd2e5fa8eb
+spec:
+  extra:
+    authentication.kubernetes.io/pod-name:
+    - gitlab-certmanager-57c4557849-dxsc8
+    authentication.kubernetes.io/pod-uid:
+    - 4906f2e9-dc26-471c-af94-882e0f977ef1
+  groups:
+  - system:serviceaccounts
+  - system:serviceaccounts:default
+  - system:authenticated
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: gitlab-issuer
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ2pqQ0NBWFlDQVFBd0FEQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUxORQpVeDh4eHo5NEpkaENtR3MxNTIxMjl5N1BxemJnREkvbnBMZUxKRlV5RjdhVCtvc2FZUHM0am1va002c1dsOTdmClNhZVZtTWhLWXZOVjhnR2wyc0xGSnRRbGYwWVNNaU9sckZBdlJzRFN2dlJ2S3R1Mld1YndXK1BZdWw2YU9wSXgKTU9lb1BRM1lHUms5Q29GdTY0WkZaWGp1cHFzN0o5bFl1TzIrQVQ5ZHFTU0ZPUVhRUHMxMmJXNkZNV3R6eHZoawpnVTF1dmZzWW4zdXR6RjIrLzlteGxEQUcyRDNnSkhiRDd2TUJUZys4QW1DaXA4OXpkRnlqcUNLSEYvcjdhN0RvClR1MzVPSS9kN2dCTFFnbmIyVGpkUjdzTFZaTk1Nb0VNVlFWK0dQVFl4YmZtWXcwdzFmNHB4TmJmcEtpQzlDa1MKM1hnQS85UmVSc2R2M3FYUmg4OENBd0VBQWFCSk1FY0dDU3FHU0liM0RRRUpEakU2TURnd0tRWURWUjBSQkNJdwpJSUllWjJsMGJHRmlMbVZyY3k1dVpYcDZiMjVoY21OcGVtOHVZMjl0TG1KeU1Bc0dBMVVkRHdRRUF3SUZvREFOCkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUlVOTU5Z25kL2xFVDhDRFhpSU9rbWxGV29IMXBkdFR1aHprSldDL0sKT3V6M1h4ZHdmR1hoQ2I5UUMySlQveGV4L3FhbmQvYXFlTy9vd3I3aXRxVVc3RitpbWd6dWIzaUh0cllZV29kbgpnMjYyRnZUQkFoeGczb2p5NU45R3JRZ0QxSCtSb1JQTVRTcm1EaVBZQWE5cGVTNnByS3Zyc3dMalNBQUNSa1dZCmltSFNPdEhEclNVYnlGRkYwV2FwT1ZmbVNqUEVjUk5ublhsbzRibnRzUHczYTdCRWlXeitKVEplZ25QcStnRnEKZVp2MVgxcC9UTURzYk15M2YzM0NQS0N3bUpXK1h5L0tnTDNLSHYwS1g4QnFkSTZKeFhMNDFpQm0vUFdkYmxRQgpsaDlRbGxQZWdiM2tZSlluZEhDa2ZSclZOR25udEhoR2R4dVJsaHQ0WFh0TEN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==
+  uid: e1356d58-1ced-45cf-a033-62cb7dafe3c2
+  usages:
+  - digital signature
+  - key encipherment
+  username: system:serviceaccount:default:gitlab-certmanager
+status:
+  conditions:
+  - lastTransitionTime: "2022-07-11T02:54:00Z"
+    message: Certificate request has been approved by cert-manager.io
+    reason: cert-manager.io
+    status: "True"
+    type: Approved
+  - lastTransitionTime: "2022-07-11T02:54:00Z"
+    message: 'Waiting on certificate issuance from order default/gitlab-gitlab-tls-cdbcg-4086165975:
+      "pending"'
+    reason: Pending
+    status: "False"
+    type: Ready
+
+---
+
+Name:         gitlab-issuer
+Namespace:    default
+Labels:       app=certmanager-issuer
+              chart=certmanager-issuer-0.1.0
+              heritage=Helm
+              release=gitlab
+Annotations:  <none>
+API Version:  cert-manager.io/v1
+Kind:         Issuer
+Metadata:
+  Creation Timestamp:  2022-07-11T02:52:59Z
+  Generation:          1
+  Managed Fields:
+    API Version:  cert-manager.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+        f:labels:
+          .:
+          f:app:
+          f:chart:
+          f:heritage:
+          f:release:
+      f:spec:
+        .:
+        f:acme:
+          .:
+          f:email:
+          f:privateKeySecretRef:
+            .:
+            f:name:
+          f:server:
+          f:solvers:
+    Manager:      kubectl
+    Operation:    Update
+    Time:         2022-07-11T02:52:59Z
+    API Version:  cert-manager.io/v1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:acme:
+          .:
+          f:lastRegisteredEmail:
+          f:uri:
+        f:conditions:
+    Manager:         controller
+    Operation:       Update
+    Time:            2022-07-11T02:53:59Z
+  Resource Version:  325623
+  UID:               2a8c7328-308e-47ce-84bd-fe62d1dd3691
+Spec:
+  Acme:
+    Email:            nezzo.narcizo@hotmail.com
+    Preferred Chain:  
+    Private Key Secret Ref:
+      Name:  gitlab-acme-key
+    Server:  https://acme-v02.api.letsencrypt.org/directory
+    Solvers:
+      http01:
+        Ingress:
+          Class:  gitlab-nginx
+      Selector:
+Status:
+  Acme:
+    Last Registered Email:  nezzo.narcizo@hotmail.com
+    Uri:                    https://acme-v02.api.letsencrypt.org/acme/acct/625010976
+  Conditions:
+    Last Transition Time:  2022-07-11T02:53:59Z
+    Message:               The ACME account was registered with the ACME server
+    Observed Generation:   1
+    Reason:                ACMEAccountRegistered
+    Status:                True
+    Type:                  Ready
+Events:                    <none>

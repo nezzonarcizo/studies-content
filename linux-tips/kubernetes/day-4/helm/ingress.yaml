@@ -1,0 +1,16 @@
+# Depois com mais tempo vou procurar a forma de fazer na AWS o que foi feito na Azure
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: giropops
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: "DNS_NAME"
+    http:
+      paths:
+      - backend:
+          serviceName: giropops
+          servicePort: 80
+        path: /

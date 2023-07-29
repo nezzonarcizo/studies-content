@@ -1,0 +1,2199 @@
+Aula 01: A rede com IP, ping e Traceroute -------
+
+    Teoria:
+
+        Introdução:
+
+            Veremos neste curso...
+
+                - Conexão dos cabos
+                - Equipamentos de hub
+                - Switch
+                - Roteadores
+                - Servidores
+                - DNS e DHCP
+                - IPV4
+                - Segurança da informação dos equipamentos (Básico)
+
+                Iremos montar um projeto usando um software de simulação de rede e faremos testes de acesso e conexão.
+
+        Definindo a rede:
+
+            Quando fazemos uma conexão com o Google, por exemplo, nossa requisição passa por diversos pontos, regiões, equipamentos e computadores intermediários antes de chegar de fato 
+            no google. Da mesma forma acontece com a resposta do Google só que fazendo o caminho inverso.
+
+            As diversas máquina e equipamentos interconectados em diferentes pontos, capazes de transportar informações é o que caracterizam a nossa rede. Elas existem em diferentes 
+            tamanhos, desde um ambiente doméstico, em que temos dois computadores e uma impressora, até grandes corporações com centenas de usuários, máquinas potentes com servidores, até
+            a mais famosa, a internet.
+
+        Ping:
+
+            No mundo da internet a conexão e entrega de dados é parecida com o mundo real, onde enviamos uma carta que contém em suas informações quem é o destinatário e qual é o endereço. 
+            O processo de identificação das máquinas é chamado de endereçamento IP.
+
+            Para ver como ele funciona, abriremos o terminal do S.O que estamos trabalhando e utilizamos o comando ipconfig (ifconfig no Mac).
+
+            A informação que segue o label Endereço IPV4 é o IP da nossa máquina.
+
+            Caso não consigamos uma conexão com determinada máquina na rede, poderemos utilizar o protocolo ping para verificar se ela está ativa ou apta para conexão.
+
+            Podemos utilizar o protocolo ping para verificar se uma máquina está ativa ou apta para conexão. No caso, quando queremos testar a conexão como uma máquina distante, podemos 
+            pingar o endereço, no caso do google...www.google.com.br o que nos retornará o seu número IP. Isto é a tradução da URL para o endereçamento IP. O responsável por fazer esta 
+            tradução ou mapeamento é o chamado servidor DNS.
+
+                Para realizar o teste, digitamos no nosso terminal o seguinte comando: ping www.google.com.br
+
+                A resposta que obtivemos foi a seguinte:
+
+                    C:\Users\marlon.narcizo>ping www.google.com.br
+
+                    Disparando www.google.com.br [172.217.29.3] com 32 bytes de dados:
+                    Resposta de 172.217.29.3: bytes=32 tempo=33ms TTL=52
+                    Resposta de 172.217.29.3: bytes=32 tempo=39ms TTL=52
+                    Resposta de 172.217.29.3: bytes=32 tempo=35ms TTL=52
+                    Resposta de 172.217.29.3: bytes=32 tempo=41ms TTL=52
+
+                    Estatísticas do Ping para 172.217.29.3:
+                        Pacotes: Enviados = 4, Recebidos = 4, Perdidos = 0 (0% de
+                                perda),
+                    Aproximar um número redondo de vezes em milissegundos:
+                        Mínimo = 33ms, Máximo = 41ms, Média = 37ms
+
+
+            Podemos notar a tradução da URL para o endereçamento IP do Google.
+
+            Dentro da informação do ping existe um protocolo chamado ICMP (Internet Control Message Protocol), este protocolo trabalha de forma semelhante a um telefonema. É como se 
+            pegássemos um telefone e ligássemos para a máquina do Google, na esperança de que alguem atenda. Dentro da informação enviada, falaremos algo que será representado pelos 32 
+            bytes que aparecem no retorno.
+
+            A máquina do Google responde, podemos ver pelo IP dela e pelo tempo que a informação levou do nosso computador para passar pela máquina do Google e retornar. Isto é chamado de
+            tempo de Ida e Volta ou RTT (Round Trip Time). Para que seja realizada esta conexão, precisamos passar por diversas máquinas intermediárias, que podem estar configuradas de 
+            diversas forma que caracterizam o loop, porque existem várias interconexões. Se a nossa informação enviada ficar trafegando eternamente no loop, consumindo recursos, travaria 
+            tudo.
+
+            Por isso que cada pacote de informação tem um tempo de vida útil e a cada passagem entre essas máquinas, ele irá decrementar em uma unidade representado pelo índice 
+            TTL (Time to live).
+
+            No nosso exemplo, quando a informação passar por 52 máquinas, o valor será zerado e extinguida.
+
+            Podemos ver também que enviamos 4 pacotes para a máquina do Google e todos eles foram respondidos, isto significa que a conexão está perfeita.
+
+        
+        Traceroute:
+
+            O Traceroute através do ICMP faz uma verificação para saber quais são as máquina intermediárias que participam do processo.
+                Obs: No Linux considerar traceroute -n.
+
+            Para testar o tracerout utilizamos o comando: tracert -d www.google.com
+                Obs: O -d (-n no Linux) para que ele não faça a tradução do DNS.
+
+            A minha saída foi:
+
+                C:\Users\nesso>tracert -d www.google.com
+
+                Rastreando a rota para www.google.com [2800:3f0:4001:810::2004]
+                com no máximo 30 saltos:
+
+                1    <1 ms    <1 ms    <1 ms  fe80::7ac1:a7ff:fe1a:3102
+                2     *        *        *     Esgotado o tempo limite do pedido.
+                3     *        *        *     Esgotado o tempo limite do pedido.
+                4    62 ms    63 ms    63 ms  2001:4860:1:1::f74
+                5    74 ms    62 ms    63 ms  2800:3f0:800e::1
+                6    63 ms    64 ms    63 ms  2001:4860:0:1::1eba
+                7     *       74 ms    74 ms  2800:3f0:4001:810::2004
+
+                Rastreamento concluído.
+
+            Podemos observar que foi feita a mesma tradução, por meio do servidor DNS, que no protocolo ping. Mas as informações retornadas foram diferentes.
+
+            Na primeira coluna temos a identificação da máquina, a sequencia praticamente por onde passou a informação da minha máquina. Assim como ela passará por outras 
+            máquinas.
+
+            Observamos também que, temos os 3 intervalos de tempo que são mostrados nas outras máquinas. Eles são os mesmos do ping se referem ao processo de ida do cliente para o servidor
+            e a volta do servidor para o cliente.
+
+            Na vida real temos um caminho em mente que vamos percorrer pra chegar em casa, porém este caminha pode estar congestionado, e assim como na vida real teremos que escolher outro
+            caminho. Desta mesma forma pode acontecer na rede, podemos enviar um pacote com informações, mas pode ser que seja necessário que este pacote encontre outro caminho para chegar
+            no servidor. Para identificar se será necessário enviar numa rota diferente, três pacotes diferentes em intervalos diferentes são enviados para ver se alguma outra máquina
+            poderia atuar como ponto de parada.
+
+            Na primeira coluna podemos perceber que querm recebeu os três pacotes foi o mesmo IP, ou seja, a primeira coluna se refere a mesma rota. Porém a máquina 2 e 3 não retornaram
+            nenhuma informação de tempo. Elas não responderam por dois motivos possíveis. O primeiro é porque o ICMP pode estar desabilitado para evitar sobrecarga, o segundo pode ser questão
+            de segurança, pois um dos primeiros testes de invasão de rede é um teste de conectividade como o que estamos fazendo. Ele começa por uma verificação de qual é o sistema que a 
+            empresa está trabalhando, quais as possíveis portas que estão abertas para conseguir acesso. Mas no nosso caso a máquina está funcionando, pois passaram a informação para a 
+            máquina 4 que continuou passando para a próxima. Então chegou na 7, que é o servidor Google.
+
+                 7     *       74 ms    74 ms  2800:3f0:4001:810::2004
+
+        O que vimos nessa aula
+
+        - O que é Rede de computadores.
+        - O comando ping para teste de conectividade.
+        - O protocolo ICMP utilizado
+        - O (Time to Live) TTL OU tempo de vida útil do pacote.
+        - O comando traceroute para verificar a rota que meu pacote está passando na rede.
+
+    
+    Questões aula 01:
+
+        1 - O que caracteriza uma rede?
+
+            Selecione uma alternativa
+
+            R: Máquinas que estão interligadas, passando informações em diversos pontos
+
+            De acordo com o site do Wikipedia, a melhor definição de redes de computadores seria: “Uma rede de computadores é formada por um conjunto de máquinas eletrônicas com 
+            processadores capazes de trocar informações e partilhar recursos”. Ou seja, pelo fato das máquinas estarem interligadas e serem capazes de trocar informações, caracterizaria 
+            uma rede.
+
+
+        2 - Qual protocolo está dentro do ping?
+
+            Selecione uma alternativa
+
+            R: ICMP
+
+            Dentro da ferramenta administrativa do ping temos o protocolo ICMP, sendo ele o responsável por mandar uma requisição (Echo Request) para máquina remota e esperar um retorno 
+            dessa máquina remota (Echo Reply).
+
+        
+        3 - Caso o tempo indicado no teste do ping esteja mais elevado em relação ao valor que normalmente apresenta, o que isso quer dizer?
+
+            Selecione uma alternativa
+
+            R: Isso significa que podemos ter um problema tanto na comunicação de ida ou da volta
+
+            Quando temos um alto valor no índice do tempo do teste do ping, isso significa que podemos ter um problema em nossa comunicação. O protocolo ICMP que está dentro do ping manda
+            um Echo request e aguarda um retorno de resposta da máquina destino (Echo Reply). Dessa forma, o tempo elevado pode indicar um problema na comunicação que pode estar tanto em 
+            um trecho como em outro.
+
+        4 - O que seria o TTL que aparece no teste do ping?
+
+            Selecione uma alternativa
+
+            R: TTL indica por quantas máquinas (hops) minha informação pode passar antes de ser extinta
+
+            O TTL seria uma informação dentro do pacote do IP que informa qual é a máxima quantidade de hops que minha informação pode passar antes de ser descartada. É a quantidade de 
+            máquinas que ela vai poder passar no caminho.
+
+        
+        5 - Quando digitamos ping www.google.com no console aparece um número, o que seria esse número?
+
+            Selecione uma alternativa
+
+            R: Endereço de IP
+
+            Ao digitarmos www.google.com, ocorre uma tradução entre o nome e o endereço IP da máquina do google que estamos acessando. As máquinas para serem identificadas na rede devem 
+            possuir um endereçamento IP.
+
+        
+        6 - Qual ferramenta administrativa eu uso para testar conectividade?
+
+            Selecione uma alternativa
+
+            R: ping
+
+            Dentro do ping temos o protocolo ICMP responsável por fazer a requisição até uma máquina remota (Echo Request) e esperar a resposta (Echo Reply). Através desse protocolo ICMP, 
+            podemos verificar se temos uma resposta da máquina remota, sabendo assim se temos conectividade.
+
+            O traceroute seria usado para verificar a rota que minha informação percorreu até chegar o destino.
+
+            O ipconfig seria usado para ver as configurações de IP de minha máquina e o nslookup seria para verificarmos recursos mais avançados de problemas que podemos ter entre a url e 
+            o endereço IP.
+            
+        
+        7 - Qual o principal uso do traceroute?
+
+            Selecione uma alternativa
+
+            R: Verificar a rota que a minha informação está passando na rede
+
+            A principal funcionalidade do traceroute é verificar a rota que a minha informação levou para chegar até a máquina de destino. Isso porque, em redes de computadores temos o 
+            que chamamos de rede não determinística, ou seja, não necessariamente um pacote de informação vai ser transferido pela mesma rota do anterior com o mesmo intervalo de tempo. 
+            Isto se deve a muitos fatores, por exemplo, uma máquina que pode estar congestionada ou um problema no link de comunicação, etc.
+
+            Pense como se a rede fosse uma cidade com várias ruas, nem sempre pegaremos a mesma rota para chegar até a nossa casa ou ir para o trabalho, depende de muitos fatores, por 
+            exemplo, trânsito, obras e outros aspectos. Nas redes de computadores não é tão diferente. :)
+
+        
+        8 - Quando eu digito tracert e vemos que uma máquina retornou a informação (*), o que isso quer dizer?
+
+            Selecione uma alternativa
+
+            R: Provavelmente o administrador da máquina desabilitou a resposta ao nosso chamado, para evitar um grande volume de tráfego na máquina bem como por questões de segurança.
+
+            Quando nós temos uma máquina que retornou (*) e passou a informação para uma próxima máquina, isso provavelmente indica que o administrador dessa máquina desabilitou a 
+            resposta ao nosso chamado. O que acontece seria que esse tipo de teste pode ser interpretado como uma tentativa de “scanear” possíveis portas abertas e vulnerabilidades que 
+            possam existir, caso seja usado por um usuário malicioso, pode ser usada como uma forma de reconhecimento da rede dessa possível vítima para que assim possa explorar possíveis
+            falhas.
+
+
+Aula 02: DNS, hubs e as conexões de máquinas -------
+
+        Teoria:
+
+            Montando uma rede 2pc:
+
+                O ambiente de teste utilizado no curso, são duas máquinas conectadas por um cabo de rede. Vimos que cada máquina tem o seu número IP, e sabemos que ele não pode se repetir na mesma rede.
+                Este número IP não vem direto de fábrica, ele é configurado por nós, através de uma máquina que distribiu os IP's ou manualmente.
+
+                O caminho para configurar o adaptador é: Iniciar > Painel de Controle > Central de Rede e Compartilhamento > Alterar as configurações do adaptador > (Botão direito em Conexão local) >
+                                                                Propriedades > Clicar em IPV4 na lista da popup que aparece > Propriedades.
+
+                                                                ou
+
+                                                         Clicar com o botão direito na conexão de rede perto do relógio > Abrir central de rede e compartilhamento > Então continuar em "Alterar as configurações
+                                                                                                                                                                                            do adaptador"
+
+                As configurações de rede do computador 1 foram:
+
+                    IP: 192.168.3.1
+                    Máscara: 255.255.255.0
+
+                Do computador 2:
+
+                    IP: 192.168.3.2
+                    Máscara: 255.255.255.0
+
+                Foi realizado um teste de ping.
+
+                Testando a conectividade da placa de rede...
+                Temos um endereço IP reservado para que possamos testar a nossa própria placa de rede, este número é: 127.0.0.1
+                Este tipo de endereçamento chamamos de loopback. Ele envia informações para ele mesmo para ver se esta tudo ok internamente.
+
+                Este tipo de endereço é reservado e não podemos usá-lo para atribuir em outra placa de rede.
+                Se formos nas "Propriedades de IP versão 4" ao tentarmos modificar o IP para 127 recebemos a seguinte mensagem:
+
+                    "Endereços IP que começam com 127 não são válidos, pois são reservados para endereços de loopback. Especifique outro valor válido entre 1 e 223."
+
+                Até o momento as traduções que estão sendo mostradas no terminal só possuem números.
+                Podemos verificar como é feita a tradução pelo servidor DNS, entre nome e endereçamento IP.
+                Podemos fazer um teste na nossa própria máquina.
+
+                Procedimento feito foi o seguinte:
+                    Abrir o bloco de notas com privilégios de administrador.
+                    Abriremos o arquivo hosts em "C:>Windows>System32>drivers>etc. Devemos mudar para todos os arquivos para enxergar os arquivos desta pasta.
+
+                    Dentro deste arquivo vemos um mapeamento entre "localhost" e o IP 127.0.0.1. Localhost é o mesmo que usamos na programação Web.
+                    Podemos mudar este nome, localhost, para qualquer outro nome, depois no terminal pingar o nome que escolhemos e ver ele responder o IP: 127.0.0.1.
+
+                        Conteúdo arquivo hosts:
+
+                            # localhost name resolution is handled within DNS itself.
+                            #       127.0.0.1      localhost
+                            #       ::1            localhost
+                                    127.0.0.1      www.cursoderedesdaalura.com
+
+            
+            Nslookup:
+
+                No processo de mapeamento Nome/IP podemos ter problemas em algum momento. Para identificar de qual lado esta o problema, temos uma ferramenta administrativa chamada nslookup.
+                Junto a este comando basta o endereçamento IP que queremos descobrir ou o nome.
+
+                    C:\Users\marlon.narcizo>nslookup www.facebook.com
+                    Servidor:  dcms01.tribunal.tre-ms.gov.br
+                    Address:  10.19.1.6
+
+                    Não é resposta de autorização:
+                    Nome:    star-mini.c10r.facebook.com
+                    Addresses:  2a03:2880:f133:83:face:b00c:0:25de // No retorno podemos ver dois tipos de máquina com identificação:
+                            31.13.74.35 // Este também é uma identificação de máquina
+                    Aliases:  www.facebook.com
+
+                Aqui também nos mostra que o endereçamento de máquina IP não é uma resposta autoritativa. Isto acontece porque já acessamos o facebook antes, então a informação que foi pedida no nslookup
+                foi fornecida pelo servidor interno e não pelo site do facebook em si, pois o servidor já tinha em seu cache qual é o respectivo endereçamento da plataforma. Ficaria muito oneroso se a cada
+                nslookup tivessemos que pegar esta mesma informação. Ou seja, Não é autoritativa porque foi o servidor interno que respondeu e não o facebook.
+
+                Podemos utilizar o nslookup com qualquer nome ou qualquer ip.
+                Caso utilizemos algo que não existe, a seguinte saída será exibida:
+
+                    C:\Users\marlon.narcizo>nslookup teste
+                    Servidor:  dcms01.tribunal.tre-ms.gov.br
+                    Address:  10.19.1.6
+
+                    *** dcms01.tribunal.tre-ms.gov.br não encontrou teste: Non-existent domain
+
+                    C:\Users\marlon.narcizo>
+
+                No caso "teste" não está relacionado a nenhum número IP. Não existe o registro nem na minha rede e nem na internet. O mesmo ocorre com o ping.
+
+                    marlon.narcizo@TREMS0208 MINGW64 /d/Comum/Pessoal/marlon.narcizo/Desktop
+                    $ ping 2.2.2.2
+
+                    Disparando 2.2.2.2 com 32 bytes de dados:
+                    Esgotado o tempo limite do pedido.
+
+                    (Teste realizado no Git Bash)
+
+                Podemos ver que foi esgotado o tempo limite do pedido. Fizemos uma chamada para o endereçamento 2.2.2.2, mas não recebemos uma resposta.
+
+
+            Montando rede 3pc:
+
+                Nesta parte do curso foi montada uma rede com três computadores para fazer testes de conexão. Como cada placa de rede só tem uma interface de conexão RJ-45 utilizamos um Hub.
+
+                A terceira máquina ficou com a seguinte configuração de rede:
+
+                    IP: 192.168.1.3
+                    Máscara: 255.255.255.0
+
+                Também foi realizado teste de ping da máquina IP final 2 para as máquina finais 1 e 3.
+
+
+        Questões aula 02:
+
+            1 - Qual a responsabilidade do servidor DNS?
+
+                Selecione uma alternativa
+
+                R: Traduz URLs para endereços IP
+
+                Os servidores DNS são chamados de Domain Name Servers e sua função é realizar o “mapeamento” entre endereço IP e url (ex: www.google.com). Dessa forma, se estamos digitando www.google.com 
+                no browser, o servidor DNS está fazendo a tradução entre o nome da url e o endereço IP.
+
+            
+            2 - Qual o nome que damos quando configuramos um endereço IP manualmente em nosso computador?
+
+                Selecione uma alternativa
+
+                R: Quando inserimos um IP em uma máquina, ela passa a atuar com aquele endereço IP, esse tipo de inserção manual de endereço IP é chamado de IP estático, pois fixamos que ele tenha o valor 
+                que inserimos.
+
+            3 - Qual principal uso do nslookup?
+
+                Selecione uma alternativa
+
+                R: Verificar traduções de nomes de domínios e endereços IP e isolar problemas entre as duas partes
+
+                O Nslookup pode ser usado para descobrirmos o endereço IP de um domínio, bem como saber detalhes mais avançados de DNS, para saber se nosso serviço está sendo direcionado para a máquina de 
+                destino, por exemplo.
+
+                Parabéns, você acertou!
+
+            4 - Ao digitar nslookup www.google.com eu recebo uma mensagem de resposta não autoritativa, por que recebo essa mensagem?
+
+                Selecione uma alternativa
+
+                R: Porque quem respondeu foi uma máquina da minha rede local que guardou a informação do site que havia acessado previamente e ela que está respondendo pela requisição.
+
+                Uma vez que eu já acessei o site antes, essa máquina guarda em sua memória, para não ter que ficar fazendo essas requisições na internet o tempo todo. Dessa forma, a minha máquina que 
+                respondeu não tem autoridade sobre esse domínio, não é minha máquina que possui o registro do www.google.com.
+
+            
+            5 - Como funciona o ping?
+
+                Selecione uma alternativa
+
+                R: Ele manda uma requisição para a máquina que procuramos (Echo Request) e aguarda uma informação de retorno (Echo Reply)
+
+                O ping possui dentro dele um protocolo chamado ICMP, ele vai mandar uma requisição (Echo request) e aguarda uma resposta (Echo reply).
+
+
+            6 - Qual equipamento podemos usar para conectar vários computadores?
+
+                Selecione uma alternativa
+
+                R: Hub
+
+                - O Hub é um equipamento utilizado para interconectar diversos dispositivos finais.
+                - NAT é um método de tradução de endereços privados e públicos.
+                - Servidor é uma máquina centralizada que oferece serviços a um cliente (ex: computador)
+                - Máscara de rede é usado para determinar se dois equipamentos estão na mesma rede
+
+
+Aula 03: Cabos de conexão -------
+
+    Teoria:
+
+        O cabo de rede que compramos, possui 8 fios por dentro, e suas cores representam um padrão que veremos a seguir.
+
+            (T568A)
+
+            1 - "Branco do verde"
+            2 - Verde
+            3 - "Branco do laranja"
+            4 - Azul
+            5 - "Branco do azul"
+            6 - Laranja
+            7 - "Branco do marrom"
+            8 - Marrom
+
+        O conector de plástico no qual encaixamos e crimpamos (Ato de fixar com alicate os fios no conector) os fios menores, é chamado de RJ-45.
+
+        Como já vimos, temos esta combinação de cores acima, esta sequencia de cores e este padrão designado para tal sequencia foi criado pela TIA (Telecomunication industry
+        association). Eles definiram o padrão de cores que devia ser seguido. Agora vamos analisar as conexões que fizemos até agora no curso.
+
+        Quando os fios são crimpados com a sequencia de cores do padrão T568A o cabo é chamado de cabo direto.
+
+            A placa de rede transmite nas posições 1 e 2:
+
+                1 - "Branco do verde"
+                2 - Verde
+
+            E receberá nas posições 3 e 6:
+
+                3 - "Branco do laranja"
+                6 - Laranja
+
+
+            Já o hub por sua vez, transmitirá nas posições:
+
+                3 - "Branco do laranja"
+                6 - Laranja
+
+            E receberá nas posições:
+
+                1 - "Branco do verde"
+                2 - Verde
+
+            Praticamente é como se a placa do hub fosse ao contrário.
+
+        Porém se utilizarmos o mesmo cabo em dois computadores que por convenção terão suas placas "no mesmo sentido", a transmissão e recepção dos dois serão tentadas a partir
+        dos mesmos fios, o que ocasionará a colisão. Pois estão transmitindo pelo mesmo fio (1 - "Branco do verde", 2 - Verde) e tentando receber pelos mesmos fios 
+        (3 - "Branco do laranja", 6 - Laranja).
+
+        Pensando nisto, a TIA criou um outro padrão, chamado T568B.
+
+            (T568B)
+
+            1 - "Branco do laranja"
+            2 - Laranja
+            3 - "Branco do verde"
+            4 - Azul
+            5 - "Branco do azul"
+            6 - Verde
+            7 - "Branco do marrom"
+            8 - Marrom
+
+        Ou seja, uma ponta com o T568A e a outra ponta com o T568B, será o ideal, pois o computador 1 transmite e na posição 3 o computador 2 recebe. E também a posição 2
+        transmitirá e a posição 6 receberá.
+
+            Então percebemos que, nos computadores, o padrão é transmitir nas posições 1 e 2, e receber nas posições 3 e 6.
+            Se invertermos então os cabos Branco do verde e verde, e Branco do laranja e Laranja apenas em uma ponta dos cabos, a comunição funcionará, pois aconteceu um
+            cruzamento interno dos sinais de uma forma que eles não colidam. Por causa deste cruzamento este tipo de cabo recebeu o nome de cabo cruzado ou crossover.
+
+            Então para ligarmos dois hosts sem o auxilio de um hub ou um switch, utilizaremos um cabo cross.
+
+        É importante deixar claro que é o cruzamento dos cabos que permite a comunicação sem a colisão de dados, ou seja, os dois lados no padrão T568B iria ocasionar a colisão
+        do mesmo jeito.
+
+        As placas de rede mais modernas já conseguem detectar esta diferenã e fazem a correção automaticamente via software. Mas nem todas as placas de rede possuem essa
+        configuração. É melhor saber qual tipo de cabo precisamos usar.
+
+        
+    Questões aula 03:
+
+        1 - Quais são os dois tipos de cabos que usamos para conexão?
+
+            Selecione uma alternativa
+
+            R: Cabo direto e cabo cruzado
+
+            Caso tenhamos o mesmo padrão de cores nas duas pontas do cabo, chamamos de cabo direto, pois as mesmas cores estão nas mesmas posições nas duas pontas.
+            Caso tenhamos um padrão de cores diferente em cada ponta do cabo, teremos o que chamamos de cabo cruzado.
+
+        2 - O que caracteriza um cabo cruzado?
+
+            Selecione uma alternativa
+
+            R: Um cabo que possui os fios internos em posições diferentes em cada ponta
+
+            Quando temos um padrão de cores diferente em cada ponta do cabo, teremos o que chamamos de cabo cruzado.
+
+        
+        3 - O que caracteriza um cabo direto?
+
+            Selecione uma alternativa
+
+            R: Um cabo com a mesma sequência de cor nas mesmas posições nas duas pontas do cabo
+
+            Quando temos um padrão de cores iguais nas duas pontas do cabo, teremos o que chamamos de cabo direto
+
+        
+        4 - Quais são os dois padrões feitos pela TIA?
+
+            Selecione uma alternativa
+
+            R: T568A e T568B
+
+            O padrão de cores feitos pela TIA seria T568A e T568B, sendo que a T568A possui a sequência de cores, nesta ordem:
+
+                Branco e verde, verde, branco e laranja, azul, branco e azul, laranja, branco e marrom, marrom
+
+            E a T568B:
+
+                Branco e laranja, laranja, branco e verde, azul, branco e azul, verde, branco e marrom, marrom
+
+        
+        5 - Qual tipo de cabo usamos para fazer a conexão entre dois computadores?
+
+            Selecione uma alternativa
+
+            R: Cabo cruzado
+
+            Pelo fato de termos dois computadores, eles tem o mesmo tipo de placa de rede e vão transmitir os sinais nas mesmas posições. Dessa forma é necessário realizar 
+            essa compatibilidade entre os sinais de transmissão e recepção e isso é obtido através do cabo cruzado.
+
+        
+        6 - Onde é transmitido os sinais nas placas de rede dos computadores por padrão?
+
+            Selecione uma alternativa
+
+            R: Fios 1 e 2
+
+            As placas de rede dos computadores transmitem, por padrão, nas posições 1 e 2.
+
+        
+        7 - Onde é recebido os sinais nas placas de rede dos computadores por padrão?
+
+            Selecione uma alternativa
+
+            Fios 3 e 6
+
+            As placas de rede dos computadores recebem por padrão nas posições 3 e 6.
+
+
+        8 - Onde é transmitido os sinais nas placas de rede dos hubs por padrão?
+
+            Selecione uma alternativa
+
+            R: Fios 3 e 6
+
+            As placas de rede dos hubs transmitem por padrão nas posições 3 e 6
+
+        
+        9 - Onde é recebido os sinais nas placas de rede dos hubs por padrão?
+
+            Selecione uma alternativa
+
+            R: Fios 1 e 2
+
+            As placas de rede dos hubs recebem por padrão nas posições 1 e 2.
+
+        
+        10 - Em um projeto precisei interconectar dois computadores diretamente, pelo fato de não ter cabo cruzado, resolvi fazer o teste com cabo direto e consegui “pingar” o 
+            outro computador. Qual é a provável razão para isso ter acontecido?
+
+            Selecione uma alternativa
+
+            R: Provavelmente as placas de rede possuem um padrão auto-MDIX que é capaz de detectar que colocamos um cabo “errado”, mas consegue realizar a correção das 
+            polaridades via software
+
+            Algumas placas de rede mais modernas possuem o padrão auto-MDIX, dessa forma, se as duas placas de rede estiverem configuradas, elas poderão corrigir essa questão 
+            da polaridade e se comunicarem
+
+
+Aula 04: Montando nossa rede no programa -------
+
+    Teoria:
+
+        Instalando o Packet Tracer:
+
+            O programa que utilizaremos agora para que possamos simular a nossa rede é o Packet Tracer, software criado pela Cisco.
+
+            Podemos realizar o dowload do programa no seguinte link: https://www.netacad.com/courses/packet-tracer/introduction-packet-tracer
+
+            Se estivermos utilizando o Mac, teremos também que utilizar um emulador pois o PacketTracer foi feito somente para Linux e Windows.
+            Podemos utilizar o mesmo que foi utilizado no curso, o Wineskin Winery: https://drive.google.com/file/d/0BzmYQVmw4W7nTVpIWDlXSS11RVE/view
+            Então à partir deste emulador executaremos o arquivo de instalação do PacketTracer.
+
+
+        Limitação do Hub:
+
+            Recriamos o cenário estudado anteriormente no Packet Tracer.
+
+            Definimos 3 computadores, sendo 1 laptop e 2 desktops e mais 1 hub.
+
+            Ligamos cada um dos computadores ao hub através de cabo direto (Cooper Straight Through).
+
+            Mudamos o modo de operação do Packet Tracer de "Realtime" para "Simulation"
+
+            Utilzamos o Desktop (Computador 2) e realizamos um ping para o Laptop (Computador 1), então observamos o painel de simulação.
+
+            Podemos observar pequenos envelopes que aparecem no computador que realizamos o comando ping.
+
+            Eles também aparecerão na tela de simulação e seus respectivos protocolos.
+
+            Temos o protocolo ICMP e temos o protocolo ARP. O que seria este protocolo ARP?
+
+            A primeira vez que o computador quer se comunicar com o IP, ele não sabe onde estará localizado. É preciso perguntar para todos os dispositivos que estão na nossa
+            rede.
+
+            Como o hub não tem informação aonde está conectado o equipamento com o IP do laptop, então, ele passará pelas outras portas perguntando quem é o computador que tem
+            o IP que receberá a informação. Ele enviará o protocolo ARP para descobrir.
+
+            O terceiro computador recebe a requisição e descarta a informação. Isto aconteceu porque o terceiro computador não tem o IP que estamos procurando. Estamos procurando
+            o IP 192.168.3.1, e como já vimos e nós próprios já configuramos, o computador 3 tem o IP 192.168.3.3.
+
+            Como o primeiro computador tem o IP que o Hub está procurando, terá que devolver enviando sua informação.
+
+            Este é o problema do Hub, ele não guarda informação sobre as máquinas conectadas em si mesmo. Esta é sua limitação.
+
+            Mesmo que a mesma máquina (2ª) envie dados para a primeira novamente, ele continuará a cada pacote, perguntando se não é a terceira a destinatária dos pacotes.
+
+            Resumindamente, ele passará sempre todas as informações para todos os dispositivos conectados em suas portas com exceção do que enviou.
+
+            O nome deste modo de operação é Broadcast. Imagine fazermos download de 500 mb através de um hub na rede e todos os outros dispositivos conectados a ele recebendo
+            a todo momento esta informação....Isto causaria uma lentidão na rede.
+
+            Isto nos leva a outra questão....Segurança da informação. Pelo nosso hub enviar a informação para todas as portas, em outras palavras, para todo mundo que estiver 
+            conectado, podemos ter um usuário malicioso no terceiro computador, por exemplo, e ele pode fazer o que chamamos de análise de protocolo e decifrar o que está sendo 
+            enviado pelo segundo computador. Além de lentidão, o hub representa vulnerabilidade da segurança.
+            
+
+        Wireshark http final:
+
+            Para que possamos ver a vulnerabilidade do hub que falamos no tópico anterior, utilizaremos o Wireshark, um programa de análise de protocolos.
+
+            Para realizarmos download deste programa para Windows ou Mac, utilizaremos o seguinte link:
+
+                https://www.wireshark.org/#download
+
+                Caso a instalação for feita para Linux:
+
+                    https://drive.google.com/file/d/0BzmYQVmw4W7nTVVfeURTV2hySk0/view
+
+                    E então descompactar e realizar a instalação, depois ir até o terminal e digitar:
+                        
+                        - sudo apt-get install libcap2-bin wireshark
+                        - sudo chgrp (#seu usuario#) /usr/bin/dumpcap
+                        - sudo chmod 750 /usr/bin/dumpcap
+                        - sudo setcap cap_net_raw,cap_net_admin+eip /usr/bin/dumpcap
+                        - wireshark
+
+            Iremos simular dois papéis, da vitima e do usuário malicioso.
+
+            Após abrirmos o programa Wireshark, ele irá analisar o nosso computador e verificar quais são as conexões de rede.
+
+            Devemos escolher a conexão de rede que estamos utilizando, será uma das conexões que tem atividade, normalmente com o nome ethernet.
+
+            Depois que dermos dois cliques nesta conexão veremos que temos alguns protocolos passando pela rede.
+
+            Como a intenção aqui é somente demonstrar a vulnerabilidade do hub, não nos aprofundaremos na ferramenta Wireshark.
+
+            Nosso laboratório aqui teria um cenário onde o usuário malicioso conectou seu laptop ou desktop na porta do hub e começará a análisar o tráfego da rede.
+            A vítima, por sua vez, irá acessar um site, no exemplo do curso foi acessado o site do buscapé onde foi feita a busca de câmeras da marca Canon.
+
+            O usuário malicioso quer descobrir qual foi o último termo de busca pesquisado pelo usuário no Buscapé.
+            Primeiramente ele filtra os protocolos referentes ao site Buscapé por meio do IP do servidor do site www.buscape.com.br
+            Como vimos na outra aula, é possível fazer isso com o comando:
+
+                > nslookup www.buscape.com.br
+
+            Será retornado o endereço ip da máquina do Buscapé.
+            No meu caso a saída foi:
+
+                > nslookup www.buscape.com.br
+
+                    Servidor:  csp3.zte.com.cn
+                    Address:  192.168.1.1
+
+                    Não é resposta autoritativa:
+                    Nome:    dh8bafpwuwdxw.cloudfront.net
+                    Addresses:  2600:9000:21e8:ce00:19:3c2f:2500:93a1
+                            2600:9000:21e8:1c00:19:3c2f:2500:93a1
+                            2600:9000:21e8:4c00:19:3c2f:2500:93a1
+                            2600:9000:21e8:c000:19:3c2f:2500:93a1
+                            2600:9000:21e8:4e00:19:3c2f:2500:93a1
+                            2600:9000:21e8:9800:19:3c2f:2500:93a1
+                            2600:9000:21e8:6600:19:3c2f:2500:93a1
+                            2600:9000:21e8:f800:19:3c2f:2500:93a1
+                            13.227.101.81
+                            13.227.101.56
+                            13.227.101.114
+                            13.227.101.21
+                    Aliases:  www.buscape.com.br
+                            buscape_company_ptr.zst.com.br
+
+            Então, o IP (Padrão IPv6) que encontramos foi: 2600:9000:21e8:ce00:19:3c2f:2500:93a1
+            Voltamos ao Wireshark e fazemos o seguinte busca: ipv6.addr == 2600:9000:21e8:ce00:19:3c2f:2500:93a1
+
+            Podemos observar que na coluna de protocolo aparece diversas vezes TCP. O protocolo TCP está uma camada acima do IP, e será responsável por indicar como a comunicação
+            será estabelecida e será transportada a informação. Se conseguirmos reconstruir o protocolo TCP, podemos ver eventualmente os header do HTTP e descobrir algumas informações.
+
+            Obs: Pelo que parece, este tipo de testes nao pode ser feito por causa do HTTPS/2...
+
+            Temos que procurar um site que ainda use HTTP para realizar o teste.
+
+        
+        Wireshark https final:
+
+            Realmente, assistindo a outra aula foi confirmado que o Buscapé agora usa o sistema de criptografia. Na época que foi gravada a aula ele ainda não utilizava.
+            Por isso era possível ver com análise de protocolo o que o usuário estava digitando.
+
+            Teriamos que procurar um site que não usa o SSL (Secure Sockets Layer) para que podermos testar.
+
+            Vimo então que se tentarmos ver análisar o protocolo de um site que está utilizando a camada de segurança, veremos uma página toda criptografada.
+
+
+        Para saber mais: Camadas de protocolos:
+
+            Vimos que o protocolo TCP está acima da camada do protocolo IP. Os protocolos em redes seguem uma hierarquia e cada um é responsável por determinada função na
+            comunicação.
+
+            Antigamente cada fabricante de equipamento de redes desenvolvia protocolos proprietários tornando impossível a comunicação de rede com equipamentos feitos por outros
+            fabricantes, criando assim o chamado "vendor lock-in".
+
+            Desta forma foi criado um modelo de protocolo que faria com que qualquer hardware ou software pudesse se comunicar mesmo que um equipamento possuísse mais recursos
+            que outro. Para isso foi definido que esses protocolos de comunicação seriam divididos em 7 camadas de comunicação, o chamado modelo OSI (Open System Interconnection).
+            O protocolo TCP se encontra na camada 4, que é a camada de transporte. Já o protocolo IP se encontra na camada 3, que é a camada de rede.
+
+            A parte de protocolos é muito extensa e não será abordada, porém é interessante estudar o modelo OSI.
+
+
+    Questões aula 04:
+
+        1 - Qual seria duas das principais limitações do Hub?
+
+            Selecione uma alternativa
+
+            R: Segurança e lentidão
+
+            Os hubs não conseguem aprender onde está localizado cada máquina, dessa forma, ele repassa a informação para todas as demais máquinas conectadas. Isso quer dizer 
+            que caso ocorra um fluxo intenso de tráfego na rede, teremos essa informação sendo encaminhada para todos os demais usuários causando lentidão na rede. Além disso, 
+            quando usuários mandam a informação destinada para um usuário específico, os demais usuários recebem essa informação, causando assim uma vulnerabilidade de segurança.
+
+
+        2 - Qual a principal utilização do programa Wireshark?
+
+            Selecione uma alternativa
+
+            R: Analisar protocolos para resolver problemas em redes
+
+            O Wireshark tem como principal utilização analisar protocolos que trafegam na rede com o intuito de verificar problemas que possam existir.
+
+        
+        3 - Qual desses é um protocolo utilizado para criptografar minha informação?
+
+            Selecione uma alternativa
+
+            R: TLS
+
+            TLS (Transport Layer Security) seria um protocolo de criptografia utilizado para segurança da informação. Ele seria a evolução do protocolo SSL (Secure Sockets Layer).
+
+        
+        4 - Qual seria a responsabilidade do protocolo TCP?
+
+            Selecione uma alternativa
+
+            R: Transportar minha informação
+
+            O protocolo TCP encontra-se acima da camada onde o IP está localizado e ele é responsável por realizar o transporte da minha informação. Além do protocolo TCP, 
+            essa camada possui também outro protocolo bastante conhecido, o UDP.
+
+        
+        5 - Porque não foi possível visualizar a informação que o usuário (vítima) digitou na página do youtube?
+
+            Selecione uma alternativa
+
+            R: A informação estava criptografada
+
+            O youtube usa em seu site um sistema de criptografia das informações, onde o protocolo TLS é responsável por essa atividade. Pelo fato das informações, estarem
+            criptografadas não foi possível reconstruir a informação e visualizar o que o usuário estava digitando.
+
+
+Aula 05: Switches e seus avanços -------
+
+    Teoria:
+
+        Nós vimos que os hub's são limitados, não conseguem gravar qual é a porta de determinado computador mandando as informações para todas as portas gerando lentidão e
+        falta de segurança na rede.
+
+        Foi com a intenção de resolver as limitações do hub que criaram outros equipamentos de rede, um deles é o Switch.
+
+        Criamos o mesmo ambiente de rede da outra aula no Packet Tracer, com uma única diferença, trocamos o hub pelo Switch.
+
+        A forma do Switch trabalhar é parecida com o hub, ele recebe informações nas portas 1 e 2, e transmite informações nas portas 3 e 6.
+        Utilizamos cabos diretos também para ligar os 3 computadores ao Switch.
+
+        O Switch precisa de um tempo para habilitar a porta de comunicação após o cabo direto estar conectado. O processo demora alguns segundo e é retratado na simulação do 
+        Packet tracer. A medida que as portas vão sendo habilitadas elas ficam verdes. 
+
+        Mudamos o ambiente de realtime para simulation novamente, para que possamos verificar passo a passo o que está acontecendo.
+
+        Realizamos o ping da mesma forma que anteriormente, do computador 2 para o computador 1.
+
+        Aqui também o protocolo ICMP está dentro do ping e o ARP, que não sabe onde está localizado o IP, perguntara para todos na rede.
+
+        Da mesma forma que o hub, o Switch irá disparar a informação para todos na primeira comunicação, com exceção da máquina de onde foi orifinada a informação.
+
+        A máquina 3 descartará a informação pois seu IP é diferente daquele para o qual enviamos o pacote, mas o laptop responderá com outra informação.
+
+        Nesta parte o hub continuaria enviando as informações para os dois computadores. Porém o Switch vai aprender quem é quem nesta primeira comunicação e vai registrar
+        estas informações internamente. Nas próximas vezes que tentarmos enviar informações ele já saberá para quem enviar.
+
+        Quando enviamos o protocolo ARP estamos perguntando quem tem determinado endereço IP, estamos na verdade pergutnando qual é o endereço mac com aquele número IP.
+
+        Endereço Mac é o endereço físico de nossa máquina, ou mais objetivamente, da nossa placa de rede. Exemplo de endereço Mac: 81-E7-51-17-35-77
+        Podemos verificá-lo com o comando: 
+        
+            > ipconfig /all
+
+        Este é um número único que vem direto do fabricante.
+
+        Uma vulnerabilidade do Switch que os hackers podem se aproveitar é de sua "tabela de memória". Se encher ela de endereços falsos, lotando sua memóriao aparelho
+        já não poderá mais decifrar o endereço de cada computador e voltará a enviar informações para todas as máquina, atuando da mesma forma que um hub.
+
+        O Switch trouxe grandes melhorias, mas ainda possui suas fragilidades que podem ser exploradas por hackers.
+
+        Algo que podemos fazer com prevenção a este tipo de ataque é o que chamamos de segurança da porta. Em que cada porta tem o número máximo de endereços mac que pode 
+        aceitar pré-definido. Caso haja um ataque, tentando enviar mais endereços mac para determinada porta, ela fica desabilitada.
+
+
+    Questões aula 05:
+
+        1 - O que é o protocolo ARP?
+
+            Selecione uma alternativa
+
+            R: Quando eu não conheço um dispositivo eu lanço esse protocolo para procurar o IP que eu quero me comunicar. A máquina buscada por sua vez vai retornar 
+            informando seu endereço MAC
+
+            O ARP é o protocolo utilizado para fazer o mapeamento entre o endereço IP e o endereço MAC de um dispositivo. Isso é necessário porque o MAC encontra-se 
+            um nível abaixo do IP e eu preciso dele para poder transmitir as informações.
+
+            Em redes de computadores, temos protocolos que possuem hierarquias diferentes. Para poder chegar até o IP que está na camada 3, eu preciso passar pelo MAC que está
+            na camada 2, pense como se fosse escalar uma pirâmide, não dá pra chegar ao topo sem passar pelo meio dela!
+
+
+        2 - Qual equipamento veio para substituir os hubs?
+
+            Selecione uma alternativa
+
+            R: Switches
+
+
+        3 - Qual é a principal diferença entre os Hubs e os Switches?
+
+            Selecione uma alternativa
+
+            R: O Hub não consegue aprender onde um equipamento está localizado, o Switch sim
+
+            Os hubs não conseguem aprender o endereço MAC das máquinas, já os Switches possuem essa função.
+
+
+        4 - Como o Switch aprende onde um equipamento está localizado?
+
+            Selecione uma alternativa
+
+            R: Quando um dispositivo quer se comunicar com outro, ele vai necessitar passar pelo Switch e ele informa dentro do pacote qual é seu endereço MAC e o Switch grava 
+            essa informação em sua memória.
+
+            Os dispositivos ao se comunicarem passam pelo Switch e ao passar pelo Switch ele grava em sua memória quem está conectado em qual porta.
+
+        
+        5 - Qual é uma forma de ataque usada para conseguir informações passadas no Switch destinadas a outro usuário?
+
+            Selecione uma alternativa
+
+            R: Colocar vários endereços MAC falsos para “lotar” a memória do Switch e fazer com que ele atue como um Hub.
+
+            Métodos usados por usuários maliciosos seria de inserir vários endereços MAC falsos para “lotar” a memória do Switch, uma vez que a memória esteja cheia, o Switch 
+            não vai conseguir definir quem está onde e ele passa a atuar como um Hub.
+
+        
+        6 - Como podemos nos prevenir contra esse ataque?
+
+            Selecione uma alternativa
+
+            R: Configurar a opção de segurança na porta, para que assim fique limitada a receber uma quantidade máxima de endereços MAC, caso ultrapasse, a porta é desabilitada
+
+            Podemos configurar a porta do Switch para aceitar um número máximo de endereços MAC, ao ultrapassar esse limite a porta é desligada e o ataque não teria sucesso.
+
+        
+Aula 06: Roteadores e a comunicação externa -------
+
+    Teoria:
+
+        Máscaras de rede:
+
+            Mesmo que os computadores estejam conectados no mesmo switch ou no mesmo hub, não significa que eles estão na mesma rede.
+
+            Nós podemos fazer uma separação lógica de endereçamento e colocar cada computador em uma rede diferente.
+            Precisamos as vezes segmentar uma rede em duas ou mais para atender vários tipos de necessidades. Separar setores de uma mesma empresa, por exemplo.
+
+            Primeiro ponto a se considerar é: como saberemos se o computador está na mesma rede?
+
+            Quando entramos nas propriedades da nossa conexão de rede para configurar o nosso número IP de forma manual, vemos um campo chamado: "Subnet Mask" ou Máscara de 
+            sub-rede.
+
+            No caso do laboratório que utilizamos, deixamos este campo configurado com 255.255.255.0
+            Esta é uma informação importante para saber se os computadores estão na mesma rede.
+            Façamos uma analise...
+
+                Endereço IP: 192.168.3.2
+                Máscara de rede: 255.255.255.0
+
+            A máscara de rede dividi o endereço IP do computador em dois grandes grupos: um referente às redes e outro às máquinas.
+
+                255 = Rede
+                0 = Máquina (Host)
+
+            Tudo o que for 255 será referente à rede, e o que for 0 será referente ao host. Então, ele analisará o primeiro intervalo:
+
+            Então, definimos que, para outro dispositivo estar na mesma rede do nosso computador configurado logo acima, ele precisará começar com o mesmo intervalo de octeto.
+            Logo, ele deverá começar por 192.
+
+            Então ele passará para o outro intervalo: Se este dispositivo quiser estar na mesma rede, deverá ter o segundo octeto 168. E o mesmo no terceiro octeto: O computador
+            deverá ser igual a 3.
+
+            Ou seja, sobrou só o ultimo octeto para o número de máquinas. Então para qualquer outro computador esta na mesma rede do computador acima, terá que ter o início:
+
+                192.168.3
+
+            O ultimo octeto fica livre, e qualquer numero que outros pc's configurem neste grupo, conseguirá se comunicar com nosso computador.
+
+            Exemplo: 192.168.3.1
+
+                        ou
+
+                     192.168.3.3
+
+                     ou até mesmo
+
+                     192.168.3.77
+
+            O que realmente importa é que para estar na mesma rede o endereço IP deve começar por 192.168.3.
+
+            Por isso que no nosso laboratório todas as máquinas foram configuradas com o ínicio 192.168.3. Qualquer um dos três intervalos que tivessem sido mudados em nossa
+            configuração e qualquer uma das máquinas, iria impedir esta mesma máquina de se comunicar na rede.
+
+            O teste realizado nesta aula foi mudar o primeiro intervalo para 191, deixando o IP da primeira máquina assim:
+
+                191.168.3.1
+
+            Ao realizar novamente o teste de ping da máquina 2 para a máquina 1 ele não conseguiu enviar os pacotes perdendo todos os 4.
+            A conexão não foi estabelecida e a máquina não respondeu.
+            Ou seja, com o Hub e com o Switch só conseguimos nos conectar com computadores que estão na mesma rede.
+
+        
+        Roteadores:
+
+            Para fazer com que dois computadores de redes diferentes se comuniquem, precisaremos de um roteador.
+
+            Nesta aula deletamos o Switch e um dos computadores (3), e adicionamos um Router e deixamos os outros dois computadores.
+
+            Primeiro verificamos se estamos conectando equipamentos com placas de rede semelhantes, como estamos conectando os dois computadores ao Router, não estamos conectando
+            equipamentos semelhantes.
+
+            Neste exemplo o Router não esta sendo usado de forma eficiente pois estamos conectando apenas dois computadores a ele, enquanto ele poderia conectar redes inteiras de 
+            setores diferentes.
+
+            Por isso, utilizamos cabo cruzado no projeto desta aula. Pois o roteador não estará conectando redes diferentes, mas sim, apenas duas máquinas.
+
+            Conectamos a porta fast ethernet dos dois computadores as portas disponíveis do roteador.
+
+            Criamos também a segmentação por setores da empresa, de ínicio, financeiro e marketing.          
+            
+
+        Configurando roteador:
+
+            Vimos uma imagem de um roteador doméstico no curso, com 4 portas amarelas e 1 porta azul.
+            As portas amarelas são do "Switch" embutido no aparelho. Isto acontece nos equipamentos domésticos para economizar espaço.
+
+            Os equipamentos que temos no simulador Packet Tracer da Cisco são focados para empresa. E em uma empresa estes equipamentos (Switch e Router) ficam separados.
+            Switch para conectar computadores e usuários na mesma rede, Roteador para conectar redes.
+
+            Por isso só teremos duas portas no roteador do projeto que estamos fazendo.
+
+            Para conseguirmos realizar a configuração do Roteador precisaremos de um cabo chamado, cabo console.
+            Ele é um cabo azul, que em uma das pontas é RJ45 e na outra ponta o conector Rs232, referente a uma porta serial (que transmite os bits um por vez).
+
+            O RJ-45 é conectado na porta do roteador e o Rs232 em um computador onde iremos definir as configurações. Porém, a maioria dos computadores não vem mais com a 
+            porta serial, então precisamos usar um adaptador.
+
+            Um programa que podemos utilizar para realizar a configuração do equipamento da Cisco é o PuTTy.
+
+            O PuTTY é muito útil quando queremos acessar remotamente um equipamento. Podemos remotamente configurar um aparelho. Caso tenha alguém na outra cidade para nos
+            auxiliar com o atendimento remoto não precisaremos nos deslocar para realizar a configuração. A interface gráfica dele é amigável.
+
+            No nosso laboratório desta aula, mantemos dois computadores e um roteador, conectados por cabo cross over.
+            Adicionamos apenas um computador com a conexão do cabo Rs232 na porta console do roteador para simular a configuração do roteador.
+
+            Porém isto é na prática, já no nosso simulador da Cisco as coisas são um pouco mais simples, pois podemos clicar no roteaodr e ir até a aba CLI 
+            (Command Line Interface).
+
+            Na prática precisaríamos fazer a conexão via computador. Para isto clicaremos no computador e utilizaremos o terminal.
+
+            No terminal nos será perguntado como queremos conectar com o roteador. Nós deixaremos as velocidades padrões. A partir de agora, faremos as configurações clicando
+            diretamente no roteador. Se quisermos podemos fazer a configuração do roteador clicando no computador do simulador.
+
+            Podemos escolher apagar o computador para configuração do roteador se quisermos, pois no ambiente virtual temos a opção de configurar clicando direto no roteador.
+
+            Configuramos as cores e tamanho de nossa preferência para utilizar o CLI do roteador em: Options > Preferences > Font.
+
+            Na aba CLI é possível fazer as configurações do equipamento da Cisco. O objetivo é estabelecer a conexão entre o setor Financeiro e o Marketing.
+
+            Manteremos o mesmo IP da outra aula, o Financeiro ficará com o IP 191.168.3.1 e o Marketing, 192.168.3.2.
+
+            Por ora, as conexões com o router aparecem em vermelho porque estão desabilitadas por padrão.
+
+            A primeira coisa que temos que fazer é habilitar as portas do router:
+
+                Caso apareça a mensagem: Continue with configuration dialog? Responderemos: "no", pois este modo é muito demorado.
+
+                Então, teremos o modo livre de entrada: Router> (Que chamamos de modo usuário).
+
+            Quem acessa este modo só poderá fazer algumas configurações básicas da plataforma. Ele não poderá configurar nada efetivamente, por uma questão de segurança.
+
+            Para sabermos quais configurações são possíveis de serem realizadas no modo usuário, digitaremos o "?":
+
+                Router>?
+
+                Então apertamos "ENTER"...
+
+            Podemos utilizar este comando em qualquer terminal da Cisco. Podemos usá-lo com qualquer comando para verificarmos quais são os complementos do comando:
+
+                Router>enable?
+
+            Ele retornará tudo que ainda pode ser feito com o enable.
+            Podemos usar o "?" em todas as etapas da escrita do código.
+
+            Falamos sobre estarmos no modo usuário e podermos fazer apenas configurações básicas na plataforma. O que fazemos então para poder aumentar os privilégios?
+
+            Digitaremos "enable" apenas:
+
+                Router>enable
+
+                a saída:
+
+                Router#
+
+            Ainda não poderemos configurar o equipamento, mas se usarmos novamente a ?, ele nos retornará uma lista de visualizações do que chamamos de "repardo de problemas".
+
+                Router#?
+                    Exec commands:
+                    <1-99>      Session number to resume
+                    auto        Exec level Automation
+                    clear       Reset functions
+                    clock       Manage the system clock
+                    configure   Enter configuration mode
+                    connect     Open a terminal connection
+                    copy        Copy from one file to another
+                    debug       Debugging functions (see also 'undebug')
+                    delete      Delete a file
+                    dir         List files on a filesystem
+                    disable     Turn off privileged commands
+                    disconnect  Disconnect an existing network connection
+                    enable      Turn on privileged commands
+                    erase       Erase a filesystem
+                    exit        Exit from the EXEC
+                    logout      Exit from the EXEC
+                    mkdir       Create new directory
+                    more        Display the contents of a file
+                    no          Disable debugging informations
+                    ping        Send echo messages
+                    reload      Halt and perform a cold restart
+
+                    --More-- (Após está linha os comando continuam, devemos apertar "ENTER" para verifica-los)
+                                (Precionar a barra de espaço irá mostrá-los todos de uma só vez)
+
+                    resume      Resume an active network connection
+                    rmdir       Remove existing directory
+                    send        Send a message to other tty lines
+                    setup       Run the SETUP command facility
+                    show        Show running system information
+                    ssh         Open a secure shell client connection
+                    telnet      Open a telnet connection
+                    terminal    Set terminal line parameters
+                    traceroute  Trace route to destination
+                    undebug     Disable debugging functions (see also 'debug')
+                    vlan        Configure VLAN parameters
+                    write       Write running configuration to memory, network, or terminal
+
+                Router#
+
+            Agora que estamos no modo de privilégios avançados entraremos na aba de configuração.
+            Digitaremos:
+
+                Router#configure terminal
+
+                Nossa saída:
+
+                Enter configuration commands, one per line.  
+                End with CNTL/Z.
+                Router(config)#
+
+            Agora o modo de operação mudou para configurarmos o computador.
+
+            Iremos então configurar habilitar as portas.
+            Habilitaremos a porta "FastEthernet 0/0". Escrevemos isso na aba CLI:
+
+                Router(config)#interface gigabitehternet 0/0/0
+
+                Ele pode completar o nome se quisermos. Ao precionarmos "ENTER" ele já subirá o privilégio:
+
+                Router(config-if)#
+
+            Agora, nós estamos configurando a interface. Nós iremos habilitá-la adicionando "no shutdown":
+
+                Router(config-if)#no shutdown
+
+                    Router(config-if)#
+                    %LINK-5-CHANGED: Interface GigabitEthernet0/0/0, changed state to up
+
+                    %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0/0, changed state to up
+
+                    A porta está habilitada!
+
+                Podemos reparar que a luz da conexão ficou verde.
+
+                Para sairmos da configuração desta porta digitamos:
+
+                    Router(config-if)#exit
+
+                Agora começamos a configurar a segunda porta, a porta da setor de Marketing:
+
+                    Router(config)#interface gigabitethernet 0/0/1
+                    Router(config)#no shutdown
+
+                Agora temos as duas portas habilitadas.
+
+            Precisamos então, configurar o endereçamento IP que cada uma das portas receberá, para podermos fazer está transição da rede do Financeiro para a rede do Marketing
+                Para isto, digitaremos:
+
+                    Router(config-if)#ip ?
+
+                Nossa saída:
+                    
+                    access-group     Specify access control for packets
+                    address          Set the IP address of an interface
+                    authentication   authentication subcommands
+                    flow             NetFlow Related commands
+                    hello-interval   Configures IP-EIGRP hello interval
+                    helper-address   Specify a destination address for UDP broadcasts
+                    inspect          Apply inspect name
+                    ips              Create IPS rule
+                    mtu              Set IP Maximum Transmission Unit
+                    nat              NAT interface commands
+                    ospf             OSPF interface commands
+                    proxy-arp        Enable proxy ARP
+                    split-horizon    Perform split horizon
+                    summary-address  Perform address summarization
+
+                Vemos quais opções ele nos da, e em seguida digitaremos:
+
+                    Router(config-if)#ip address ?
+                    
+                Nossa saída:
+
+                    A.B.C.D  IP address
+                    dhcp     IP Address negotiated via DHCP
+
+                Aqui somos informados se queremos definir um IP estático ou a configuração por DHCP vinda de uma máquina que nos entregará os IPs. Como nós não temos a máquina,
+                iremos adicionar o estático manualmente.
+
+                Lembrando que o IP do Marketing é: 192.168.3.2, mas para o roteador, iremos configurar um IP que terá o último octeto com o valor diferente.
+
+                    192.168.3.5
+
+                    Se digitarmos mais uma vez o "?", ele dirá que falta informar a máscara de rede relacionada ao IP. Por isso, adicionaremos 255.255.255.0.
+
+                        Router(config-if)#ip address 192.168.3.5 255.255.255.0
+
+                Saímos então das configurações de IP do roteador.
+
+            Iremos agora realizar o ping para verificar se conexão está funcionando:
+
+                Router#ping 192.168.3.2
+
+            Nossa saída:
+                
+                Type escape sequence to abort.
+                Sending 5, 100-byte ICMP Echos to 192.168.3.2, timeout is 2 seconds:
+                !!!!!
+                Success rate is 100 percent (5/5), round-trip min/avg/max = 0/2/12 ms
+
+            A requisição teve sucesso, de cinco pacotes enviados, quatro retornaram. Isto significa que conseguimos nos comunicar com o computador da rede de Marketing.
+
+            Faremos o mesmo processo de configuração para o computador do Financeiro. Entraremos na configuração do terminal:
+
+                Router#configure terminal
+
+            Saída:
+
+                Enter configuration commands, one per line.  End with CNTL/Z.
+                Router(config)#
+
+            Então iremos para a interface do computador do financeiro:
+
+                Router(config)#interface gigabitEthernet 0/0/0
+
+            Saída:
+
+                Router(config-if)#
+
+            Aqui veremos o que acontece se caso colocarmos somente o IP:
+
+                Router(config-if)#ip address 191.168.3.7
+                % Incomplete command.
+
+                Adicionamos o "?" depois do IP para verificarmos o que está faltando:
+
+                    Router(config-if)#ip address 191.168.3.7 ?
+                    A.B.C.D  IP subnet mask
+
+                    Então colocamos o que faltou:
+
+                        Router(config-if)#ip address 191.168.3.7 255.255.255.0
+            
+            Control+Z para voltarmos ao modo inciial. E logo, testamos a conectividade usando o ping.
+
+                Router#ping 191.168.3.1
+
+            Nossa saída:
+
+                Type escape sequence to abort.
+                Sending 5, 100-byte ICMP Echos to 191.168.3.1, timeout is 2 seconds:
+                .!!!!
+                Success rate is 80 percent (4/5), round-trip min/avg/max = 0/0/0 ms
+
+
+            Nosso roteador consegue pingar tanto a rede do Financeiro quanto do Marketing. Isto significa que os dois computadores podem se comunicar diretamente.
+            Agora realizaremos o teste de ping do computador do Financeiro com o computador do Marketing.
+
+            Nossa saída: 
+
+                C:\>ping 192.168.3.2
+
+                Pinging 192.168.3.2 with 32 bytes of data:
+
+                Request timed out.
+
+            Porque a requisição não foi respondida, já que os dois computadores agora se comunicam com o roteador?
+
+        
+        Portão de saída:
+
+            Nós tentamos fazer o teste de comunicação entre o Financeiro e o Marketing, mas ainda não tivemos sucesso.
+
+            Configuramos no Financeiro o IP: 191.168.3.1 e no Marketing o IP: 192.168.3.2, configuramos as mascaras que ficaram: 255.255.255.0. Sendo assim, os dois computadores sabem
+            através dos três primeiros octetos que a outra máquina não está na mesma rede. Nós configuramos o roteador, e já conseguimos com que os dois computadores se comuniquem com
+            este roteador. Porém agora precisamos indicar por onde queremos que a informação seja enviada.
+
+            O que dizemos para o computador é: "Caso você precise se comunicar com um computador em uma rede diferente, você enviará para o roteador"
+            Afinal, a função do roteador é conectar redes diferentes. Então o computador passa o problema para o roteador, que terá que encontrar uma forma de enviar a informação adiante.
+
+            Por isso é necessário configurar um novo campo no nosso adaptador, que é: Default Gateway ou Portão Padrão.
+            Trata-se do portão de saída da rede, que no caso é o roteador. Utilizaremos aquele IP que configuramos em cada porta do roteador.
+            Para o computador do Financeiro: 191.168.3.7 e para o computador do Marketing: 192.168.3.5.
+
+            Para que possamos confirmar os IP's que já configuramos, usamos o seguinte comando no CLI do router:
+
+                Router>enable
+
+                e então...
+
+                Router#show ip interface brief
+
+                a nossa saída:
+
+                Interface              IP-Address      OK? Method Status                Protocol 
+                GigabitEthernet0/0/0   191.168.3.7     YES manual up                    up 
+                GigabitEthernet0/0/1   192.168.3.5     YES manual up                    up 
+                GigabitEthernet0/0/2   unassigned      YES unset  administratively down down 
+                Vlan1                  unassigned      YES unset  administratively down down
+
+            O brief nada mais é que um resumo das configurações das interfaces do nosso roteador.
+
+            Fazemos um novo teste de ping entra a máquina do financeiro e do marketing.
+                Obs: Lembrando que precisamos do Gateway configurado nas duas máquinas para que a informação saiba por onde entrar ou sair nos dois micros.
+
+                Saída:
+
+                    (Ping do computador do Financeiro (191.168.3.1) para o computador do Marketing (192.168.3.2))
+
+                    C:\>ping 192.168.3.2
+
+                        Pinging 192.168.3.2 with 32 bytes of data:
+
+                        Reply from 192.168.3.2: bytes=32 time<1ms TTL=127
+                        Reply from 192.168.3.2: bytes=32 time<1ms TTL=127
+                        Reply from 192.168.3.2: bytes=32 time<1ms TTL=127
+                        Reply from 192.168.3.2: bytes=32 time<1ms TTL=127
+
+                        Ping statistics for 192.168.3.2:
+                            Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+                        Approximate round trip times in milli-seconds:
+                            Minimum = 0ms, Maximum = 0ms, Average = 0ms
+
+
+            Podemos observar no novo teste que agora o TTL aparece igual a 127 e não mais como 128, isto porque agora o roteador decrementa 1 a cada vez que a informação pass por ele.   
+
+            Temos duas opções nas configurações de portas do roteador que não trabalhamos nos exercícios anteriores:
+
+        
+        Roteador doméstico:
+
+            Por ora, apenas verificamos o Gateway padrão da nossa casa, no nosso roteador doméstico.
+
+                No terminal digitamos:
+
+                    > ipconfig ou ipconfig /all
+
+                        Pegamos o nosso Gateway padrão 192.168.1.1 e colamos este endereço no browse, onde vimos a tela de login para as configurações do roteador.
+
+
+                Duplex:
+
+                    Opção: # duplex auto
+
+                    Quando a porta tem a opção de operar em modo full duplex, quer dizer que ela é capaz de enviar e receber dados ao mesmo tempo, enquanto que half duples não consegue
+                    realizar tal operação simultaneamente, somente em um sentido de operação.
+
+                Speed:
+
+                    Opção: # speed auto
+
+                    Seria a velocidade de transmissão. Inicialmente as placas de rede eram capazes de transmitir em velocidades de somente 10Mbps (padrão Ethernet). Porém outras
+                    velocidades foram especificadas posteriormente como a FastEthernet 100Mbps, Gigabit Ethernet 1.000 Mbps, etc.
+                    Auto seria de auto negociação, isso quer dizer que as placas de rede interconectadas vão negociar para utilizarem parâmetros de transmissão suportados pelas duas 
+                    placas de rede, como a forma de comunicação e velocidade de transmissão.
+
+
+    Questões aula 06:
+
+        1 - Qual a função da máscara de rede?
+
+            Selecione uma alternativa
+
+            R: Dividir o endereço IP em dois grupos (rede e máquina) e a partir daí poder definir quando outro dispositivo estará na mesma rede que eu.
+
+            A máscara de rede é usada como forma de comparação para determinar se dois equipamentos estão na mesma rede. Para isso ela vai dividir o endereço IP em dois grupos,
+            de rede e hosts (máquinas).
+
+
+        2 - Esses dois dispositivos:
+
+            1- IP: 192.168.0.3 ; Máscara: 255.255.255.0
+
+            2- IP: 192.169.0.4 ; Máscara: 255.255.255.0
+
+            Estão na mesma rede?
+
+            Selecione uma alternativa
+
+            R: Não
+            
+            Lembre-se, a máscara de rede está dizendo que para dois equipamentos estarem na mesma rede, os 3 primeiros octetos do IP devem ser iguais, uma vez que suas 
+            máscaras são 255.255.255.0.
+
+        
+        3 - Se eu tenho um endereço IP: 33.44.55.66 e máscara de rede: 255.0.0.0, qual desses endereços abaixo vai caracterizar que outro dispositivo está na mesma rede que eu?
+
+            Lembre-se: - 255 = Rede - 0 = Host
+
+            Selecione uma alternativa
+
+            R: IP: 33.255.4.3 ; Máscara: 255.0.0.0
+
+            O 1° octeto do endereço IP é 33, logo só ele me importa para analisar se outro dispositivo está na mesma rede que eu, os demais são números da máquina. As outras 
+            opções começam com número diferente de 33, o que caracteriza que a máquina está em outra rede.
+
+        
+        4 - Qual equipamento é usado para comunicar com redes externas?
+
+            Selecione uma alternativa
+
+            R: Roteador
+
+            A função do roteador é interconectar redes encaminhando e seus pacotes de dados, os Switches e hubs são usados somente para conexão na minha rede local.
+
+        
+        5 - Para conectar um computador com um roteador, qual tipo de cabo eu uso?
+
+            Selecione uma alternativa
+
+            R: Cabo cruzado
+
+            Lembre-se da regra: - Dois equipamentos iguais estão interconectados? Se sim, eles tem o mesmo tipo de placa, então devo usar o cabo crossover. Se não, faço a 
+            pergunta abaixo
+            - Dois equipamentos diferentes estão conectados? Essa conexão representa o que naturalmente o equipamento foi desenvolvido para fazer?
+
+            Por exemplo ao interconectar o computador ao hub e o computador ao switch, o computador foi feito para se comunicar com várias máquinas e o hub e switch foram feitos
+            para interconectar diversas máquinas. Dessa forma ao conectarmos os dois, vamos estar explorando o que os dois foram fabricados para fazer naturalmente. Porém o 
+            roteador foi feito para interconectar redes, se eu coloco somente um dispositivo, não terei como inserir outros dispositivos para o roteador encaminhar os pacotes
+            e então a totalidade de sua função não está sendo explora. Devemos usar cabo crossover.
+
+
+        6 - Para que serve o default gateway?
+
+            Selecione uma alternativa
+
+            R: Ele é o "portão de saída" da minha rede
+
+            O default gateway é o endereço IP o qual será responsável por encaminhar pacotes para redes externas, é o IP do meu roteador.
+
+
+Aula 07: Entendendo os endereços IP -------
+
+    Teoria:
+
+        Classes IP:
+
+            Precisamos configurar IP's nas máquinas para que elas se comuniquem, mas não podemos criar qualquer valor em qualquer intervalod de endereço. Por isso existe um 
+            órgão internacional que regulamenta os IP's colocando em classes que podem ser utilizadas.
+
+            Classe A:
+
+                Classe de endereçamento: A
+                Intervalo 1º octeto: 1 - 126
+                Máscara de rede: 255.0.0.0
+
+                Para que um endereço IP esteja dentro da classe A, o primeiro octeto tem que estar entre 1-126 e a máscara de rede padrão 255.0.0.0
+
+                O que for 255 é parte da rede e o que for 0 estará reservado para os host's.
+
+                A máscara faz a análise o IP e para cada octeto seu que for 255 ela verificará no respectivo octeto do IP é igual ao outro ip que esta sendo comparado.
+
+                Ex:
+
+                Se a máscara for 255.0.0.0 e o IP da máquina for 124.4.7.9 o IP da outra máquina na mesma rede deverá ter obrigatoriamente o primeiro octeto igual, que é: 124
+
+            Classe B:
+
+                Classe de endereçamento: B
+                Intervalo do 1º octeto: 128-191
+                Máscara de rede: 255.255.0.0
+
+                Neste caso da Classe B, como a máscara é 255.255.0.0 os dois primeiros octetos dos IP's que estiverem na mesma rede tem que ser igual.
+
+                Ex:
+
+                    172.161.X.X, então os dois octetos seguintes são reservados para host, não importante seu valor para que os computadores se comuniquem.
+
+            
+            Classe C:
+
+                Classe de endereçamento: C
+                Intervalo do 1º octeto: 192-223
+                Máscara de rede: 255.255.255.0
+
+                Nesta classe o primeiro Octeto deve estar entre 192 e 223 e a máscara padrão é 255.255.255.0, assim como nosso laboratório funcionou.
+
+                Na classe C os dois octetos seguintes, segundo e terceiro, tem que ser o mesmo para IP's que ficarão na mesma rede.
+
+            
+            Classe D: 
+
+                Classe de endereçamento: D
+                Intervalo do 1º octeto: 224-239
+                Máscara de rede: -------
+
+                Primeiro octeto nesta classe tem que estar entre 224-239.
+
+                É uma classe reservada para multicast (caso em que queremos fazer a comunicação somente com alguns dispositivos que estão na nossa rede).
+                Ela não é atribuida para máquinas.
+
+            Classe E:
+
+                Classe de endereçamento: E
+                Intervalo do 1º octeto: 240-255
+                Máscara de rede: -------
+
+                Assim como a classe D esta classe também é reservada, não sendo utilizada para atribuir endereços IP's para máquinas.
+
+
+        IP privado:
+
+            Dentro de cada uma das classes de IP, teremos faixas que são chamadas privadas. Elas recebem este nome porque só conseguem se comunicar na rede local, não podendo
+            ser utilizados na comunicação na internet.
+
+            Intervalo para endereços IP privados na classe de endereços A:
+
+                10.X.X.X
+
+                Todo o IP da rede que começar com 10, não poderá se comunicar com a internet diretamente.
+
+
+            Intervalo para IP's privados de classe B:
+
+                172.16.X.X a 172.31.X.X
+
+            Intervalo para IP's privados de classe C:
+
+                192.168.X.X
+
+            No computador de nossa casa podemos utilizar o comando "ipconfig" no terminal e verificar qual é nosso endereço IP, em que classe está e se é privado ou não.
+            Se for privado, como se conecta com a internet?
+
+                Conseguimos porque o nosso roteador traduz o nosso IP privado para um IP público usando o NAT (Network Address Translation) em que é feita a tradução de um
+                endereço privado para o público.
+
+
+        IPv6:
+
+            Se analisarmos com o comando "ipconfig" o nosso endereço IP, veremos que se trata de um protocolo IPv4.
+
+            O v4, que significa "versão 4", chegou ao fim devido a grande popularidade da internet. Por isso tiveram que criar o IPv6, que possui uma série de novos componentes
+            e funcionalidades mais avançadas.
+
+            Ao usarmos o comando "nslookup uol.com.br" veremos a seguinte saída:
+
+                $ nslookup uol.com.br
+                    N▒o ▒ resposta de autoriza▒▒o:
+                    Servidor:  dcms01.tribunal.tre-ms.gov.br
+                    Address:  10.19.1.6
+
+                    Nome:    uol.com.br
+                    Addresses:  2804:49c:3102:401:ffff:ffff:ffff:36
+                            2804:49c:3101:401:ffff:ffff:ffff:45
+                            200.147.3.157
+
+            Vemos aqui um exemplo de IP versão 6:
+
+                2804:49c:3102:401:ffff:ffff:ffff:36
+
+            O site do UOL no caso, ainda possuí um endereço IPv4 (200.147.3.157) para atender diferentes tipos de acesso que tenhamos na máquina deles.
+            Podemos perceber que a versão 6 possui muito mais informações que a versão 4. Lembrando que atualmente o IPv4 não possui endereços IP's disponíveis.
+            O IPv6 já é o padrão utilizado.
+
+        
+        Endereços reservados classe A:
+
+            Temos um range de IP para utilizarmos? Qual seria este range?
+
+            Como um exemplo de endereço que não podemos utilizar temos: 2000.2.4.5. Isto porque nem um dos 4 octetos podem passar de 255.
+
+            Existe tanto um número mínimo e máximo que um endereço IP pode ter. No caso, o mínimo é 0 e o máximo é 255. Estes números, porém, não podem estar em qualquer ordem.
+            Todo endereço IP deve estar inserido dentro de uma rede pré-definida, que terá um número de identificação e ainda, terá o endereço de rede e o endereço que serve 
+            para comunicar com todos os dispositivos da rede chamado broadcast.
+
+            Exemplo de como descobrimos qual é o endereço de rede e o de broadcast:
+
+                Endereço IP: 124.4.7.9
+
+                Máscara de rede: 255.0.0.0
+
+                Lembrando que a quantidade de redes é representada pelos 255 e os hosts pelo 0.
+
+                Como nosso primeiro octeto do endereço IP está entre 1 e 126, se trata de um endereço IP de classe A. Por isso a máscara de rede é: 255.0.0.0.
+
+                Para descobrirmos o endereço de rede cortaremos o 255 da máscara de rede.
+
+                    255.0.0.0
+
+                        .0.0.0
+
+                Verificamos que ficaram os 3 zeros dos octetos seguintes.
+
+                Comparamos com o nosso endereço IP.
+
+                    124.4.7.9
+                        .0.0.0
+
+                Basta então mover os grupos de cima que ficaram vazios para completar os octetos que foram recortados embaixo.
+                Ficará assim:
+
+                    124.0.0.0 = Este é o endereço de rede!
+
+                Agora para descobrirmos o endereço de broadcast faremos o trabalho ao contrário. Cortaremos os 0 do endereço de rede.
+                Ficaremos assim:
+
+                    124...
+
+                Agora adicionamos o 255 nos espaços recortados. Teremos o seguinte resultado:
+
+                    124.255.255.255
+
+                Este então, é o endereço de broadcast: 124.255.255.255
+                Este endereço também não poderá ser usado em nenhuma máquina.
+
+                Criamos um novo projeto no Packet Tracer colocando dois micros e um switch.
+                O primeiro micro com IP 124.0.0.255 e o segundo micro com IP 124.1.0.0.
+
+                Os dois endereços IP's são válidos e irão se comunicar, podemos realizar o teste com o protocolo ping.
+                Isso porque o padrão está correto, IP's de classe A com máscara 255.0.0.0 precisam obrigatoriamente ter apenas o primeiro grupo igual.
+
+        
+        Endereços reservados classe B:
+
+            Seguindo o mesmo exemplo anterior, vamos descobrir qual é o endereço de rede e o endereço de broadcast do IP proposto:
+
+                Endereço IP: 172.161.7.9
+
+                Máscara de rede: 255.255.0.0
+
+                255 =  Rede
+                0 = Host
+
+                Sabendo que em endereços de classe B o primeiro octeto vai de 128 a 191, percebemos que o nosso endereço IP logo acima é de classe B.
+
+                Recortamos os 255's da mascara e substituimos pelos os valores dos octetos correspondentes:
+
+                    255.255.0.0 fica ..0.0
+
+                    Então, substituindo valores:
+
+                    172.161.0.0 = Este é o nosso endereço de rede.
+
+                    Agora para descobrirmos o broadcast substituimos os zeros por 255, teremos o seguinte valor:
+
+                    172.161.255.255 = Endereço de broadcast
+
+                    Lambrando que os endereços 172.161.0.0 e 172.161.255.255 não podem ser atribuidos a nenhuma outra máquina na rede.
+
+                    No laboratório criamos mais um ambiente, mais duas máquina e mais um switch.
+                    A primeira máquina com endereço 172.161.0.255 e a segunda máquina com endereço 172.161.1.0.
+                    Realizamos testes de ping novamente.
+
+        
+        Endereços reservados classe C:
+
+            Vamos ver qual é o endereço de rede e o endereço de broadcast dos IP's da classe C:
+
+                O IP que nos foi dado é o seguinte:
+
+                    Endereço IP: 192.168.0.9
+
+                    Máscara de rede: 255.255.255.0
+
+                    255 = Rede
+                    0 = Máquina (Host)
+
+                    O intervalo da classe C se dá entre 192-223, como nosso endereço IP acima começa com 192 já sabemos a qual classe ele pertence.
+
+                    A máscara padrão da classe C é 255.255.255.0, sendo assim os 3 primeiros grupos do nosso IP devem ser presevados caso outro computador queira estar na mesma rede e 
+                    para que possamos encontrar o endereço de rede e o de Broadcast.
+
+                    Repetindo o procedimento para que possamos encontrar o endereço de rede, recortaremos os três primeiros octetos da máscara e adicionaremos os respectivos grupos do
+                    nosso IP, que no caso é:
+
+                        Para: 255.255.255.0
+
+                        deixamos: ...0
+
+                        Completamos os octetos que ficaram vazios: 192.168.0.0 (Este é o endereço de rede)
+
+                    Agora encontraremos o endereço de broadcast.
+
+                        Devemos agora remover os 0's adicionados no procedimento para encontrar o endereço de rede. Como adicionamos apenas 1 zero, removeremos apenas seu octeto.
+
+                        Ficando: 192.168.0.
+
+                        Agora neste octeto que ficou vazio, iremos adicionar o 255.
+
+                        Então: 192.168.0.255 (Endereço de broadcast)    
+
+                Porém não podemos nos prender a ideia de que não podemos ter o final de um IP com 0 ou 255. O que definirá serão os números de endereço de rede e de broadcast.
+
+                                     
+    Questões aula 07:
+
+        1 - Quais são as classes de endereços IP que podem ser endereçadas para máquinas?
+
+            Selecione uma alternativa
+
+            R: Classe A,B e C
+
+            A IETF (Internet Engineering Task Force) determinou que existiriam ao todo 5 classes de endereços IP, indo de ordem alfabética da classe A até a classe E. 
+            Porém as duas últimas classes não são usadas para serem endereçadas as máquinas. A classe D seria usada para multicast (termo usado quando queremos nos comunicar 
+            com somente algumas máquinas de nossa rede) e a classe E seria uma classe experimental. Portanto as classes de IP que podem ser endereçadas para máquinas seriam a 
+            classe A, B e C.
+
+
+        2 - Como eu identifico que um endereço IP está em uma classe?
+
+            Selecione uma alternativa
+
+            R: Pelo valor do primeiro intervalo (octeto)
+
+            Para sabermos em qual classe um endereço IP se encontra, temos que analisar o primeiro octeto e ver dentro de qual range ele estaria. (Classe A, B ou C).
+
+
+        3 - O endereço IP 187.77.45.8 estaria dentro de qual classe, considerando que usa máscara de rede padrão?
+
+            Selecione uma alternativa
+
+            R: Classe B. 
+            
+            A classe "A" possui o primeiro octeto variando de 1 a 127, a classe "B" possui o primeiro octeto variando de 128 a 191 e a classe "C" possui o primeiro octeto 
+            variando de 192 a 223. Dessa forma pelo fato do número 187 se encontrar dentro de 128 a 191, sabemos que é um endereço da classe "B".
+
+        
+        4 - O que seria o endereço 127.0.0.1? Como ele é conhecido?
+
+            Selecione uma alternativa
+
+            R: É um endereço interno da placa de rede, usado para testar se os protocolos TCP/IP estão funcionando. Ele é conhecido como endereço de loopback, pois o sinal
+            é enviado e recebido por ele mesmo.
+
+            O endereço 127.0.0.1 seria uma faixa de endereço IP reservada, esse seria um endereço interno da placa de rede para realizar testes e verificar se ela está de 
+            fato validando os protocolos TCP/IP.
+
+        
+        5 - O que são IPs privados?
+
+            Selecione uma alternativa
+
+            R: São IPs que são usados somente para comunicação na rede local, não posso acessar a internet
+
+            Os endereços IP privados são usados para comunicação somente em minha rede local, de acordo com
+            a especificação, eles não podem ser usados para comunicação na internet por exemplo.
+
+        
+        6 - Se eu tenho IP privado na minha máquina, como posso acessar a internet?
+
+            Selecione uma alternativa
+
+            R: Através do método de tradução de endereços IPs privados para públicos, chamado de NAT
+
+            Isso acontece porque nosso roteador possui a configuração chamada NAT, essa configuração
+            vai converter o endereço IP privado que temos em nossas máquinas para IP públicos que nosso provedor de serviços nos fornece.
+
+        7 - Qual foi a evolução do IPv4?
+
+            Selecione uma alternativa
+
+            R: IPv6
+
+            A evolução do IPv4 seria a versão 6 do protocolo, que seria conhecida como IPv6.
+
+        
+        8 - Por que foi necessário o IPv6?
+
+            Selecione uma alternativa
+
+            R: Porque os endereços públicos do IPv4 chegaram a um fim
+
+            O endereço IPv6 foi necessário porque os endereços IPv4 públicos chegaram a um fim por conta da grande popularidade da internet, smartphones, tablets, etc.
+
+        
+        9 - Dado que o endereço IP da máquina 7.8.7.8 possui máscara de rede 255.0.0.0, determine seu endereço de rede e broadcast (Lembre-se da regra, endereço de rede e 
+            broadcast):
+
+            Selecione uma alternativa
+
+            R: Rede: 7.0.0.0 ; Broadcast: 7.255.255.255
+
+            Descobrir endereço de rede que esse endereço IP está inserido:
+            Se recortarmos o 255 da máscara de rede e inserirmos o octeto correspondente do endereço IP, teremos: 7.0.0.0 :)
+            
+            Descobrir o endereço de broadcast da rede:
+            Pegamos o endereço de rede e recortamos os 0’s (originais da máscara) e colocamos 255 no lugar, teremos então: 7.255.255.255
+            Dessa forma, por exemplo o endereço IP: 7.0.0.255 é válido porque é maior que o endereço de rede (7.0.0.0) e menor que o de broadcast (7.255.255.255)
+
+        
+        10 - Dado que o endereço IP da máquina 135.44.3.21 possui máscara de rede 255.255.0.0, determine seu endereço de rede e broadcast (Lembre-se da regra, endereço de rede
+            e broadcast):
+
+            Selecione uma alternativa
+
+            R: Rede: 135.44.0.0 ; Broadcast: 135.44.255.255
+
+            Descobrir endereço de rede que esse endereço IP está inserido:
+                Se recortarmos o 255 da máscara de rede e inserirmos os octetos correspondentes do endereço IP, teremos: 135.44.0.0 :)
+            
+            Descobrir o endereço de broadcast da rede:
+                Pegamos o endereço de rede e recortamos os 0’s (originais da máscara) e colocamos 255 no lugar, teremos então: 135.44.255.255
+
+            Dessa forma, por exemplo o endereço IP: 135.44.0.255 é válido por que é maior que o endereço de rede (135.44.0.0) e menor que o de broadcast (135.44.255.255)
+
+        
+        11 - O que caracteriza uma comunicação broadcast?
+
+            Selecione uma alternativa
+
+            R: Comunicação com todos os dispositivos da minha rede
+
+            Broadcast seria um termo usado quando a comunicação é feita para todos os dispositivos que estão na mesma rede.
+
+
+Aula 08: Endereçamento IP com DHCP -------
+
+    Teoria:
+
+        DHCP:
+
+            Até o momento temos feito a configuração manual de todos os endereços IP.
+
+            Numa empresa com 40, 50 ou mais computadores isto se tornaria muito trabalhoso.
+
+            Uma forma de resolver este problema de forma automática é o servidor DHCP.
+
+            Criamos um projeto com 4 computadores ligados a um Switch e este Switch ligado a um Router.
+
+            O roteador da Cisco que irá atuar como servidor5 DHCP.
+
+            Ele fornecerá automaticamente endereços IP's para os computadores.
+
+            Vemos então neste cenário um pequeno modelo de rede natural onde o Switch conecta vários computadores (Conexão de micros na rede local) e o nosso roteador está conectado ao
+            Switch (Conectando a rede). Lembrando que temos outras portas no roteador que poderia conectar outras redes simultaneamente.
+
+            Para configurar o Roteador conectamos ele a um notebook utilizando o cabo console. Como vimos antes o Packet Tracer nos permite usar o CLI diretamente no roteador não sendo
+            necessária a conexão com o notebook.
+
+            Configurando o roteador:
+
+                Primeira coisa a se fazer é habilitar a porta.
+
+                O CLI nos perguntará se queremos o diálogo para configurar o roteador, digitamos "no".
+
+                Após apertar "return" para continuar com a operação estaremos no modo usuário que apenas nos permite verificar algumas coisas, como reparos e testes, mas não podemos
+                configurar o equipamento. Teremos que aumentar os privilégios:
+
+                    Router>enable
+
+                    Saída:
+
+                        Router#
+
+                Até aqui só poderemos ver todas as visualizações que poderemos fazer no equipamento. Seguiremos para o configure terminal:
+
+                    Router#configure terminal
+
+                    Saída:
+                        
+                        Enter configuration commands, one per line.  End with CNTL/Z.
+                        Router(config)#
+
+                Agora estamos efetivamente na parte de configurações.
+
+                Vamos iniciar efetivamente a configuração da porta na qual conectamos o Switch.
+
+                    Router(config)#interface GigabitEthernet 0/0/0
+                    
+                    Saída:
+
+                        Router(config-if)#
+
+
+                Iremos inserir o comando para ligar a porta:
+
+                Router(config-if)#no shutdown
+
+                Saída:
+
+                    Router(config-if)#
+                    %LINK-5-CHANGED: Interface GigabitEthernet0/0/0, changed state to up
+
+                    %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0/0, changed state to up
+
+                Agora as portas estão habilitadas e as luzes devem ficar verdes. O CLI nos informa que o estado da porta foi mudado para "up". A porta já está ativa.
+
+                Iremos então começar a configuração para que ele trabalhe com DHCP. Primeiro temos que sair da configuração que estamos:
+
+                Router(config-if)#exit
+                
+                Sáida:
+                
+                    Router(config)#
+
+                Utilizamos o comando:
+
+                    Router(config)#ip dhcp
+
+                    Porém somos informados que o comando está incompleto.
+
+                    Precisamos criar um pool de endereços para que o nosso servidor DHCP utilize, aqueles que serão atribuídos para os computadores. Daremos o nome de cursoRedes para
+                    esse pool.
+
+                        Router(config)#ip dhcp pool cursoRedes
+
+                        Saída:
+
+                            Router(dhcp-config)#
+
+                    Iremos inserir "?" e digitaremos enter para ver quais comando faltam (ou parâmetros) para terminar de configurar nosso servidor DHCP.
+
+                        Router(dhcp-config)#?
+
+                        Saída:
+
+                            default-router  Default routers
+                            dns-server      Set name server
+                            domain-name     Domain name
+                            exit            Exit from DHCP pool configuration mode
+                            network         Network number and mask
+                            no              Negate a command or set its defaults
+                            option          Raw DHCP options
+
+                    Utilizaremos o comando "network" para informar a rede que queremos trabalhar.
+
+                        Router(dhcp-config)#network 192.168.0.0
+
+                        Seremos informados que o comando está incompleto:
+
+                            % Incomplete command.
+
+                    Precisamos verificar quais parâmetros faltam para que possamos terminar de configurar.
+
+                    Router(dhcp-config)#network 192.168.0.0 ?
+                    
+                    Saída:
+
+                        A.B.C.D  Network mask
+
+                    Ficou faltando a máscara de rede, que será: 255.255.255.0
+
+                    Então nosso comando completo ficará:
+
+                        Router(dhcp-config)#network 192.168.0.0 255.255.255.0
+
+                        Se quisermos podemos adicionar o "?" no comando acima para ver se falta algo antes de apertar "Enter".
+
+                            Router(dhcp-config)#network 192.168.0.0 255.255.255.0 ?
+
+                            Saída:
+
+                                <cr> 
+
+                                <cr> = Signífica "Caracter return", que não existe mais nada a ser adicionado a este comando.
+
+                        Já informamos qual é a rede que o pool de conexões estará trabalhando.
+
+                    Será importante indicar qual será o gateway para os computadores, ou seja, para onde as máquinas devem enviar informações caso eles precisarem se comunicar com alguém
+                    externamente. Utilizaremos o comando:
+
+                        Router(dhcp-config)#default-router ?
+                        
+                        Saída:
+                        
+                            A.B.C.D  Router's IP address
+
+                            Veremos que falta apenas o endereço IP do default router, que é o endereço da porta que estamos utilizando no roteador. Utilizaremos o IP: 192.168.0.1.
+
+                                Router(dhcp-config)#default-router 192.168.0.1
+
+                                    Obs: Mesmo que já tenhamos definido qual é o endereço IP e a porta do Roteador que estamos utilizando, é necessário o comando "default-router" para
+                                    mostrar qual é a porta do Gateway e assim fazendo que ela seja preenchida automaticamente na distribuição de IP via DHCP.
+
+                            Lembrando que pelo fato de estarmos utilizando a máscara: 255.255.255.0 temos que utilizar os 3 primeiros octetos que definimos.
+
+                                Router(config)#interface gigabitEthernet 0/0/0
+
+                                Saída:
+
+                                    Router(config-if)#
+
+                            Agora iremos inserir o IP que utilizaremos nesta porta:
+
+                                Router(config-if)#ip address 192.168.0.1 255.255.255.0
+
+                                Lembrando que podemos utilizar o "?" todas vez que acharmos que falta um parâmetro do comando.
+
+                    Vamos verificar se a configuração DHCP funcionou. Colocaremos todos os computadores para receber o IP de forma DHCP.
+
+                    Podemos observar que a partir do momento que mudamos a configuraçãos dos Host's para DHCP eles fazem uma requisição de IP para o servidor DHCP do servidor.
+
+                    O procedimento de requisição e reposta é o seguinte. No primeiro momento ele não tem IP algum e saíra perguntando quem irá fornece-lo.
+                    Este é um final broadcast. O roteador que configuramos irá receber a requisição e dirá: "Estou configurado para oferecer endereços IP's".O computador aceitará o IP
+                    fornecido e irá informar que recebeu um IP. A mensagem será entregue para o roteador também, que por sua vez, irá dar um "OK".
+
+                    O processo é o mesmo para qualquer máquina que for conectada a rede, mudamos em sua placa de rede de "Static IP" para "DHCP". Tanto o IP é configurado automaticamente
+                    quanto a máscara e o gatway.
+
+                    Quando finalizamos os 4 computadores receberam IP de forma automática e dinâmica sem que conflitem. Não precisamos mais configurá-los manualmente.
+
+    
+    Questões aula 08:
+
+        1 - Para que serve um servidor DHCP?
+
+            Selecione uma alternativa
+
+            R: Para atribuir IP a máquinas (clientes) de forma dinâmica
+
+            Os servidores DHCP (Dynamic Host Configuration Protocol) alocam dinamicamente endereços IPs a clientes (máquinas).
+
+        
+        2 - Como é conhecida essa forma de atribuição de IP pelo DHCP?
+
+            Selecione uma alternativa
+
+            R: IP dinâmico
+
+            Quando um endereço IP é atribuído a uma máquina (cliente), dizemos que a configuração foi dinamicamente alocado. Os servidores DHCP normalmente possuem o que chamamos de
+            “lease time”, ou seja possui um tempo de alocação de um endereço IP a uma máquina, quando esse tempo é expirado é preciso ocorrer uma renovação de endereço IP. Por isso ele 
+            é dinamicamente alocado :)
+
+        
+        3 - Quando um cliente não possui um endereço IP e está configurado para receber IP dinâmico, como ele faz a requisição para que alguém forneça um endereço IP?
+
+            Selecione uma alternativa
+
+            R: Broadcast
+
+            Quando um cliente não possui endereço IP ele não sabe a quem perguntar, então ele precisa sair perguntando para todo mundo que está na mesma rede quem poderá fornecer um 
+            endereço IP. Quando essa comunicação é feita para todos os dispositivos, chamamos isso de Broadcast.
+
+
+Aula 09: Acessando o site em nossa simulação -------
+
+    Teoria:
+
+        Acessando o Google:
+
+            Agora nossa missão é permitir que os usuários acessem o site do Google ou pelo menos uma simulação disto.
+            Devemos lembrar que estamos usando o software de simulação da Cisco então eles não acessarão a Web de verdade.
+            Configuramos o servidor e uma página Http: para simular esta conexão.
+            Estamos usando no projeto 4 PC's, 1 Switch e 1 Router da aula 8.
+            Acicionaremos mais 1 Switch e 1 Server e conectaremos ao nosso roteador DHCP.
+
+            Assim como tivemos que ativar a porta do Router GigabitEthernet 0/0/0 teremos que ativar a GigabitEthernet 0/0/1 para se comunicar com o Switch que sai para a Web até o servidor.
+
+            Voltando para o CLI do nosso roteador utilizamos os seguintes comandos em sequência para adiantar o trabalho:
+
+                Router>enable //Elevando permissões para executarmos comandos
+
+                Router#configure terminal //Entrando em modo de configuração
+
+                Saída:
+                    
+                    Enter configuration commands, one per line.  End with CNTL/Z.
+                
+                Router(config)#interface gigabitethernet 0/0/1 //Escolhendo a porta que iremos configurar
+
+                Router(config-if)#no shutdown //Ativando a porta
+
+                Saída:
+
+                    Router(config-if)#
+                    %LINK-5-CHANGED: Interface GigabitEthernet0/0/1, changed state to up
+
+                    '%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0/1, changed state to up
+
+            Já está escolhida a porta que configuraremos para a saída para a internet e a ativamos.
+
+            Definiremos agora um endereço IP para esta porta:
+
+                Router(config-if)#ip address ? //Para verificar o que precisamos para configurar o IP
+                
+                Saída:
+
+                    A.B.C.D  IP address
+                    dhcp     IP Address negotiated via DHCP
+
+                    Logo acima a informação de que precisamos de um endereço IP e uma máscara de subrede.
+
+            Definimos então o que é necessário:
+
+                Router(config-if)#ip address 8.8.8.1 255.0.0.0
+
+                Lembrando que, como escolhemos um endereço IP de classe A, nossa máscara de subrede por padrão também deve ser de classe A.
+
+            Feita a configuração no nosso Router, iremos agora configurar o nosso servidor para realizar a simulação.
+            Definiremos qualquer IP que esteja entre 8.0.0.0 e 8.255.255.255, pois será válido.
+
+                No software Packet Tracer, no nosso Servidor Web definiremos:
+
+                    Endereço IP: 8.0.255.255
+                    Máscara de subrede: 255.0.0.0
+                    Default Gateway: 8.8.8.1
+
+            Editaremos uma página para representar a página que queremos acessar. Não precisamos de muito design pois é apenas uma simulação.
+            No nosso servidor web iremos até services e depois em HTTP.
+
+                Colocaremos o seguinte conteúdo como index.html:
+
+                    <html>
+                        <h1>GOOGLE</h1>
+                        <input type="search">
+                        <input type="button" value="Buscar">
+                    </html>  
+
+            Agora temos configurado o nosso roteador para atuar como DHCP para a nossa rede privada e um IP estático.
+
+            Agora as duas redes já sabem qual é o portão de saída e podem se comunicar entre si. Faremos um teste.
+
+            Podemos ver que o IP definido para o nosso roteador é o mesmo gateway do nosso servidor Web.
+
+            Digitaremos no Web Browser de um dos computadores da nossa rede privada o IP do servidor do "Google" que criamos.
+
+                http://8.0.255.255
+
+            No próximo passo aprenderemos a configurar o servidor DNS para que ao invés de colocarmos o endereço IP na barra de endereços do browser, digitemos apenas a URL que será traduzida
+            para o endereço IP.
+
+
+        Configurando DNS:
+
+            Vamos colocar o servidor DNS para fazer a tradução entre a URL www.google.com e o endereço IP máquina do Google. Adicionaremos o servidor DNS ao projeto
+
+            Conectamos o novo servidor (DNS) ao Switch, aquele mesmo que o nosso servidor web já está conectado.
+
+            Assim como nosso servidor web está configurado, também configuraremos o nosso servidor DNS com um endereço IP de classe A:
+
+                Endereço IP: 8.1.0.0
+                Máscara de subrede: 255.0.0.0
+                Default Gateway: 8.8.8.1 (Endereço da porta de saída do nosso roteador)
+                
+            Agora vamos criar o mapeamento do nosso servidor DNS para o servidor Web.
+
+            Em "Services" -> "DNS" digitaremos a URL do site que para qual o endereço IP do servidor web nos envia (www.google.com) e relacionaremos ao endereço IP deste servidor web
+            (8.0.255.255).
+
+            Habilitamos o servidor DNS clicando em "On" e depois em adicionar.
+
+            Fazemos um teste indo até um dos micros e digitando no Web Browser o endereço que acabamos de mapear no servidor DNS.
+
+            Porém pordemos perceber que não deu certo, isto porque não indicamos qual é o servidor DNS no nosso roteador. O computador não sabe qual é o servidor DNS que ele deve procurar.
+            Como estamos usando o DHCP, pediremos que ele informe aos usuário squal o servidor DNS será utilizado.
+
+            Voltamos a área CLI do nosso roteador.
+
+                Router>enable //Elevando permissões
+
+                Router#configure terminal //Entrando no modo de configuração
+                Enter configuration commands, one per line.  End with CNTL/Z.
+
+                Router(config)#ip dhcp pool cursoRedes //Entrando nas configurações de DHCP do nosso servidor DHCP
+
+                Router(dhcp-config)#? //Olhando lista de comandos para verificar o comando daquilo que queremos configurar.
+                default-router  Default routers
+                dns-server      Set name server
+                domain-name     Domain name
+                exit            Exit from DHCP pool configuration mode
+                network         Network number and mask
+                no              Negate a command or set its defaults
+                option          Raw DHCP options
+
+                Router(dhcp-config)#dns-server 8.1.0.0 //Informando ao servidor DHCP o endereço IP do nosso servidor DNS
+
+                Router(dhcp-config)#
+
+            Como a distribuição de IP e as configurações já foram realizadas ao ligar a nossa rede, devemos realizar um "refresh" nos micros.
+            Basta clicar na opção "Static IP" e voltar para "DHCP" ou realizar o comando:
+
+                ipconfig /renew
+
+            Agora nossos computadores sabem qual é o servidor DNS.
+            
+            Fazemos um novo teste digitando o endereço www.google.com no web browser de qualquer computador que realizamos o refresh.
+            Verificamos agora que conseguimos visualizar a página do Google.
+
+            Projeto finalizado!!!
+
+
+    Questões aula 09:
+
+        1 - Que configurações fizemos no projeto para que fosse possível que os computadores digitassem www.google.com no browser e tivéssemos a página do google na tela?
+
+            Selecione uma alternativa
+
+            R: Tivemos que configurar o servidor DNS no DHCP do roteador para atribuir esse endereço do DNS para as máquinas (clientes).
+
+            Os computadores não sabem quem é o servidor DNS, nós precisamos informar para eles quem é o servidor que eles devem procurar.
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+
+
+
+
+
+
+
+

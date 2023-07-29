@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: another-context
+  name: another-context
+  namespace: context2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: another-context
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: another-context
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}

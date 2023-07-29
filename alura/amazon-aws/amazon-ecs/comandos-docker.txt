@@ -1,0 +1,20 @@
+Testando incluir uma variável de ambiente em um container e capturar ela na criação
+# docker run -e ENV_VAR1=myvalue1 ubuntu env | grep ENV_VAR
+
+Listar todos os containers que já existiram
+# docker container ls --all
+
+Criando um container que fique rodando e com porta aleatória no localhost
+# docker run --name my-nginx -P -d nginx
+
+Procurando imagens existente de determinada tecnologia
+# docker search nginx
+
+Verificar se tem algo "ouvindo" em determinada porta de um servidor
+# curl http://localhost:porta
+
+Inspecionar container
+# docker inspect "id_container"
+
+Criando um container e utiliza-lo em modo interativo com o shell
+# sudo docker run -it container-1 /bin/sh

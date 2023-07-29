@@ -1,0 +1,2513 @@
+-*- Dia 1
+
+https://kubernetes.io/
+
+
+
+https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/
+-*- Questão 1 - Criar um pod utilizando a imagem do Nginx versão 1.23.0 com o nome static-web no namespace prova.
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx:1.23.0
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+"
+
+Comandos uteis:
+
+# kubectl create -f arquivo.yaml
+# kubectl apply -f arquivo.yaml
+
+A diferença entre o create e o apply é que no apply se o container já existir ele somente atualiza as informações, no create se o container já existir ele da erro
+na criação
+
+# kubectl create --help
+
+Obs: O comando abaixo cria também um deployment, não somente um pod
+# kubectl create deployment static-web-2 --image nginx:1.23.0 --port 80 --namespace prova --dry-run=client -o yaml > pod-2.yaml
+# kubectl create deployment "nome" "imagem" "porta" "namespace" --dry-run=client -o yaml > "arquivo.yaml"
+
+Para criar somente um pod
+# kubectl run static-web-3 --image nginx:1.23.0 --port 80 --namespace prova --dry-run=client -o yaml > pod-3.yaml
+
+# kubectl describe pod "nome-do-pod"
+
+Obs: É mais recomendado utilizar arquivo e exemplos da documentação
+
+
+-*- Questão 2 - Aumentar a quantidade de replicas do deployment static-web-2 no namespace prova, que está utilizando a imagem do nginx 1.23.0, para 3 replicas.
+
+
+# kubectl get deployment -n prova
+
+# kubectl scale deployment -n prova static-web-2 --replicas 3
+
+Poderíamos também criar o arquivo
+
+# kubectl create deployment static-web-2 --image nginx:1.23.0 --port 80 --namespace prova --replicas 3 --dry-run=client -o yaml > pod-2.yaml
+
+# kubectl create -f pod-2.yaml
+
+Ou deleta e cria novamente com "kubectl delete -f arquivo.yaml" ou realiza o comando com apply
+
+Poderíamos também utilizar o edit
+
+# kubectl edit deployment static-web-2 -n prova
+
+
+
+-*- Questão 3 - Precisamos atualizar a versão do Nginx do Pod static-web. Ele está na versão 1.18.0 e precisamos atualizar para a versão 1.23.0.
+
+Podemos fazer isso através do edit
+
+# kubectl edit pod static-web
+
+Podemos fazer isso pegando o yaml do pod já criado, editar e fazer um novo deploy
+
+# kubectl get pods static-web -o yaml > pod-4.yaml
+
+---editar
+
+# kubectl create -f pod-4.yaml
+
+Podemos também fazer com o "set"
+
+# kubectl set image --help
+
+# kubectl set image pod static-web web=nginx:1.18.0
+
+
+-*- Dia 2
+
+-*- Questão 4 - Precisamos levantar algumas informações sobre o nosso cluster:
+
+- Quantos nodes são workers?
+# kubectl get nodes
+2
+elliot-02   Ready    <none>                 259d   v1.22.3
+elliot-03   Ready    <none>                 259d   v1.22.3
+
+- Quantos nodes são masters?
+# kubectl get nodes
+1
+elliot-01   Ready    control-plane,master   259d   v1.23.6
+
+- Qual o Pod Network (CNI) que estamos utilizando?
+https://kubernetes.io/docs/concepts/
+root@elliot-01:~# kubectl get namespace
+NAME              STATUS   AGE
+default           Active   259d
+kube-node-lease   Active   259d
+kube-public       Active   259d
+kube-system       Active   259d
+prova             Active   23h
+
+root@elliot-01:~# kubectl get pods -n kube-system
+NAME                                READY   STATUS    RESTARTS       AGE
+coredns-64897985d-lgttt             1/1     Running   4 (21h ago)    56d 'Servico de DNS do cluster - Replica 1'
+coredns-64897985d-w2j7k             1/1     Running   4 (21h ago)    56d 'Servico de DNS do cluster - Replica 2'
+etcd-elliot-01                      1/1     Running   4 (21h ago)    56d 'Toda a configuracao do cluster'
+kube-apiserver-elliot-01            1/1     Running   4 (21h ago)    56d 'Parte do API, somente ele se comunica com o etcd'
+kube-controller-manager-elliot-01   1/1     Running   4 (21h ago)    56d "kube-controller-manager - Componente da camada de gerenciamento que executa os processos de controlador"
+kube-proxy-5p2ph                    1/1     Running   4 (21h ago)    56d "kube-proxy mantém regras de rede nos nós, existe 1 em cada nó - Replica 1"
+kube-proxy-8lzm5                    1/1     Running   4 (21h ago)    56d "kube-proxy mantém regras de rede nos nós, existe 1 em cada nó - Replica 2"
+kube-proxy-9wcmp                    1/1     Running   4 (91m ago)    56d "kube-proxy mantém regras de rede nos nós, existe 1 em cada nó - Replica 3"
+kube-scheduler-elliot-01            1/1     Running   4 (21h ago)    56d 'Responsável por definir onde o POD vai rodar, em qual node ele será executado'
+weave-net-98lnq                     2/2     Running   76 (91m ago)   259d 'Pod Network - Replica 1'
+weave-net-xpfft                     2/2     Running   74 (21h ago)   259d 'Pod Network - Replica 2'
+weave-net-zq4d5                     2/2     Running   81 (21h ago)   259d 'Pod Network - Replica 3'
+
+
+weave-net
+
+- Qual o CIDR dos pods no segundo worker?
+
+"Algumas formas de pegar esta informação"
+
+# kubectl describe node "NameNode" | grep -i podCIDR
+
+# kubectl get node -o jsonpath="{range .items[*]}{.metadata.name} {.spec.podCIDR}"
+
+# grep -i cidr /etc/kubernetes/manifests/kube-apiserver*
+
+
+"OUTRAS FORMAS DE BUSCAR INFORMAÇÕES DO CLUSTER"
+
+# kubectl cluster-info dump | grep -i cluster-cidr
+
+
+root@elliot-01:~# kubectl get nodes
+NAME        STATUS   ROLES                  AGE    VERSION
+elliot-01   Ready    control-plane,master   259d   v1.23.6
+elliot-02   Ready    <none>                 259d   v1.22.3
+elliot-03   Ready    <none>                 259d   v1.22.3
+
+root@elliot-01:~# kubectl describe node elliot-03
+
+Addresses:
+  InternalIP:  172.31.4.174
+
+# ssh 172.31.4.174
+
+root@elliot-03:~# cd /etc/kubernetes/
+root@elliot-03:/etc/kubernetes# ls
+kubelet.conf  manifests  pki
+
+root@elliot-03:/etc/kubernetes# cd manifests/
+root@elliot-03:/etc/kubernetes/manifests# ls
+root@elliot-03:/etc/kubernetes/manifests# ps -efwww | grep weave
+
+root        1949    1927  0 16:50 ?        00:00:00 /bin/sh /home/weave/launch.sh
+root        2012    1987  0 16:50 ?        00:00:01 /usr/bin/weave-npc
+root        2131    1949  0 16:50 ?        00:00:05 /home/weave/weaver --port=6783 --datapath=datapath --name=7a:00:6f:58:63:69 --http-addr=127.0.0.1:6784 
+--metrics-addr=0.0.0.0:6782 --docker-api= --no-dns --db-prefix=/weavedb/weave-net "--ipalloc-range=10.32.0.0/12" --nickname=elliot-03 --ipalloc-init consensus=2 
+--conn-limit=200 --expect-npc --no-masq-local 172.31.7.162 172.31.4.238
+root        2280    1949  0 16:50 ?        00:00:00 /home/weave/kube-utils -run-reclaim-daemon -node-name=elliot-03 -peer-name=7a:00:6f:58:63:69 -log-level=debug
+root       42646   41733  0 18:45 pts/0    00:00:00 grep --color=auto weave
+
+root@elliot-03:/etc/kubernetes/manifests# ps -efwww | grep kubelet
+root         483       1  2 16:50 ?        00:03:10 /usr/bin/kubelet "--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf"
+--kubeconfig=/etc/kubernetes/kubelet.conf "--config=/var/lib/kubelet/config.yaml" --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.5
+root       43697   41733  0 18:48 pts/0    00:00:00 grep --color=auto kubelet
+
+# vim /var/lib/kubelet/config.yaml
+clusterDNS:
+- 10.96.0.10
+
+- Voltando pro node master
+root@elliot-01:~#
+
+# kubectl get node -o jsonpath="{range .items[*]}{.metadata.name} {.spec.podCIDR}"
+elliot-01 elliot-02 elliot-03  root@elliot-01
+
+# kubectl cluster-info dump
+
+# kubectl cluster-info dump | grep -i cidr
+I0717 16:50:45.422063       1 core.go:222] Will not configure cloud provider routes for allocate-node-cidrs: false, configure-cloud-routes: true.
+I0717 16:50:30.511062       1 server_others.go:475] "Detect-local-mode set to ClusterCIDR, but no cluster CIDR defined"
+I0717 16:50:30.511071       1 server_others.go:524] "Defaulting to no-op detect-local" detect-local-mode="ClusterCIDR"
+I0717 16:50:29.866948       1 server_others.go:475] "Detect-local-mode set to ClusterCIDR, but no cluster CIDR defined"
+I0717 16:50:29.866961       1 server_others.go:524] "Defaulting to no-op detect-local" detect-local-mode="ClusterCIDR"
+I0717 16:50:30.350088       1 server_others.go:475] "Detect-local-mode set to ClusterCIDR, but no cluster CIDR defined"
+I0717 16:50:30.350100       1 server_others.go:524] "Defaulting to no-op detect-local" detect-local-mode="ClusterCIDR"
+
+# kubectl cluster-info dump | grep -i cluster-cidr
+(SEM SAÍDA)
+
+
+- Qual o DNS que estamos utilizando para o cluster?
+
+root@elliot-01:~# kubectl get namespaces
+NAME              STATUS   AGE
+default           Active   259d
+kube-node-lease   Active   259d
+kube-public       Active   259d
+kube-system       Active   259d
+prova             Active   24h
+
+root@elliot-01:~# kubectl get pods -n kube-system
+NAME                                READY   STATUS    RESTARTS        AGE
+"coredns-64897985d-lgttt             1/1     Running   4 (22h ago)     56d"
+"coredns-64897985d-w2j7k             1/1     Running   4 (22h ago)     56d"
+etcd-elliot-01                      1/1     Running   4 (22h ago)     56d
+kube-apiserver-elliot-01            1/1     Running   4 (22h ago)     56d
+kube-controller-manager-elliot-01   1/1     Running   4 (22h ago)     56d
+kube-proxy-5p2ph                    1/1     Running   4 (22h ago)     56d
+kube-proxy-8lzm5                    1/1     Running   4 (22h ago)     56d
+kube-proxy-9wcmp                    1/1     Running   4 (146m ago)    56d
+kube-scheduler-elliot-01            1/1     Running   4 (22h ago)     56d
+weave-net-98lnq                     2/2     Running   76 (146m ago)   259d
+weave-net-xpfft                     2/2     Running   74 (22h ago)    259d
+weave-net-zq4d5                     2/2     Running   81 (22h ago)    259d
+
+
+R: coredns
+
+Adicionar as informações colhidas no arquivo /opt/cluster_info.txt
+
+vim /opt/cluster_info.txt
+
+
+-*- Questão 5 - Precisamos criar um pod com as seguintes características:
+
+- Precisa ter um container rodando a imagem do Nginx
+- Precisa de um segundo container rodando uma imagem do Redis (trocamos por outro do busybox)
+- Precisamos de um terceiro container rodando o busybox e executando o seguinte comando:
+  # echo "parangaricutirimirruaro" > /tmp/toskao
+
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: questao-5
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: container-1
+      image: nginx:1.23.0
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - name: workdir
+          mountPath: /usr/share/nginx/html
+    - name: container-2
+      image: busybox
+      command: ["sh", "-c", "while true; do uname -a >> /tmp/index.html; date >> /tmp/index.html; sleep 2; done"]  
+      volumeMounts:
+      - mountPath: /tmp/
+        name: workdir
+    - name: container-3
+      image: busybox
+      command: ["sh", "-c", "tail -f /tmp/toskao"]
+      volumeMounts:
+        - name: workdir
+          mountPath: /tmp/
+  dnsPolicy: Default
+  volumes:
+    - name: workdir
+      emptyDir: {}
+"
+
+
+# kubectl exec -it questao-5 -- sh
+
+
+-*- Dia 3
+
+-*- Questão 6 - Criar um pod estatico utilizando a imagem do nginx
+
+"Static Pods are managed directly by the kubelet daemon on a specific node, without the API server observing them. Unlike Pods that are managed by the control plane 
+(for example, a Deployment); instead, the kubelet watches each static Pod (and restarts it if it fails)."
+
+
+Obs: Fiquei um tempão tendo trabalho porque não podemos usar letras maiusculas no manifesto
+
+# kubectl run static-pod --image nginx -o yaml --dry-run=client 
+
+Obs: Comando apenas para verificar como será o manifesto do Pod
+
+
+- Modo da documentacao...
+# Run this command on the node where kubelet is running
+mkdir -p /etc/kubernetes/manifests/
+cat <<EOF >/etc/kubernetes/manifests/static-web.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+EOF
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+"
+
+Choose a node where you want to run the static Pod. In this example, it's elliot-01.
+
+# kubectl run staticPod --image nginx -o yaml --dry-run=client > static-pod.yaml
+
+# kubectl get nodes -o wide
+
+Obs: Este comando caso precisassemos pegar o IP do outro Node pra conectar e mandar o manifesto do Pod estático
+
+NAME        STATUS   ROLES                  AGE    VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION    CONTAINER-RUNTIME
+elliot-01   Ready    control-plane,master   266d   v1.23.6   172.31.7.162   <none>        Ubuntu 20.04.4 LTS   5.15.0-1015-aws   docker://20.10.16
+elliot-02   Ready    <none>                 266d   v1.22.3   172.31.4.238   <none>        Ubuntu 20.04.2 LTS   5.13.0-1017-aws   docker://20.10.10
+elliot-03   Ready    <none>                 266d   v1.22.3   172.31.4.174   <none>        Ubuntu 20.04.2 LTS   5.13.0-1017-aws   docker://20.10.10
+
+
+Choose a directory, say /etc/kubernetes/manifests and place a web server Pod definition there, for example /etc/kubernetes/manifests/staticPodyaml:
+
+# cd /etc/kubernetes
+
+# ls
+
+admin.conf  controller-manager.conf  kubelet.conf  manifests  pki  scheduler.conf  tmp
+
+# vim kubelet.conf
+
+"
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvakNDQWVhZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeE1UQXpNVEUyTlRnek1Gb1hEVE14TVRBeU9URTJOVGd6TUZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS2d5CkZLWnZqeWFLNHpBbWxJQjlieUU2NU1MM1FXbHA4NERMUFFvZ0xDeFB3T21JZ3JNQ3B2VHlmNzNqQVNnanBoZkcKbUhibzZ1bmFlNWJlSlJFVnNGcTlXcGlPMy9uY3hlVG16TUkxSDROZkJiZGxvbUNxZlFuWUFJUngxeXBVMUpmdAo4QmdrYm81S0huY1lwYWtTUnk3dkt6eUcvY2o5SnIzRCt5UVFGLzEzMStJcFA3ZGRVWFlSQVd1WFljZktkYlVvCkJKajJWbFd1Rk50M0pVdEdTdk5BbVU0RlNUZ1A4cWdMY2N3bFRWcFFmY2lTWkR2cEhRbFZ6L2V3d2UrKzYyOHYKMXBqYlN4cE9OT05GaXlJMGFYc2pubG5hVVBSM3dsQUlpQjVKbDBHWmVPTUs3NGE4Q2F4a2tZVWMrbk5vcjZkaAoxc0FjN3RUOXE0YUlDc2RRVm9VQ0F3RUFBYU5aTUZjd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZPSDNjSTMzdk90QnhtdUtJM0ZmNGVIL0J2bWNNQlVHQTFVZEVRUU8KTUF5Q0NtdDFZbVZ5Ym1WMFpYTXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBS0dBOVZvamV2ZEdYNnVhRWY4bgpwWU1URENNK3JhMlhralVVa21YbGZWTEtUSWYrMzBYZzM5aC9zRHhMcVZzZ0hXQTViZE1PSzQzamR2elowaHVjCjRxUm9qKzBaUnliYmhHNmxNMng3VDk2cUdZRENTZHR1V29oMkljU0N4QWtWT29TM1lXcHV4MmMzRFFuQW5uWkUKTHRXSTRORDNSMUxSRzQvMW9FZVEwZHk5MEpYWVVSRThQbWhaWW9TOHFZNnc4UjdNNU1sYU1mc296S3ZQWjZVbwpPN05IK1dHOU82MUl5RFZySWZRN1duUkJ1dHlNRDE0dnE1ZlYwYTlud3AvUU13OHNFS2dGdFI5eVFQYzFETHNQCm1LMW5KTjdtMDlKdVMycGhvNHQ4YStJeFoxQ3E5aFNtM3ozczA1U0hlVE04d3JTRVltVWc4SjdiRzN4amgrMngKQk1BPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    server: https://172.31.7.162:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: system:node:elliot-01
+  name: system:node:elliot-01@kubernetes
+current-context: system:node:elliot-01@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: system:node:elliot-01
+  user:
+    client-certificate: /var/lib/kubelet/pki/kubelet-client-current.pem
+    client-key: /var/lib/kubelet/pki/kubelet-client-current.pem
+"
+
+# cd manifests
+
+# ls
+
+etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-scheduler.yaml
+
+Obs: Estes são os manifestos dos recursos que precisamos subir nos nodes master
+
+Copiando o manifesto do static-pod para dentro do /etc/kubernetes/manifests
+# cp /root/day-7/static-pod.yaml .
+
+
+Configure your kubelet on the node to use this directory by running it with --pod-manifest-path=/etc/kubernetes/manifests/ argument. 
+On Fedora edit /etc/kubernetes/kubelet to include this line:
+
+KUBELET_ARGS="--cluster-dns=10.254.0.10 --cluster-domain=kube.local --pod-manifest-path=/etc/kubernetes/manifests/"
+
+Another way to configure: vim /var/lib/kubelet/config.yaml
+
+Restart the kubelet. On Fedora, you would run:
+
+# Run this command on the node where the kubelet is running
+systemctl restart kubelet
+
+
+Teste
+
+# Run this command on the node where kubelet is running
+mkdir -p /etc/kubernetes/manifests/
+cat <<EOF >/etc/kubernetes/manifests/static-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-pod
+  labels:
+    run: static-pod
+spec:
+  containers:
+    - name: static-pod
+      image: nginx
+      ports:
+        - name: static-pod
+          containerPort: 80
+          protocol: TCP
+EOF
+
+mkdir -p /etc/kubernetes/manifests/
+cat <<EOF >/etc/kubernetes/manifests/static-web-3.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web-3
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+EOF
+
+# kubectl get pods
+
+NAME                     READY   STATUS    RESTARTS   AGE
+static-pod-elliot-01     1/1     Running   0          3s
+static-web-2-elliot-01   1/1     Running   0          9m21s
+static-web-3-elliot-01   1/1     Running   0          5m35s
+static-web-elliot-01     1/1     Running   0          19m
+
+
+Caso fossemos fazer uma cópia de segurança à partir do node que estamos trabalhando
+
+# scp static-pod.yaml "IP do Node":/tmp
+
+Se conecte ao node e movimente la pra onde dever ir o manifesto
+
+Conhecendo um pouco mais dos pods do kube-system...
+
+coredns - "Parte de serviço de DNS do cluster (resolução de nome e IP) tanto interno quanto externo"
+etcd - "Onde estão todas as configurações, estado geral do cluster"
+kube-apiserver - "Componente do Control Plane. Teoricamente o cérebro do cluster...Ele recebe todas as informações do kube-controller e do kube-proxy e persiste isso 
+                  no etcd"
+kube-controller - "Componente do Control Plane. Gerenciador dos controller. Verifica se tudo está rodando ok (Node controller, Job controller, Endpoints controller 
+                    e Service Account & Token controllers)."
+kube-proxy - "Um em cada node. Controla toda a comunicação de rede dentro do node, serviços, pods etc."
+kube-scheduler - "Componente do Control Plane. Escalomento dos Pods. Ele que determina e organiza onde cada Pod vai rodar"
+weave-net -  (Add on) "Um em cada node. Pod Network (driver). Comunicação entre Pods em nodes diferentes"
+
+
+-*- Questão 7 - O nosso gerente está assustado, pois conversando com o gerente de outra empresa, ficou sabendo que aconteceu uma indisponibilidade no ambiente Kubernetes
+* de lá por conta de certifciados expirados. Ele está demasiadamente preocupado.
+* Ele quer que tenhamos a certeza de que nosso cluster não corre esse perigo, portanto, adicione no arquivo /tmp/meus-certificados.txt todos eles e suas datas de 
+* expiração.
+
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/
+
+- Podemos resolver de um jeito fácil isso
+
+# kubeadm certs check-expiration
+
+- Obs: Este comando deve ser realizado dentro do Node do Control-Plane
+
+[check-expiration] Reading configuration from the cluster...
+[check-expiration] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+W0724 22:56:46.025751   48084 utils.go:69] The recommended value for "resolvConf" in "KubeletConfiguration" is: /run/systemd/resolve/resolv.conf; the provided value is: /run/systemd/resolve/resolv.conf
+
+CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+admin.conf                 May 21, 2023 21:36 UTC   300d            ca                      no      
+apiserver                  May 21, 2023 21:30 UTC   300d            ca                      no      
+apiserver-etcd-client      May 21, 2023 21:30 UTC   300d            etcd-ca                 no      
+apiserver-kubelet-client   May 21, 2023 21:30 UTC   300d            ca                      no      
+controller-manager.conf    May 21, 2023 21:30 UTC   300d            ca                      no      
+etcd-healthcheck-client    May 21, 2023 21:29 UTC   300d            etcd-ca                 no      
+etcd-peer                  May 21, 2023 21:29 UTC   300d            etcd-ca                 no      
+etcd-server                May 21, 2023 21:29 UTC   300d            etcd-ca                 no      
+front-proxy-client         May 21, 2023 21:30 UTC   300d            front-proxy-ca          no      
+scheduler.conf             May 21, 2023 21:30 UTC   300d            ca                      no      
+
+CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+ca                      Oct 29, 2031 16:58 UTC   9y              no      
+etcd-ca                 Oct 29, 2031 16:58 UTC   9y              no      
+front-proxy-ca          Oct 29, 2031 16:58 UTC   9y              no  
+
+- Já poderiamos mandar a saída deste comando para o arquivo
+
+# kubeadm certs check-expiration >> /tmp/meus-certificados.txt
+
+- Para verificar o arquivo do recurso que gera estes valores (Este comando vem indicado no resultado do comando acima)...
+
+"
+apiVersion: v1
+data:
+  ClusterConfiguration: |
+    apiServer:
+      extraArgs:
+        authorization-mode: Node,RBAC
+      timeoutForControlPlane: 4m0s
+    apiVersion: kubeadm.k8s.io/v1beta3
+    certificatesDir: /etc/kubernetes/pki
+    clusterName: kubernetes
+    controllerManager: {}
+    dns: {}
+    etcd:
+      local:
+        dataDir: /var/lib/etcd
+    imageRepository: k8s.gcr.io
+    kind: ClusterConfiguration
+    kubernetesVersion: v1.23.6
+    networking:
+      dnsDomain: cluster.local
+      serviceSubnet: 10.96.0.0/12
+    scheduler: {}
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2021-10-31T16:58:45Z"
+  name: kubeadm-config
+  namespace: kube-system
+  resourceVersion: "950868"
+  uid: eefb7e39-5362-4bea-bfab-2e5156c8adb5
+"
+
+Para verificar outros comandos do "kubeadm certs"
+
+# kubeadm certs --help
+
+"Opção interessante:   renew            Renew certificates for a Kubernetes cluster"
+
+# kubeadm certs renew --help
+
+"Opção interessante: all                      Renew all available certificates"
+
+# kubeadm certs renew all
+
+certificate embedded in the kubeconfig file for the admin to use and for kubeadm itself renewed
+certificate for serving the Kubernetes API renewed
+certificate the apiserver uses to access etcd renewed
+certificate for the API server to connect to kubelet renewed
+certificate embedded in the kubeconfig file for the controller manager to use renewed
+certificate for liveness probes to healthcheck etcd renewed
+certificate for etcd nodes to communicate with each other renewed
+certificate for serving etcd renewed
+certificate for the front proxy client renewed
+certificate embedded in the kubeconfig file for the scheduler manager to use renewed
+
+Done renewing certificates. You must restart the kube-apiserver, kube-controller-manager, kube-scheduler and etcd, so that they can use the new certificates.
+
+- Agora de maio foi para julho a expiração dos certificados...Mas, ainda precisamos restartar os serviços informados acima...
+
+kube-apiserver, kube-controller-manager, kube-scheduler and etcd
+
+Se lembrarmos da questão anterior, utilizamos a pasta /etc/kubernetes/manifests...
+Os manifestos destes serviços estão lá, são serviços que sobem automaticamente graças ao nosso kubelet
+
+root@elliot-01:/etc/kubernetes#  ls
+admin.conf  controller-manager.conf  kubelet.conf  manifests  pki  scheduler.conf  tmp
+
+Então, basta que restartemos o kubelet, para estes componentes do clusters sejam reiniciados e voltem automaticamente com o certificado renovado.
+
+root@elliot-01:/etc/kubernetes# systemctl restart kubelet
+root@elliot-01:/etc/kubernetes# systemctl stop kubelet
+root@elliot-01:/etc/kubernetes# systemctl start kubelet
+
+Quando não da certo...
+
+# docker ps | grep apiserver
+
+# docker stop 253a7ca2a340
+
+e vamos fazer isso para os outros componentes...
+
+Do modo mais complexo...
+
+# kubectl get nodes
+
+NAME        STATUS   ROLES                  AGE    VERSION
+elliot-01   Ready    control-plane,master   266d   v1.23.6
+elliot-02   Ready    <none>                 266d   v1.22.3
+elliot-03   Ready    <none>                 266d   v1.22.3
+
+Só temos um master...
+
+# cd /etc/kubernetes/
+
+Temos um diretório chamado "pki"
+
+root@elliot-01:/etc/kubernetes# ls
+admin.conf  controller-manager.conf  kubelet.conf  manifests  "pki"  scheduler.conf  tmp
+
+root@elliot-01:/etc/kubernetes# cd pki
+root@elliot-01:/etc/kubernetes/pki# ls
+apiserver-etcd-client.crt  apiserver-kubelet-client.crt  apiserver.crt  ca.crt  etcd                front-proxy-ca.key      front-proxy-client.key  sa.pub
+apiserver-etcd-client.key  apiserver-kubelet-client.key  apiserver.key  ca.key  front-proxy-ca.crt  front-proxy-client.crt  sa.key
+
+Vamos verificar se os certificados estão expirados...
+Utilizaremos a ferramenta "openssl"...
+
+Exemplo:
+
+# openssl x509 -noout -text -in apiserver.crt
+
+"
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 3741176791410221587 (0x33eb54785df12213)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN = kubernetes
+        Validity
+            "Not Before: Oct 31 16:58:30 2021 GMT
+            Not After : May 21 21:30:17 2023 GMT"
+        Subject: CN = kube-apiserver
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:a4:57:eb:9b:53:93:16:92:9e:76:e8:21:ac:b6:
+                    11:18:ff:7e:c6:5d:ee:f2:1f:87:94:3d:78:05:14:
+                    2d:c7:06:69:79:be:3f:bf:82:dd:ed:f1:80:1c:d3:
+                    1a:72:53:f6:4c:d4:05:55:cd:a3:18:53:65:4c:93:
+                    84:85:a7:d6:d0:97:0a:2f:e0:f4:dd:aa:78:13:bc:
+                    2c:41:c7:5d:6f:74:a7:f4:8d:cd:a6:24:b0:21:8a:
+                    e9:dc:d5:7f:67:3f:c2:33:a1:70:29:ef:f1:79:43:
+                    98:15:1d:6f:79:e1:5c:cc:fc:0d:4d:6b:85:3a:32:
+                    21:36:9b:5f:b3:ba:7d:c7:01:3f:73:62:33:95:50:
+                    a1:5a:40:5e:53:91:e7:2f:8f:ee:69:42:2a:e1:88:
+                    46:c7:4e:8e:6b:87:cf:0e:91:34:f1:ec:7d:58:ef:
+                    8d:ca:e5:23:cf:54:e9:bd:3c:1a:6b:99:c9:af:82:
+                    a4:8c:bf:f9:e8:0a:45:58:69:4c:2c:3d:2c:44:d7:
+                    0b:f5:3f:e2:d0:2f:d1:8f:d9:1f:86:59:50:4b:8d:
+                    5c:63:a0:cb:23:3d:a6:11:d7:2c:88:51:a8:ed:e9:
+                    3f:69:38:af:12:41:f2:8f:bf:73:62:04:40:53:a3:
+                    97:e6:8c:e7:eb:eb:ec:ce:fa:3c:5e:68:c0:47:04:
+                    8b:3b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                keyid:E1:F7:70:8D:F7:BC:EB:41:C6:6B:8A:23:71:5F:E1:E1:FF:06:F9:9C
+
+            X509v3 Subject Alternative Name: 
+                DNS:elliot-01, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, IP Address:10.96.0.1, IP Address:172.31.7.162
+    Signature Algorithm: sha256WithRSAEncryption
+         4e:d6:a6:0c:de:d0:b3:34:da:8f:ee:f8:ea:41:79:de:c9:62:
+         77:a2:44:ba:2b:1a:6c:ba:75:fa:a1:d5:fd:18:6f:fc:67:ba:
+         8c:4d:54:17:ae:1b:1f:76:f7:08:9e:f5:f8:0a:9e:5c:de:50:
+         5f:73:aa:c8:b7:32:3d:12:90:9d:d0:20:c7:ab:39:de:a2:ca:
+         3d:a4:09:4d:d3:89:b3:1d:56:12:19:ea:22:cd:cf:f1:df:b4:
+         5b:84:fe:e9:bc:a3:2a:af:56:54:eb:d7:a8:1e:9c:a2:71:d0:
+         c0:23:4f:30:bc:b7:9e:26:09:7c:a0:56:de:fe:a6:91:fe:23:
+         2e:31:27:c6:82:65:88:3d:41:5c:ee:72:05:09:0b:64:ed:f0:
+         bf:8d:f1:b2:e4:cf:7a:bc:bd:cd:d1:c5:27:e5:91:ce:5a:78:
+         d6:5d:7f:fb:03:4d:88:2a:50:d0:05:b3:e8:33:3e:33:18:91:
+         b6:41:47:36:c1:bd:eb:96:7b:5f:2b:15:a7:fc:a3:b4:2d:82:
+         aa:8b:c2:a7:37:9d:51:e3:b5:47:52:68:46:fe:2b:48:95:86:
+         2b:b7:4f:ad:c7:0c:bf:ab:7d:91:d3:f8:c0:dc:c1:61:af:db:
+         17:0e:df:7b:8f:9b:b8:c8:b2:aa:2b:4c:6b:99:4c:34:b8:b4:
+         0c:85:90:4d
+"
+
+Nosso certificado ainda está válido:
+
+"Not Before: Oct 31 16:58:30 2021 GMT
+ Not After : May 21 21:30:17 2023 GMT"
+
+(Para simplificar o comando:)
+
+# openssl x509 -noout -text -in apiserver.crt | grep -i "Not After"
+  Not After : May 21 21:30:17 2023 GMT
+
+- O comando abaixo nos ajuda a ver todos os certificados...
+
+# find /etc/kubernetes/pki/ -iname "apiserver*"
+
+/etc/kubernetes/pki/apiserver-kubelet-client.key
+/etc/kubernetes/pki/apiserver-etcd-client.crt
+/etc/kubernetes/pki/apiserver-etcd-client.key
+/etc/kubernetes/pki/apiserver.key
+/etc/kubernetes/pki/apiserver-kubelet-client.crt
+/etc/kubernetes/pki/apiserver.crt
+
+- Apenas os crt...
+
+# find /etc/kubernetes/pki/ -iname "apiserver*crt"
+
+/etc/kubernetes/pki/apiserver-etcd-client.crt
+/etc/kubernetes/pki/apiserver-kubelet-client.crt
+/etc/kubernetes/pki/apiserver.crt
+
+- Depois vamos verificando um por um...
+
+# openssl x509 -noout -text -in apiserver.crt | grep -i "Not After"
+Not After : May 21 21:30:17 2023 GMT
+
+# openssl x509 -noout -text -in apiserver-etcd-client.crt | grep -i "Not After"
+Not After : May 21 21:30:18 2023 GMT
+
+# openssl x509 -noout -text -in apiserver-kubelet-client.crt | grep -i "Not After"
+Not After : May 21 21:30:17 2023 GMT
+
+- Para pegar as três linhas correspondentes a validade...
+
+# openssl x509 -noout -text -in apiserver.crt | grep -A3 Validity
+Validity
+    Not Before: Oct 31 16:58:30 2021 GMT
+    Not After : May 21 21:30:17 2023 GMT
+Subject: CN = kube-apiserver
+
+# openssl x509 -noout -text -in apiserver-etcd-client.crt | grep -A3 Validity
+Validity
+    Not Before: Oct 31 16:58:31 2021 GMT
+    Not After : May 21 21:30:18 2023 GMT
+Subject: O = system:masters, CN = kube-apiserver-etcd-client
+
+# openssl x509 -noout -text -in apiserver-kubelet-client.crt | grep -A3 Validity
+Validity
+  Not Before: Oct 31 16:58:30 2021 GMT
+  Not After : May 21 21:30:17 2023 GMT
+Subject: O = system:masters, CN = kube-apiserver-kubelet-client
+
+- Obs: temos uma forma de pegar a validade de todos os certificados .crt que estão na pasta /etc/kubernetes/pki
+
+# find /etc/kubernetes/pki/ -iname "apiserver*crt" -exec openssl x509 -noout -enddate -in {} \;
+  Achar - Onde - Pelo Nome - E execute - Comando openssl - Data de validade
+
+notAfter=May 21 21:30:18 2023 GMT
+notAfter=May 21 21:30:17 2023 GMT
+notAfter=May 21 21:30:17 2023 GMT
+
+- Para acrescentarmos o nome do arquivo...
+
+# find /etc/kubernetes/pki/ -iname "apiserver*crt" -ls -exec openssl x509 -noout -enddate -in {} \;
+
+263390      4 -rw-r--r--   1 root     root         1155 May 21 21:30 /etc/kubernetes/pki/apiserver-etcd-client.crt
+notAfter=May 21 21:30:18 2023 GMT
+   263375      4 -rw-r--r--   1 root     root         1164 May 21 21:30 /etc/kubernetes/pki/apiserver-kubelet-client.crt
+notAfter=May 21 21:30:17 2023 GMT
+   262921      4 -rw-r--r--   1 root     root         1285 Jul 24 22:42 /etc/kubernetes/pki/apiserver.crt
+notAfter=May 21 21:30:17 2023 GMT
+
+- Ou
+
+# find /etc/kubernetes/pki/ -iname "apiserver*crt" -exec openssl x509 -noout -enddate -subject -in {} \;
+
+notAfter=May 21 21:30:18 2023 GMT
+subject=O = system:masters, CN = kube-apiserver-etcd-client
+notAfter=May 21 21:30:17 2023 GMT
+subject=O = system:masters, CN = kube-apiserver-kubelet-client
+notAfter=May 21 21:30:17 2023 GMT
+subject=CN = kube-apiserver
+
+- Ou colocando o subject na frente
+
+# find /etc/kubernetes/pki/ -iname "apiserver*crt" -exec openssl x509 -noout -subject -enddate -in {} \;
+
+subject=O = system:masters, CN = kube-apiserver-etcd-client
+notAfter=May 21 21:30:18 2023 GMT
+subject=O = system:masters, CN = kube-apiserver-kubelet-client
+notAfter=May 21 21:30:17 2023 GMT
+subject=CN = kube-apiserver
+notAfter=May 21 21:30:17 2023 GMT
+
+- Agora vamos mandar para o arquivo /tmp/meus-certificados.txt
+
+# find /etc/kubernetes/pki/ -iname "apiserver*crt" -exec openssl x509 -noout -subject -enddate -in {} \; >> /tmp/meus-certificados.txt
+
+# cat /tmp/meus-certificados.txt
+
+
+
+-*- Questão 8 - Pois bem, vimos que precisamos atualizar o nosso cluster imediatamente sem trazer nenhuma indisponibilidade para o ambiente. Como devemos proceder?
+
+- Obs: Fazer isso em todos os nodes Masters
+
+Podemos utilizar o comando kubeadm certs para visualizar as datas corretas e também para realizar sua renovação. Conforme estamos fazendo abaixo...
+
+# kubeadm certs renew all
+
+Lembrando a importância de realizar o procedimento em todos os nodes master.
+Lembre-se de restartar o apiserver, controller, scheduller e o etcd.
+Para isso podemos utilizar o comando docker stop de dentro do node que está sendo atualizado.
+
+- Obs: Pode ser que não tenha docker, por justamente o Kubernetes não estar mais dando suporte ao Docker...
+
+Containerd CLI
+
+Alguns comandos:
+
+# ctr task ls
+
+# ctr task kill "nome da task"
+
+Para ver o help do containerd cli
+
+# ctr -h
+
+# ctr tasks -h
+
+
+-*- Dia 4
+
+-*- Questão 9 - O nosso gerente solicitou que seja feita agora, um backup/snapshot do nosso ETCD.
+* Ele ficou muito assustado em saber que se perdermos o ETCD, perderemos o nosso cluster e, consequentemente, a nossa tranquilidade!
+* Portanto, bora fazer esse snapshot!
+
+https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+
+Built-in snapshot
+
+Temos que ter instalado o "etcdctl"
+
+# sudo apt-get install etcdctl
+
+Se não encontrar...
+
+# sudo apt-cache search etcdctl
+
+Se não encontrar...
+
+# sudo apt-cache search etcd
+
+Encontramos tanto o server quanto o client...
+
+"etcd-server - highly-available key value store -- daemon"
+"etcd-client - highly-available key value store -- client"
+
+Vamos instalar somente o client, que é quem precisamos para rodar comandos...
+
+# sudo apt-get install etcd-client
+
+Agora vamos ver onde os etcd's estão rodando...
+
+# kubectl get pods -n kube-system -o wide
+
+coredns-64897985d-lgttt             1/1     Running   6 (76m ago)    65d    10.40.0.1      elliot-02   <none>           <none>
+coredns-64897985d-w2j7k             1/1     Running   6 (25h ago)    65d    10.40.0.2      elliot-02   <none>           <none>
+"etcd-elliot-01                      1/1     Running   7 (25h ago)    65d    172.31.7.162   elliot-01   <none>           <none>"
+kube-apiserver-elliot-01            1/1     Running   7 (25h ago)    65d    172.31.7.162   elliot-01   <none>           <none>
+kube-controller-manager-elliot-01   1/1     Running   7 (76m ago)    65d    172.31.7.162   elliot-01   <none>           <none>
+kube-proxy-5p2ph                    1/1     Running   6 (25h ago)    65d    172.31.7.162   elliot-01   <none>           <none>
+kube-proxy-8lzm5                    1/1     Running   6 (25h ago)    65d    172.31.4.174   elliot-03   <none>           <none>
+kube-proxy-9wcmp                    1/1     Running   6 (25h ago)    65d    172.31.4.238   elliot-02   <none>           <none>
+kube-scheduler-elliot-01            1/1     Running   7 (25h ago)    65d    172.31.7.162   elliot-01   <none>           <none>
+weave-net-98lnq                     2/2     Running   80 (76m ago)   267d   172.31.4.174   elliot-03   <none>           <none>
+weave-net-xpfft                     2/2     Running   78 (25h ago)   267d   172.31.4.238   elliot-02   <none>           <none>
+weave-net-zq4d5                     2/2     Running   85 (25h ago)   267d   172.31.7.162   elliot-01   <none>           <none>
+
+Lembrando que, quando temos o local que está rodando na informação/nome do Pod, significa que ele é um Pod estático...
+Um Pod estático que está rodando no nosso node master...
+
+Precisamos coletar algumas informações no manifesto deste Pod, como ele é um Pod estático, o manifesto dele vai estar em /etc/kubernetes/manifests
+
+Então...
+
+# vim /etc/kubernetes/manifests/etcd.yaml
+
+Podemos verificar que ele tema algumas informações importantes...
+
+spec:
+  containers:
+  - command:
+    - etcd
+    - --advertise-client-urls=https://172.31.7.162:2379
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    - --client-cert-auth=true
+    - --data-dir=/var/lib/etcd
+    - --initial-advertise-peer-urls=https://172.31.7.162:2380
+    - --initial-cluster=elliot-01=https://172.31.7.162:2380
+    - --key-file=/etc/kubernetes/pki/etcd/server.key ----------------------------------> Chave
+    - --listen-client-urls=https://127.0.0.1:2379,https://172.31.7.162:2379
+    - --listen-metrics-urls=http://127.0.0.1:2381
+    - --listen-peer-urls=https://172.31.7.162:2380
+    - --name=elliot-01
+    - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt ------------------------------> Certificado
+    - --peer-client-cert-auth=true
+    - --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
+    - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --------------------------> Certificado
+    - --snapshot-count=10000
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt -------------------------------> Certificado
+    image: k8s.gcr.io/etcd:3.5.1-0
+
+
+Na documentação somos informados que temos que criar uma variável de ambiente informando a versão que queremos, no caso na documentação já fixa a versão...
+
+# ETCDCTL_API=3 etcdctl --endpoints $ENDPOINT snapshot save snapshotdb
+
+Algumas informações...
+- ETCDCTL_API=3
+- etcdctl (Comando que precisa do etcdctl instalado)
+- $ENDPOINT caso estejamos fazendo o snapshot de um etcd de um cluster que está remoto, se ja estivermos no master, não precisamos desta flag...
+- Primeira incidencia da palavra snapshot obrigatória porque é o que queremos do cluster
+- Na segunda incidencia snapshot já é o nome que queremos dar para o nosso snapshot, no meu caso etcd-snapshot
+
+Assim ficaria o comando à partir do node master...
+
+# ETCDCTL_API=3 etcdctl snapshot save snapshot_etcd_25072022
+
+Ele vai ficar um tempo demorando pois falta o certificado...
+
+Vamos pegar as informações que tenha o termo etcd no manifesto...
+
+Para facilitar, vamos para a pasta do manifesto...
+
+# cd /etc/kubernetes/manifests
+
+Agora pegar as incidencias do termo etcd no arquivo...
+Obs: Um local onde os certificados e a key do etcd estão melhores dispostas é no "kube-apiserver.yaml"
+
+# grep etcd kube-apiserver.yaml
+
+- --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+- --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+- --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+- --etcd-servers=https://127.0.0.1:2379 ----------------------------------> Como estamos acessando as configurações, etcd etc localmente, vamos ignorar o endpoint
+
+Agora vamos passar as informações no comando anterior...
+
+Se utilizarmos o comando...
+
+# ETCDCTL_API=3 etcdctl snapshot --help
+
+NAME:
+        snapshot - Manages etcd node snapshots
+
+USAGE:
+        etcdctl snapshot <subcommand> [flags]
+
+API VERSION:
+        3.2
+
+
+COMMANDS:
+        restore Restores an etcd member snapshot to an etcd directory
+        save    Stores an etcd node backend snapshot to a given file
+        status  Gets backend snapshot status of a given file
+
+OPTIONS:
+  -h, --help[=false]    help for snapshot
+
+GLOBAL OPTIONS:
+-      --cacert=""                               verify certificates of TLS-enabled secure servers using this CA bundle
+-      --cert=""                                 identify secure client using this TLS certificate file
+      --command-timeout=5s                      timeout for short running command (excluding dial timeout)
+      --debug[=false]                           enable client-side debug logging
+      --dial-timeout=2s                         dial timeout for client connections
+      --endpoints=[127.0.0.1:2379]              gRPC endpoints
+      --hex[=false]                             print byte strings as hex encoded strings
+      --insecure-skip-tls-verify[=false]        skip server certificate verification
+      --insecure-transport[=true]               disable transport security for client connections
+-      --key=""                                  identify secure client using this TLS key file
+      --user=""                                 username[:password] for authentication (prompt if password is not supplied)
+  -w, --write-out="simple"                      set the output format (fields, json, protobuf, simple, table)
+
+--cacert=""        --cert=""           --key=""
+
+Vamos dar o grep novamente para deixar na tela os caminhos para facilitar...
+
+# grep etcd kube-apiserver.yaml
+
+- --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+- --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+- --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+- --etcd-servers=https://127.0.0.1:2379
+
+Agora podemos utiliza-los no nosso comando...
+
+# ETCDCTL_API=3 etcdctl snapshot save snapshot_etcd_25072022 --cert /etc/kubernetes/pki/apiserver-etcd-client.crt 
+#                                                          --key /etc/kubernetes/pki/apiserver-etcd-client.key 
+#                                                          --cacert /etc/kubernetes/pki/etcd/ca.crt
+
+Snapshot saved at snapshot_etcd_25072022
+
+root@elliot-01:/etc/kubernetes/manifests# ls
+
+snapshot_etcd_25072022
+
+# ls -lha snapshot_etcd_25072022
+
+-rw-r--r-- 1 root root 5.7M Jul 26 01:49 snapshot_etcd_25072022
+
+
+
+-*- Questão 10 - Muito bem, o gerente está feliz, mas não perfeitamente explendido em sua felicidade!
+* A pergunta do gerente foi a seguinte, você já fez o restore para testar o nosso snapshot? EU QUERO TESTAR AGORA!
+
+Primeiro vamos verificar o que tem rodando...
+
+# kubectl get pods
+
+NAME                     READY   STATUS    RESTARTS      AGE
+static-pod-elliot-01     1/1     Running   1 (26h ago)   28h
+static-web-2-elliot-01   1/1     Running   1 (26h ago)   28h
+static-web-3-elliot-01   1/1     Running   1 (26h ago)   28h
+static-web-elliot-01     1/1     Running   1 (26h ago)   28h
+
+Vamos executar mais um pod...
+
+# kubectl run ultimo-pod --image nginx
+
+# kubectl get pods
+NAME                     READY   STATUS    RESTARTS      AGE
+static-pod-elliot-01     1/1     Running   1 (26h ago)   28h
+static-web-2-elliot-01   1/1     Running   1 (26h ago)   28h
+static-web-3-elliot-01   1/1     Running   1 (26h ago)   28h
+static-web-elliot-01     1/1     Running   1 (26h ago)   28h
+ultimo-pod               1/1     Running   0             14s
+
+Vamos ver o que acontece quando fizermos o restore do backup do etcd...
+
+Obs: A principal diferença do restore do backup do etcd é que agora não precisaremos utilizar o endereço dos certificados...
+Também passamos o local que estão os dados do nosso etcd...
+
+Como um teste, podemos fazer o restore primeiro para uma pasta no /tmp
+
+# ETCDCTL_API=3 etcdctl snapshot restore snapshot_etcd_25072022 --data-dir /tmp/etcd-test
+
+2022-07-26 02:08:50.560009 I | mvcc: restore compact to 1033511
+2022-07-26 02:08:50.568447 I | etcdserver/membership: added member 8e9e05c52164694d [http://localhost:2380] to cluster cdf818194e3a8c32
+
+# cd /tmp/etcd-test/
+# ls
+member
+# cd member
+# ls
+snap  wal
+
+Caso queiramos ir mais a fundo no nosso teste, podemos ir no manifesto do etcd e mudar o path do volumes: e apontar para o backup restaurado no temp...
+Não é legal fazer este teste, nunca fazer em producao, mas, a nível de estudo está tudo bem...
+
+# cd /etc/kubernetes/manifests/
+
+# vim etcd.yaml
+
+volumes:
+- hostPath:
+    path: /etc/kubernetes/pki/etcd
+    type: DirectoryOrCreate
+  name: etcd-certs
+- hostPath:
+    path: /var/lib/etcd ----------------------------------> Mudar para o caminho onde exportou o backup
+    type: DirectoryOrCreate
+  name: etcd-data
+status: {}
+
+
+# kubectl get pods
+NAME                     READY   STATUS    RESTARTS      AGE
+static-pod-elliot-01     1/1     Running   1 (26h ago)   29h
+static-web-2-elliot-01   1/1     Running   1 (26h ago)   29h
+static-web-3-elliot-01   1/1     Running   1 (26h ago)   29h
+static-web-elliot-01     1/1     Running   1 (26h ago)   29h
+
+Depois de apontar para o backup, podemos ver que o nosso pod com o nome 'ultimo-pod' não está aí, pois criamos ele depois que fizemos o backup...
+
+Obs: Alguns componentes kubernetes podem quebrar ao fazer esta "Brincadeira" no meu caso foi o kube-controller...
+
+NAME                                READY   STATUS        RESTARTS         AGE
+coredns-64897985d-lgttt             1/1     Running       6 (154m ago)     65d
+coredns-64897985d-w2j7k             1/1     Running       6 (26h ago)      65d
+kube-apiserver-elliot-01            1/1     Running       8 (18m ago)      65d
+kube-controller-manager-elliot-01   1/1     Terminating   14 (7m33s ago)   65d
+kube-proxy-5p2ph                    1/1     Running       6 (26h ago)      65d
+kube-proxy-8lzm5                    1/1     Running       6 (26h ago)      65d
+kube-proxy-9wcmp                    1/1     Running       6 (26h ago)      65d
+kube-scheduler-elliot-01            1/1     Running       12 (7m33s ago)   65d
+weave-net-98lnq                     2/2     Running       80 (154m ago)    267d
+weave-net-xpfft                     2/2     Running       78 (26h ago)     267d
+weave-net-zq4d5                     2/2     Running       85 (26h ago)     267d
+
+
+Excluir o servico do controller-manager foi pior, porque aí que nenhum Pod subia rsssss
+Tive que voltar, no etcd.yaml, o caminho do volume para o local original, /var/lib/etcd...
+
+
+
+-*- Dia 5
+
+-*- Questão 11 - Precisamos subir um container em um node master. Este container tem que estar rodando a imagem do nginx, o nome do pod é o pod-web e o container e o
+* container-web. Sua namespaces será a catota.
+
+https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+
+https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+
+Para ver se o namespace catota existe:
+# kuebctl get namespaces
+
+Criar o namespaces catota:
+# kubectl create namespace catota
+
+# kubectl get namespaces
+NAME              STATUS   AGE
+catota            Active   3m8s
+default           Active   270d
+kube-node-lease   Active   270d
+kube-public       Active   270d
+kube-system       Active   270d
+
+Criar o Pod:
+
+Com dry-run:
+# kubectl run pod-web --image nginx --dry-run=client -o yaml
+
+Com manifesto:
+
+# vim pod-taint.yaml
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-web
+  labels:
+    env: test
+spec:
+  containers:
+  - name: container-web
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  tolerations:
+  - key: "example-key"
+    operator: "Exists"
+    effect: "NoSchedule"
+"
+
+Porém temos um problema para schedular no node master:
+
+# kubectl get nodes
+
+NAME        STATUS   ROLES                  AGE    VERSION
+elliot-01   Ready    control-plane,master   270d   v1.23.6
+elliot-02   Ready    <none>                 270d   v1.22.3
+elliot-03   Ready    <none>                 270d   v1.22.3
+
+# kubectl describe node elliot-01
+
+Name:               elliot-01
+Roles:              control-plane,master
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=elliot-01
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=
+                    node-role.kubernetes.io/master=
+                    node.kubernetes.io/exclude-from-external-load-balancers=
+Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 31 Oct 2021 16:58:44 +0000
+"Taints:             key1=value1:NoSchedule"
+Unschedulable:      false
+
+Obs: Um Node com a taint 'NoSchedule' ele não receberá Pods novos, permanecerá com os que já existem, porém não irá irá 'schedular' novos Pods...
+      Um Node com a taint 'NoExecute' irá tirar tudo que está executando ali e os recursos serão escalados em outros Nodes...Se já tiver algo ali, ele mandará para
+      outros Nodes que possam escalar recursos.
+
+
+
+Vamos fazer um teste com um Node worker...
+
+# vim deploy-taint.yaml
+
+"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+"
+
+# kubectl get deploy
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   5/5     5            5           23s
+
+
+Vamos verificar em qual Node estes Pods estão rodando...
+# kubectl get pods -o wide
+
+NAME                               READY   STATUS    RESTARTS      AGE     IP          NODE        NOMINATED NODE   READINESS GATES
+nginx-deployment-9456bbbf9-grnn9   1/1     Running   0             87s     10.44.0.3   elliot-03   <none>           <none>
+nginx-deployment-9456bbbf9-lnxhm   1/1     Running   0             86s     10.40.0.3   elliot-02   <none>           <none>
+nginx-deployment-9456bbbf9-mxv9k   1/1     Running   0             87s     10.40.0.4   elliot-02   <none>           <none>
+nginx-deployment-9456bbbf9-tm99l   1/1     Running   0             87s     10.44.0.4   elliot-03   <none>           <none>
+nginx-deployment-9456bbbf9-wpdx7   1/1     Running   0             86s     10.44.0.2   elliot-03   <none>           <none>
+static-pod-elliot-01               1/1     Running   3 (22h ago)   4d2h    10.32.0.3   elliot-01   <none>           <none>
+static-web-2-elliot-01             1/1     Running   3 (22h ago)   4d2h    10.32.0.5   elliot-01   <none>           <none>
+static-web-3-elliot-01             1/1     Running   3 (22h ago)   4d2h    10.32.0.4   elliot-01   <none>           <none>
+static-web-elliot-01               1/1     Running   3 (22h ago)   4d2h    10.32.0.2   elliot-01   <none>           <none>
+ultimo-pod                         1/1     Running   2 (22h ago)   2d21h   10.44.0.1   elliot-03   <none>           <none>
+
+Vamos fazer o teste com o Node elliot-03...
+Primeiro verificamos se ele tem algum taint...
+
+# kubectl describe node elliot-03
+
+CreationTimestamp:  Sun, 31 Oct 2021 17:00:09 +0000
+Taints:             <none>
+
+Não tem nenhum taint...
+Vamos colocar o taint 'NoExecute' para que os Pods possam ir para outro Node...
+
+# kubectl taint node elliot-03 key1=value1:NoExecute
+node/elliot-03 tainted
+
+# kubectl describe node elliot-03
+Name:               elliot-03
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=elliot-03
+                    kubernetes.io/os=linux
+Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 31 Oct 2021 17:00:09 +0000
+'Taints:             key1=value1:NoExecute'
+
+Vamos ver se existe algum Pod rodando ainda no Node elliot-03
+
+# kubectl get pods -o wide
+
+NAME                               READY   STATUS    RESTARTS      AGE     IP          NODE        NOMINATED NODE   READINESS GATES
+nginx-deployment-9456bbbf9-ks47q   1/1     Running   0             94s     10.40.0.5   elliot-02   <none>           <none>
+nginx-deployment-9456bbbf9-lnxhm   1/1     Running   0             6m22s   10.40.0.3   elliot-02   <none>           <none>
+nginx-deployment-9456bbbf9-mxv9k   1/1     Running   0             6m23s   10.40.0.4   elliot-02   <none>           <none>
+nginx-deployment-9456bbbf9-vv4cd   1/1     Running   0             94s     10.40.0.6   elliot-02   <none>           <none>
+nginx-deployment-9456bbbf9-zsqfh   1/1     Running   0             94s     10.40.0.7   elliot-02   <none>           <none>
+static-pod-elliot-01               1/1     Running   3 (23h ago)   4d2h    10.32.0.3   elliot-01   <none>           <none>
+static-web-2-elliot-01             1/1     Running   3 (23h ago)   4d2h    10.32.0.5   elliot-01   <none>           <none>
+static-web-3-elliot-01             1/1     Running   3 (23h ago)   4d2h    10.32.0.4   elliot-01   <none>           <none>
+static-web-elliot-01               1/1     Running   3 (23h ago)   4d2h    10.32.0.2   elliot-01   <none>           <none>
+
+Como podemos ver, não temos mais nenhum Pod rodando no node elliot-03
+
+Para ver o status do rollout do deployment por causa da alteração:
+
+# kubectl rollout status deployment nginx-deployment
+
+deployment "nginx-deployment" successfully rolled out
+
+Vamos remover o taint para que tudo volte ao normal
+Obs: Volta ao normal no sentindo que: Novos Pods poderão ser escalonados no node elliot-03, mas não significa que os que estavam rodando antes irão voltar.
+
+# kubectl taint node elliot-03 key1=value1:NoExecute-
+node/elliot-03 untainted
+
+Repare que a única diferença entre este comando que retira o taint e o comando que implanta o taint é o final de '-' ao final...
+
+Vamos conferir se o taint foi de fato removido...
+
+# kubectl describe node elliot-03
+
+Name:               elliot-03
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=elliot-03
+                    kubernetes.io/os=linux
+Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 31 Oct 2021 17:00:09 +0000
+'Taints:             <none>'
+Unschedulable:      false
+
+Caso queiramos de alguma forma balancear de volta o cluster, podemos restartar o deployment...
+
+# kubectl status deployment nginx-deployment
+deployment "nginx-deployment" successfully rolled out
+
+# kubectl rollout restart deployment nginx-deployment
+deployment.apps/nginx-deployment restarted
+
+NAME                                READY   STATUS    RESTARTS      AGE    IP          NODE        NOMINATED NODE   READINESS GATES
+nginx-deployment-86556cbb56-6xjjl   1/1     Running   0             28s    10.44.0.2   elliot-03   <none>           <none>
+nginx-deployment-86556cbb56-7bnjp   1/1     Running   0             27s    10.40.0.5   elliot-02   <none>           <none>
+nginx-deployment-86556cbb56-bchwb   1/1     Running   0             25s    10.44.0.3   elliot-03   <none>           <none>
+nginx-deployment-86556cbb56-r4chj   1/1     Running   0             28s    10.44.0.1   elliot-03   <none>           <none>
+nginx-deployment-86556cbb56-rk6vr   1/1     Running   0             28s    10.40.0.4   elliot-02   <none>           <none>
+static-pod-elliot-01                1/1     Running   3 (23h ago)   4d2h   10.32.0.3   elliot-01   <none>           <none>
+static-web-2-elliot-01              1/1     Running   3 (23h ago)   4d2h   10.32.0.5   elliot-01   <none>           <none>
+static-web-3-elliot-01              1/1     Running   3 (23h ago)   4d2h   10.32.0.4   elliot-01   <none>           <none>
+static-web-elliot-01                1/1     Running   3 (23h ago)   4d2h   10.32.0.2   elliot-01   <none>           <none>
+
+Podemos ver que dois Pods voltaram para o node elliot-03
+
+Agora que fizemos testes com taints podemos voltar a questão...
+
+OBS: NÃO É PRA REMOVER O TAINT QUE JÁ EXISTE NO MASTER. EM NENHUM MOMENTO FOI SOLICITADO QUE REMOVESSE-MOS O TAINT DO MASTER...
+
+Vamos procurar usar o "Tolerations" para que o Pod procure um Node com a Key-Value - "NoSchedule" e se associe a este Node...
+
+
+
+# vim pod-taint.yaml
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-web
+  namespace: catota
+  labels:
+    env: test
+spec:
+  containers:
+  - name: container-web
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Equal
+    effect: NoSchedule
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+"
+
+
+tolerations:
+  - key: node-role.kubernetes.io/apps
+    operator: Equal
+    effect: apps
+
+Obs: Eu tive que editar o Node master elliot-01 para acrescentar a taint "NoSchedule" de acordo com a sintaxe da aula 
+("node-role.kubernetes.io/master=NoSchedule:NoSchedule") Antes estava: key=value1: NoSchedule
+
+# kubectl edit node elliot-01
+...
+
+Vamos criar o pod para testar:
+
+# kubectl create -f pod-taint.yaml
+
+kubectl get pods -n catota -o wide
+NAME      READY   STATUS    RESTARTS   AGE   IP          NODE        NOMINATED NODE   READINESS GATES
+pod-web   1/1     Running   0          31s   10.32.0.6   elliot-01   <none>           <none>
+
+
+
+-*- Questão 12 - Precisamos de algumas informações do nosso cluster e dos pods que lá estão.
+* Portanto, precisamos do seguinte:
+* - Adicione todos os pods do cluster por ordem de criação, dentro do arquivo /tmp/pods.txt
+* - Remova um pod do weave e adicione os eventos no arquivo /tmp/eventos.txt
+* - Liste todos os pods que estão em execução no node elliot-02 e os adicione no arquivo /tmp/pods/node-elliot02.txt
+
+# kubectl get pods
+
+(Pods do namespace default)
+
+NAME                                READY   STATUS    RESTARTS      AGE
+nginx-deployment-86556cbb56-6xjjl   1/1     Running   0             67m
+nginx-deployment-86556cbb56-7bnjp   1/1     Running   0             67m
+nginx-deployment-86556cbb56-bchwb   1/1     Running   0             67m
+nginx-deployment-86556cbb56-r4chj   1/1     Running   0             67m
+nginx-deployment-86556cbb56-rk6vr   1/1     Running   0             67m
+static-pod-elliot-01                1/1     Running   3 (24h ago)   4d3h
+static-web-2-elliot-01              1/1     Running   3 (24h ago)   4d3h
+static-web-3-elliot-01              1/1     Running   3 (24h ago)   4d3h
+static-web-elliot-01                1/1     Running   3 (24h ago)   4d3h
+
+(Todos os Pods de todos os namespaces)
+
+NAMESPACE     NAME                                READY   STATUS    RESTARTS        AGE
+catota        pod-web                             1/1     Running   0               10m
+default       nginx-deployment-86556cbb56-6xjjl   1/1     Running   0               68m
+default       nginx-deployment-86556cbb56-7bnjp   1/1     Running   0               68m
+default       nginx-deployment-86556cbb56-bchwb   1/1     Running   0               68m
+default       nginx-deployment-86556cbb56-r4chj   1/1     Running   0               68m
+default       nginx-deployment-86556cbb56-rk6vr   1/1     Running   0               68m
+default       static-pod-elliot-01                1/1     Running   3 (24h ago)     4d3h
+default       static-web-2-elliot-01              1/1     Running   3 (24h ago)     4d3h
+default       static-web-3-elliot-01              1/1     Running   3 (24h ago)     4d3h
+default       static-web-elliot-01                1/1     Running   3 (24h ago)     4d3h
+kube-system   coredns-64897985d-lgttt             1/1     Running   2 (24h ago)     68d
+kube-system   coredns-64897985d-w2j7k             1/1     Running   2 (24h ago)     68d
+kube-system   etcd-elliot-01                      1/1     Running   2 (24h ago)     68d
+kube-system   kube-apiserver-elliot-01            1/1     Running   12 (107m ago)   68d
+kube-system   kube-controller-manager-elliot-01   1/1     Running   7 (24h ago)     68d
+kube-system   kube-proxy-5p2ph                    1/1     Running   2 (24h ago)     68d
+kube-system   kube-proxy-8lzm5                    1/1     Running   2 (107m ago)    68d
+kube-system   kube-proxy-9wcmp                    1/1     Running   2 (24h ago)     68d
+kube-system   kube-scheduler-elliot-01            1/1     Running   19 (107m ago)   68d
+kube-system   weave-net-29l8p                     2/2     Running   4 (24h ago)     2d22h
+kube-system   weave-net-cr4d9                     2/2     Running   5 (105m ago)    2d22h
+kube-system   weave-net-dzwh5                     2/2     Running   6 (105m ago)    2d22h
+
+
+Se realizarmos um "kubectl describe pod "nome-do-pod"" veremos que ele nos trás diversas informações...
+Mais informações são impressas na tela quando rodamos "kubectl get pods "nome-do-pod" -o yaml"
+
+Vamos dizer que precisamos trazer os dados ordenados por um determinado valor...
+
+Para consultar o que temos de opções no "get pods" podemos utilizar o 
+
+# kubectl get pods --help
+
+Veremos que temos o: "--sort-by='': If non-empty, sort list types using this field specification.  The field specification is expressed"
+
+O exercício nos pede para que adicionemos em lista todos os Pods por ordem de criação...Para isso temos o campo "creationTimestamp"
+
+Então...
+
+Obs: Temos três sintaxes aceitas para este comando...
+
+# kubectl get pods -A --sort-by metadata.creationTimestamp
+
+# kubectl get pods -A --sort-by=metadata.creationTimestamp
+
+# kubectl get pods -A --sort-by=.metadata.creationTimestamp
+
+Obs: "metadata.creationTimestamp" por causa da estrutura do YAML
+
+NAMESPACE     NAME                                READY   STATUS    RESTARTS        AGE
+kube-system   kube-proxy-8lzm5                    1/1     Running   2 (120m ago)    68d
+kube-system   kube-proxy-9wcmp                    1/1     Running   2 (24h ago)     68d
+kube-system   kube-proxy-5p2ph                    1/1     Running   2 (24h ago)     68d
+kube-system   kube-apiserver-elliot-01            1/1     Running   12 (120m ago)   68d
+kube-system   etcd-elliot-01                      1/1     Running   2 (24h ago)     68d
+kube-system   kube-controller-manager-elliot-01   1/1     Running   7 (24h ago)     68d
+kube-system   kube-scheduler-elliot-01            1/1     Running   19 (120m ago)   68d
+kube-system   coredns-64897985d-lgttt             1/1     Running   2 (24h ago)     68d
+kube-system   coredns-64897985d-w2j7k             1/1     Running   2 (24h ago)     68d
+default       static-web-elliot-01                1/1     Running   3 (24h ago)     4d4h
+default       static-web-2-elliot-01              1/1     Running   3 (24h ago)     4d3h
+default       static-web-3-elliot-01              1/1     Running   3 (24h ago)     4d3h
+default       static-pod-elliot-01                1/1     Running   3 (24h ago)     4d3h
+kube-system   weave-net-29l8p                     2/2     Running   4 (24h ago)     2d22h
+kube-system   weave-net-cr4d9                     2/2     Running   5 (118m ago)    2d22h
+kube-system   weave-net-dzwh5                     2/2     Running   6 (118m ago)    2d22h
+default       nginx-deployment-86556cbb56-rk6vr   1/1     Running   0               81m
+default       nginx-deployment-86556cbb56-r4chj   1/1     Running   0               81m
+default       nginx-deployment-86556cbb56-6xjjl   1/1     Running   0               81m
+default       nginx-deployment-86556cbb56-7bnjp   1/1     Running   0               81m
+default       nginx-deployment-86556cbb56-bchwb   1/1     Running   0               81m
+catota        pod-web                             1/1     Running   0               22m
+
+
+Vamos jogar a saída para o arquivo solicitado na questão...
+
+# kubectl get pods -A --sort-by=.metadata.creationTimestamp > /tmp/pods.txt
+
+
+* - Remova um pod do weave e adicione os eventos no arquivo /tmp/eventos.txt
+
+# kubectl get pods -n kube-system
+NAME                                READY   STATUS    RESTARTS        AGE
+coredns-64897985d-lgttt             1/1     Running   2 (24h ago)     68d
+coredns-64897985d-w2j7k             1/1     Running   2 (24h ago)     68d
+etcd-elliot-01                      1/1     Running   2 (24h ago)     68d
+kube-apiserver-elliot-01            1/1     Running   12 (126m ago)   68d
+kube-controller-manager-elliot-01   1/1     Running   7 (24h ago)     68d
+kube-proxy-5p2ph                    1/1     Running   2 (24h ago)     68d
+kube-proxy-8lzm5                    1/1     Running   2 (126m ago)    68d
+kube-proxy-9wcmp                    1/1     Running   2 (24h ago)     68d
+kube-scheduler-elliot-01            1/1     Running   19 (126m ago)   68d
+weave-net-29l8p                     2/2     Running   4 (24h ago)     2d22h
+weave-net-cr4d9                     2/2     Running   5 (124m ago)    2d22h
+weave-net-dzwh5                     2/2     Running   6 (124m ago)    2d22h
+
+
+Assim consigo pegar os eventos por ordem...
+# kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
+
+Vamos deletar o pod o weave net
+# kubectl delete pod weave-net-29l8p -n kube-system 
+pod "weave-net-29l8p" deleted
+
+Vamos ver de novo os eventos...
+# kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
+
+Obs: Vamos pegar somente os eventos do momento que matamos o pod do weave net...
+
+NAMESPACE     LAST SEEN   TYPE      REASON             OBJECT                MESSAGE
+default       33s         Warning   ImageGCFailed      node/elliot-01        failed to get imageFs info: non-existent label "docker-images"
+default       56m         Warning   FailedScheduling   pod/pod-web           0/3 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: value1}, that the pod didn't tolerate, 2 node(s) didn't match Pod's node affinity/selector.
+default       55m         Warning   FailedScheduling   pod/pod-web           skip schedule deleting pod: default/pod-web
+default       47m         Warning   FailedScheduling   pod/pod-web           0/3 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: value1}, that the pod didn't tolerate, 2 node(s) didn't match Pod's node affinity/selector.
+default       46m         Warning   FailedScheduling   pod/pod-web           skip schedule deleting pod: default/pod-web
+catota        33m         Normal    Scheduled          pod/pod-web           Successfully assigned catota/pod-web to elliot-01
+catota        33m         Normal    Started            pod/pod-web           Started container container-web
+catota        33m         Normal    Pulled             pod/pod-web           Container image "nginx" already present on machine
+catota        33m         Normal    Created            pod/pod-web           Created container container-web
+"kube-system   25s         Normal    Killing            pod/weave-net-29l8p   Stopping container weave
+kube-system   57s         Normal    Killing            pod/weave-net-29l8p   Stopping container weave-npc
+kube-system   26s         Normal    Created            pod/weave-net-gd876   Created container weave-init
+kube-system   26s         Normal    Scheduled          pod/weave-net-gd876   Successfully assigned kube-system/weave-net-gd876 to elliot-02
+kube-system   26s         Normal    Pulled             pod/weave-net-gd876   Container image "docker.io/weaveworks/weave-kube:2.8.1" already present on machine
+kube-system   26s         Normal    SuccessfulCreate   daemonset/weave-net   Created pod: weave-net-gd876
+kube-system   25s         Normal    Started            pod/weave-net-gd876   Started container weave-init
+kube-system   25s         Warning   FailedKillPod      pod/weave-net-29l8p   error killing pod: failed to "KillContainer" for "weave" with KillContainerError: "rpc error: code = Unknown desc = Error response from daemon: No such container: 0d139a82b6323c8593385cf2f2874d49c7188db97b4dd26a51533967a48c6979"
+kube-system   23s         Normal    Created            pod/weave-net-gd876   Created container weave
+kube-system   23s         Normal    Started            pod/weave-net-gd876   Started container weave
+kube-system   23s         Normal    Pulled             pod/weave-net-gd876   Container image "docker.io/weaveworks/weave-npc:2.8.1" already present on machine
+kube-system   23s         Normal    Created            pod/weave-net-gd876   Created container weave-npc
+kube-system   23s         Normal    Started            pod/weave-net-gd876   Started container weave-npc
+kube-system   23s         Normal    Pulled             pod/weave-net-gd876   Container image "docker.io/weaveworks/weave-kube:2.8.1" already present on machine"
+
+
+
+* - Liste todos os pods que estão em execução no node elliot-02 e os adicione no arquivo /tmp/pods/node-elliot02.txt
+
+# kubectl get pods --all-namespaces -o wide --field-selector=spec.nodeName=elliot-02
+
+ou
+
+# kubectl get pods --all-namespaces -o wide --field-selector spec.nodeName=elliot-02
+
+ou
+
+# kubectl get pods -A -o wide --field-selector spec.nodeName=elliot-02
+
+Agora jogamos para dentro do arquivo informado...
+
+# kubectl get pods -A -o wide --field-selector spec.nodeName=elliot-02 > /tmp/pods-node-elliot-02.txt
+
+- Respostas
+
+1
+# kubectl get pods -A --sort-by=.metadata.creationTimestamp > /tmp/pods.txt
+
+2
+# kubectl delete pod weave-net-29l8p -n kube-system
+# kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
+Obs: Vamos pegar somente os eventos do momento que matamos o pod do weave net...
+# vim /tmp/eventos.txt
+
+Colar, salvar e sair...
+
+3
+# kubectl get pods --all-namespaces --field-selector spec.nodeName=elliot-02 > /tmp/pods-node-elliot-02.txt
+
+
+
+-*- Dia 6
+
+-*- Questão 13 - O nosso gerente observou no dashboard do Lens que um dos nossos nodes não está bem. Temos algum problema com o nosso cluster e precisamos resolver agora.
+
+Um dos Nodes estava como "NotReady"
+
+Obs: A criação do erro não foi feita na aula
+
+
+Verificando o Node não tinha nada no status:
+# kubectl describe node "Nome do Node"
+
+Primeiro verificamos os Pods:
+# kubectl get pods
+
+
+O negócio foi verificar o componente do cluster que roda em todos os nodes que é o "Kubelet"
+
+# systemctl status kubelet
+
+O status estava como "inactive"
+
+Para verificar se tinha algum processo do Kubelet rodando...
+# ps -ef | grep -i kubelet
+
+Não tinha nada rodando...A princípio é tentar fazer rodar da forma mais comum...
+# systemctl start kubelet
+
+Não subiu!
+Ele tenta fazer o start mas não consegue....
+Está tentando executar em "ExecStart=/usr/local/bin/kubelet"
+
+Vamos ver como está este local...
+# ls -lha /usr/local/bin/kubelet
+
+Tem como procurarmos o binário com "whereis"
+
+Por exemplo:
+# whereis ls
+ls: /usr/bin/ls /usr/share/man/man1/ls.1.gz
+
+# whereis kubeadm
+kubeadm: /usr/bin/kubeadm
+
+Vamos procurar então o Kubelet:
+# whereis kubelet
+kubelet: /usr/bin/kubelet
+
+Teríamos duas opções neste caso, mover o binário para o local onde o systemctl está "olhando" ou mudar o local para onde o systemctl está "olhando"...
+
+A segunda opção é melhor, pois como vimos acima, o kubeadm já está lá junto com o kubelet...
+
+Alterando o caminho do kubelet....
+# vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
+Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
+# This is a file that "kubeadm init" and "kubeadm join" generates at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically
+EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
+# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use
+# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.
+EnvironmentFile=-/etc/default/kubelet
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS
+
+
+Depois de corrigir vamos dar o reload...
+# systemctl daemon-reload
+# systemctl restart kubelet
+# systemctl status kubelet
+
+
+Podemos ver os logs também com:
+# docker ps (Verificar se o docker está rodando depois que já tiver conectado ao node problemático com 'ssh node-com-problema')
+# journalctl -u kubelet
+
+Caso não lembre qual arquivo é:
+# systemctl edit --full kubelet
+
+
+
+-*- Questão 14 - Temos uma secret com o nome e senha de um usuário que nossa aplicação irá utilizar, precisamos colocar esta secret em um Pod.
+* Detalhe, esse secret deve se tornar uma variável de ambiente dentro do container...
+
+Vamos ver os tipos de secret que podemos criar...
+# kubectl create secret --help
+
+Create a secret using specified subcommand.
+
+Available Commands:
+  'docker-registry Create a secret for use with a Docker registry' -> Importante quando temos um Cluster que não tem as imagens locais.
+  generic         Create a secret from a local file, directory, or literal value
+  tls             Create a TLS secret
+
+Usage:
+  kubectl create secret [flags] [options]
+
+Use "kubectl <command> --help" for more information about a given command.
+Use "kubectl options" for a list of global command-line options (applies to all commands).
+
+``
+
+Utilizamos a generic...
+Para ver quais opções temos para generic secrets
+# kubeclt create secret generic --help
+
+Examples:
+  # Create a new secret named my-secret with keys for each file in folder bar
+  kubectl create secret generic my-secret --from-file=path/to/bar
+  
+  # Create a new secret named my-secret with specified keys instead of names on disk
+  kubectl create secret generic my-secret --from-file=ssh-privatekey=path/to/id_rsa
+--from-file=ssh-publickey=path/to/id_rsa.pub
+  
+  # Create a new secret named my-secret with key1=supersecret and key2=topsecret
+' kubectl create secret generic my-secret --from-literal=key1=supersecret --from-literal=key2=topsecret '
+  
+  # Create a new secret named my-secret using a combination of a file and a literal
+  kubectl create secret generic my-secret --from-file=ssh-privatekey=path/to/id_rsa --from-literal=passphrase=topsecret
+  
+  # Create a new secret named my-secret from env files
+  kubectl create secret generic my-secret --from-env-file=path/to/foo.env --from-env-file=path/to/bar.env
+
+
+Vamos ver como ficaria o arquivo da secret com o '--dry-run=client -o yaml'
+# kubectl create secret generic credentials --from-literal user=marlon --from-literal password=12345678 --dry-run=client -o yaml
+
+apiVersion: v1
+data:
+  password: MTIzNDU2Nzg=
+  user: bWFybG9u
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: credentials
+
+Para decodificar as secrets:
+# echo "MTIzNDU2Nzg=" | base64 -d
+
+Para criar de fato a secret...
+# kubectl create secret generic credentials --from-literal user=marlon --from-literal password=12345678
+
+Vamos criar um Pod...
+# kubectl run pod-secret --image nginx --dry-run -o yaml
+ou
+# kubectl run pod-secret --image nginx --dry-run=client -o yaml
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod-secret
+  name: pod-secret
+spec:
+  containers:
+  - image: nginx
+    name: pod-secret
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+"
+
+Vamos adicionar a secret como variável de ambiente...
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod-secret
+  name: pod-secret
+spec:
+  containers:
+  - image: nginx
+    name: pod-secret
+    resources: {}
+    env:
+    - name: MEU_USER
+      valuefrom:
+        secretKeyRef:
+          name: credentials
+          key: user
+    - name: MINHA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: credentials
+          key: password        
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+"
+
+Obs: Caso quisessemos ler as duas ao mesmo tempo, poderíamos também declarar um volume, e colocar as secrets em um arquivo lá...
+
+Vamos criar o Pod agora...
+# kubectl create -f pod-secret-yaml
+
+Vamos ver as envs...
+# kubectl describe pod pod-secret
+...
+Environment:
+MEU_USER:        <set to the key 'user' in secret 'credentials'>      Optional: false
+MINHA_PASSWORD:  <set to the key 'password' in secret 'credentials'>  Optional: false
+...
+
+Vamos buscar as variáveis de ambiente dentro do container...
+# kubectl exec -it pod-secret -- bash
+
+# pod-secret:/# env
+
+KUBERNETES_SERVICE_PORT_HTTPS=443
+KUBERNETES_SERVICE_PORT=443
+'MEU_USER=marlon'
+HOSTNAME=pod-secret
+PWD=/
+PKG_RELEASE=1~bullseye
+HOME=/root
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+NJS_VERSION=0.7.6
+TERM=xterm
+SHLVL=1
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+KUBERNETES_SERVICE_HOST=10.96.0.1
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PORT=443
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+NGINX_VERSION=1.23.1
+'MINHA_PASSWORD=12345678'
+_=/usr/bin/env
+
+
+
+-*- Dia 7
+
+Depois que compra a prova temos acesso ao site chamado - https://killer.sh
+Este site é um simulador de como é a prova...Importante para um "esquenta" para a prova
+
+
+
+
+-*- Dia 8
+
+Obs: Foram removidos todos os Pod's criados nas outras aulas....Deployments e Pod's estáticos...
+
+-*- Questão 15 - Precisamos subir um pod, fácil não?
+* Porém esse Pod somente poderá ficar disponível quando um determinado service estiver no ar.
+* O serviço deverá ser um simples Nginx.
+* Teremos mais detalhes do Pod durante a resolução.
+
+# kubectl get pods
+No resources found in default namespace.
+
+# kubectl run pod-standby --image nginx --port 80 --dry-run=client -o yaml
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod-standby
+  name: pod-standby
+spec:
+  containers:
+  - image: nginx
+    name: pod-standby
+    ports:
+    - containerPort: 80
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+"
+
+Vamos adicionar as configurações de "livenessProbe" e "readnessProbe"
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod-standby
+  name: pod-standby
+spec:
+  containers:
+  - image: nginx
+    name: pod-standby
+    ports:
+    - containerPort: 80
+    resources: {}
+    livenessProbe:
+      exec:
+        command:
+        - 'true'
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - 'wget -q -T -O- http://my-nginx:80'
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+"
+
+Nestas configurações fazemos com que o livenessProbe seja um comando linux tipo "while true" e o readnessProbe seja um get na porta do Pod do nginx
+
+
+Se utilizarmos o comando:
+# kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+pod-standby   0/1     Running   0          42s
+
+
+Veremos que o Pod em si subiu, mas ainda não está pronto...e não é restartado, porque ele de fato está "vivo", passando pelo livenessProbe, mas não está pronto, segundo
+o readinessProbe, pois ele não consegue dar o wget na porta 80 do Pod "my-nginx" pois ele ainda não existe...
+
+Vamos então criar o Pod que o readinessProbe está esperando...
+# kubectl run my-nginx --image=nginx --port=80
+
+NAME          READY   STATUS    RESTARTS   AGE
+my-nginx      1/1     Running   0          36s
+pod-standby   0/1     Running   0          4m14s
+
+Nosso pod my-nginx está rodando, mas, por que o pod-standby ainda não está ready? Simples, porque não temos o serviço para que o pod-standby possa se conectar so my-nginx
+Vamos expor nosso Pod...
+# kubectl expose pod my-nginx
+
+Vamos verificar se o service foi criado...
+# kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   273d
+my-nginx     ClusterIP   10.102.138.66   <none>        80/TCP    98s
+
+O service foi criado como esperávamos...
+Vamos verificar como estão os Pod's agora...
+# kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+my-nginx      1/1     Running   0          6m11s
+pod-standby   0/1     Running   0          9m49s
+
+O pod-standby ainda não está pronto. Por quê?
+
+Detalhe: Não temos o wget dentro do container do nginx rsssss
+Vamos trocar o comando wget para o curl...
+
+
+# vim pod-standby.yaml
+"
+readinessProbe:
+exec:
+  command:
+  - sh
+  - -c
+  - 'curl http://my-nginx:80'
+"
+# kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+my-nginx      1/1     Running   0          73m
+pod-standby   0/1     Running   0          29m
+
+# kubectl delete pod pod-standby
+pod "pod-standby" deleted
+
+# kubectl create -f pod-standby.yaml
+pod/pod-standby created
+
+# kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+my-nginx      1/1     Running   0          73m
+pod-standby   1/1     Running   0          3s
+
+Agora o nosso pod 'pod-standby' passou pelo readinessProbe...
+
+Vamos deletar o svc...
+# kubectl delete svc my-nginx
+service "my-nginx" deleted
+
+# kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+my-nginx      1/1     Running   0          76m
+pod-standby   1/1     Running   0          2m34s
+
+Ele continua running, porque ele passou pelo readinessProbe, e para o livenessProbe está tudo ok....
+Mas, se deletarmos o Pod, recriarmos e ele tiver que passar de novo pelo livinessProbe
+
+# kubectl delete pod pod-standby
+pod "pod-standby" deleted
+
+# kubectl create -f pod-standby.yaml
+
+# kubectl get pods
+NAME          READY   STATUS    RESTARTS   AGE
+my-nginx      1/1     Running   0          78m
+pod-standby   0/1     Running   0          18s
+
+Ele vai ficar pra sempre rodando, mas não vai passar para "ready" que é quando pode receber tráfego...
+
+
+
+-*- Dia 9
+
+-*- Questão 16 - Hoje o nosso gerente pediu para que ficassemos confortáveis com o gerenciamento de contextos dos nossos clusters.
+* Ele está com medo de que executemos algo em algum cluster errado, e assim deixando o nosso dia muito mais chatiante!
+
+Atualmente temos apenas um contexto...
+
+CURRENT   NAME                          CLUSTER      AUTHINFO           NAMESPACE
+*         kubernetes-admin@kubernetes   kubernetes   kubernetes-admin   
+
+Para está questão vamos fazer a instalação do Kind...
+
+$ curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-amd64
+$ chmod +x ./kind
+$ sudo mv ./kind /usr/local/bin/kind
+
+Vamos criar um manifesto para criar nosso cluster com o Kind...
+
+# vim kind-cluster.yaml
+
+# 3 nodes - 2 workers e 1 master/control-plane
+
+"
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+- role: worker
+- role: worker
+"
+
+Agora vamos dar o comando para criar o cluster...
+# kind create cluster --name cka-01 --config kind-cluster.yaml
+
+Creating cluster "cka-01" ...
+ ✓ Ensuring node image (kindest/node:v1.24.0) 🖼 
+ ✓ Preparing nodes 📦 📦 📦  
+ ✓ Writing configuration 📜 
+ ✓ Starting control-plane 🕹️ 
+ ✓ Installing CNI 🔌 
+ ✓ Installing StorageClass 💾 
+ ✓ Joining worker nodes 🚜 
+Set kubectl context to "kind-cka-01"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-cka-01
+
+Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/quick-start/
+
+
+Obs: Tive que vir para minha máquina pois não tinha espaço nos nodes criados na Amazon...
+Obs2: Utilizar o Kind com root
+
+# kubectl config get-contexts
+CURRENT   NAME          CLUSTER       AUTHINFO      NAMESPACE
+*         kind-cka-01   kind-cka-01   kind-cka-01 
+
+# kubectl get nodes
+NAME                   STATUS   ROLES           AGE     VERSION
+cka-01-control-plane   Ready    control-plane   5m24s   v1.24.0
+cka-01-worker          Ready    <none>          4m48s   v1.24.0
+cka-01-worker2         Ready    <none>          4m47s   v1.24.0
+
+
+Obs: Estava tendo problemas para criar o segundo cluster....Bastou reiniciar a máquina que deu tudo certo....ai ai
+Obs: Para pegar um log mais completo na criação do cluster...
+# kind create cluster --loglevel debug --name cka-02 --config kind-cluster.yaml
+or
+# kind create cluster --retain -v 1 --name cka-02 --config kind-cluster.yaml
+# kind export logs
+
+# kind create cluster --name cka-02 --config kind-cluster.yaml
+✗ Joining worker nodes 🚜 
+ERROR: failed to create cluster: failed to join node with kubeadm: command 
+"docker exec --privileged cka-02-worker2 kubeadm join --config /kind/kubeadm.conf --skip-phases=preflight --v=6" failed with error: exit status 1
+
+...
+nodes "cka-02-worker2" not found
+error uploading crisocket
+...
+
+"
+swapoff -a    # will turn off the swap 
+kubeadm reset
+systemctl daemon-reload
+systemctl restart kubelet
+iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X  # will reset iptables
+systemctl restart docker
+"
+
+# sysctl fs.inotify
+# sysctl fs.inotify.max_user_instances=512
+fs.inotify.max_user_instances = 512
+
+# sysctl fs.inotify
+fs.inotify.max_queued_events = 16384
+fs.inotify.max_user_instances = 512
+fs.inotify.max_user_watches = 123562
+
+
+Depois de muita luta...
+
+Creating cluster "cka-02" ...
+DEBUG: docker/images.go:58] Image: kindest/node:v1.24.0@sha256:0866296e693efe1fed79d5e6c7af8df71fc73ae45e3679af05342239cdc5bc8e present locally
+ ✓ Ensuring node image (kindest/node:v1.24.0) 🖼
+ ✓ Preparing nodes 📦 📦 📦  
+ ✓ Writing configuration 📜 
+ ✓ Starting control-plane 🕹️ 
+ ✓ Installing CNI 🔌 
+ ✓ Installing StorageClass 💾 
+ ✓ Joining worker nodes 🚜 
+Set kubectl context to "kind-cka-02"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-cka-02
+
+Have a nice day! 👋
+
+# kind get clusters
+cka-01
+cka-02
+
+# kubectl config get-contexts
+CURRENT   NAME          CLUSTER       AUTHINFO      NAMESPACE
+          kind-cka-01   kind-cka-01   kind-cka-01   
+*         kind-cka-02   kind-cka-02   kind-cka-02
+
+# kubectl get nodes
+NAME                   STATUS   ROLES           AGE     VERSION
+cka-02-control-plane   Ready    control-plane   3m21s   v1.24.0
+cka-02-worker          Ready    <none>          2m50s   v1.24.0
+cka-02-worker2         Ready    <none>          2m50s   v1.24.0
+
+# kubectl config use-context kind-cka-01
+# kubectl config get-contexts
+CURRENT   NAME          CLUSTER       AUTHINFO      NAMESPACE
+*         kind-cka-01   kind-cka-01   kind-cka-01   
+          kind-cka-02   kind-cka-02   kind-cka-02 
+
+# kubectl get nodes
+NAME                   STATUS   ROLES           AGE   VERSION
+cka-01-control-plane   Ready    control-plane   48m   v1.24.0
+cka-01-worker          Ready    <none>          48m   v1.24.0
+cka-01-worker2         Ready    <none>          48m   v1.24.0
+
+
+
+-*- Questão 17 - Precisamos criar um Pod com o Nginx rodando no cluster cka-01, já no cluster cka-02, nós precisamos ter um deployment do Nginx e um service
+* apontando para esse deployment.
+* Os Pods deverão ter o mesmo nome em todos os clusters.
+
+Primeiro vamos criar o Pod no cluster cka-01...Vamos verificar se estamos no contexto correto...
+# kubectl config get-contexts
+CURRENT   NAME          CLUSTER       AUTHINFO      NAMESPACE
+*         kind-cka-01   kind-cka-01   kind-cka-01   
+          kind-cka-02   kind-cka-02   kind-cka-02
+
+Também poderíamos utilizar o
+# kubectl config current-context
+kind-cka-01
+
+Estamos! Então vamos realizar o comando de criação do manifesto do Pod com --dry-run=client
+
+# kubectl run --image nginx pod-test --port 80 --namespace test --dry-run=client -o yaml > pod-context.yaml
+
+ou
+
+# vim pod-context-cka01.yaml
+e cole o conteudo dentro...
+
+# kubectl create namespace test
+namespace/contexts-test created
+
+# kubectl create -f pod-context.yaml
+
+
+- Forcing namespace deletion
+Forcing deletion k8s resources...
+# kubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --show-kind --ignore-not-found
+
+kubectl get namespace [your-namespace] -o json >tmp.json
+nano tmp.json
+- Let finalizers like that "finalizers: "
+kubectl proxy
+
+On another terminal...
+
+curl -k -H "Content-Type: application/json" -X PUT --data-binary @tmp.json http://127.0.0.1:8001/api/v1/namespaces/[your-namespace]/finalize
+
+
+Vamos mudar de contexto e criar o deployment...
+# kubectl config get-contexts
+CURRENT   NAME          CLUSTER       AUTHINFO      NAMESPACE
+*         kind-cka-01   kind-cka-01   kind-cka-01   
+          kind-cka-02   kind-cka-02   kind-cka-02   
+
+# kubectl config use-context kind-cka-02
+Switched to context "kind-cka-02".
+
+# kubectl create deployment another-context --image nginx --port 80 --namespace context2 --dry-run=client -o yaml > deployment.yaml
+# kubectl create namespace context2
+namespace/context2 created
+
+# kubectl create -f deployment.yaml
+
+# kubectl get deploy -n context2
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+another-context   1/1     1            1           29s
+
+# kubectl get pods -n context2
+NAME                               READY   STATUS    RESTARTS   AGE
+another-context-7b87bb84cd-c2p59   1/1     Running   0          50s
+
+
+Criando o serviço para o deployment...
+# kubectl expose deploy another-context -n context2 --type=NodePort
+
+# kubectl get svc -n context2
+NAME              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+another-context   ClusterIP   10.96.4.153   <none>        80/TCP    8s
+
+Deletando os clusters...
+# kind delete cluster --name cka-01
+# kind delete cluster --name cka-02
+
+-*- Dia 10
+
+-*- Questão 18 - Nosso gerente precisa reportar para o nosso diretor, quais as namespaces que nós temos hoje em produção.
+* Salvar a lista de namepaces no arquivo /tmp/namespaces-k8s.txt
+
+# kubectl get namespaces > /tmp/namespaces-k8s.txt
+# cat /tmp/namespaces-k8s.txt
+# vim /tmp/namespaces-k8s.txt
+
+NAME              STATUS   AGE
+catota            Active   12d
+default           Active   283d
+kube-node-lease   Active   283d
+kube-public       Active   283d
+kube-system       Active   283d
+
+Para tirarmos o cabeçalho...
+# kubectl get namespaces --no-headers > /tmp/namespaces-k8s.txt
+# cat /tmp/namespaces-k8s.txt
+catota            Active   12d
+default           Active   283d
+kube-node-lease   Active   283d
+kube-public       Active   283d
+kube-system       Active   283d
+
+
+- Jeito mais conveniente...
+Para trazer só a lista de nomes...
+# kubectl get namespaces --no-headers -o custom-columns=":metadata.name"
+catota
+default
+kube-node-lease
+kube-public
+kube-system
+
+Para trazer o recurso e nome...
+# kubectl get namespaces --no-headers -o name
+namespace/catota
+namespace/default
+namespace/kube-node-lease
+namespace/kube-public
+namespace/kube-system
+
+
+
+-*- Questão 19 - Precisamos criar um Pod chamado web utilizando a imagem do Nginx na versão 1.21.4. O Pod deverá ser criado no namespace
+* web-1 e o container deverá se chamar meu-container-web. O nosso gerente pediu para que seja criado um script que retorne o
+* status desse pod que iremos criar. O nome do script é /tmp/script-do-gerente-toskao.sh
+
+# kubectl create namespace web-1
+
+# kubectl get namespace
+NAME              STATUS   AGE
+catota            Active   12d
+default           Active   283d
+kube-node-lease   Active   283d
+kube-public       Active   283d
+kube-system       Active   283d
+web-1             Active   5s
+
+# kubectl run web --image nginx:1.21.4 --namespace web-1 --dry-run=client -o yaml
+
+# vim web-1.yaml
+Obs: Editar o conteúdo para deixá-lo assim:
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: web
+  name: web
+  namespace: web-1
+spec:
+  containers:
+  - image: nginx:1.21.4
+    name: meu-container-web
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+"
+
+# kubectl create -f web-1.yaml
+
+# kubectl get pods -n web-1
+NAME   READY   STATUS              RESTARTS   AGE
+web    0/1     ContainerCreating   0          6s
+
+# kubectl get pods -n web-1
+NAME   READY   STATUS    RESTARTS   AGE
+web    1/1     Running   0          16s
+
+- Agora vamos criar o script para que retorne o status
+
+O comando para trazermos o status é:
+# kubectl get pods -n web-1 --no-headers -o custom-columns=":status.phase"
+
+Se quisermos trazer o nome do pod antes do status:
+# kubectl get pods -n web-1 --no-headers -o custom-columns=":metadata.name,:status.phase"
+
+Vamos adicionar este comando dentro do arquivo solicitado...
+# vim /tmp/script-do-gerente-toskao.sh
+
+Dando permissão de execução...
+# chmod +x /tmp/script-do-gerente-toskao.sh
+
+Rodando o script...
+# /tmp/script-do-gerente-toskao.sh
+web   Running
+
+
+-*- Questão 20 - Criamos o Pod do Nginx, parabéns!
+* Portanto, agora precisamos mudar a versão do Nginx para a versão 1.18.0, pois o nosso gerente viu um artigo no Medium e disse
+* que agora temos que usar essa versão e ponto.
+
+
+* task-2 - Precisamos criar um Deployment no lugar do nosso Pod do Nginx.
+
+* task-3 - Precisamos utilizar o Nginx com a imagem do Alpine, porque o gerente leu um outro arquivo no Medium.
+
+* task-4 - Precisamos realizar o rollback do nosso deployment web.
+
+- Existem duas formas mais comuns de fazer isso, uma delas é com edit a outra com o set...
+
+# kubectl edit pod web -n web-1
+"
+namespace: web-1
+resourceVersion: "1424482"
+uid: ddbe61fe-2114-4d10-b475-00e450822fea
+spec:
+containers:
+- image: nginx:1.18.0
+  imagePullPolicy: IfNotPresent
+  name: web-1
+  resources: {}
+  terminationMessagePath: /dev/termination-log
+  terminationMessagePolicy: File
+  volumeMounts:
+  - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+"
+Vamos executar o script para saber o status...
+# /tmp/script-do-gerente-toskao.sh
+web   Running
+
+# kubectl describe pod web -n web-1
+
+Events:
+  Type    Reason     Age                From               Message
+  ----    ------     ----               ----               -------
+  Normal  Scheduled  26m                default-scheduler  Successfully assigned web-1/web to elliot-02
+  Normal  Pulling    26m                kubelet            Pulling image "nginx:1.21.4"
+  Normal  Pulled     26m                kubelet            Successfully pulled image "nginx:1.21.4" in 5.792532144s
+  Normal  Created    20s (x2 over 26m)  kubelet            Created container web-1
+  Normal  Started    20s (x2 over 26m)  kubelet            Started container web-1
+  Normal  Killing    20s                kubelet            Container web-1 definition changed, will be restarted
+  Normal  Pulled     20s                kubelet            Container image "nginx:1.18.0" already present on machine
+
+
+
+- Fazendo o Rollout
+Obs: Não é possível fazer rollout de versões com Pods, por isso precisamos criar um Deployment e fazer todo o processo novamente.
+
+# kubectl create deployment web --image nginx:1.20.2 --namespace web-1 --dry-run=client -o yaml
+
+"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: web
+  name: web
+  namespace: web-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web
+    spec:
+      containers:
+      - image: nginx:1.20.2
+        name: meu-container-web
+        resources: {}
+status: {}
+"
+
+# vim deployment-web-1.yaml
+
+# kubectl create -f deployment-web-1.yaml
+deployment.apps/web created
+
+# kubectl get deploy -n web-1
+
+Obs: Vamos deletar o Pod que não utilizaremos mais...
+# kubectl delete pod web -n web-1
+pod "web" deleted
+
+# kubectl get deploy -n web-1
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+web    1/1     1            1           2m29s
+
+
+- Task - 3 - Utilizando a imagem do Nginx com Alpine...
+Obs: nginx:1.20.2-alpine
+Vamos editar a versão da imagem do Nginx como fizemos antes com o Pod...
+# kubectl edit deploy web -n web-1
+deployment.apps/web edited
+
+
+- Task - 4 - Realizando o Rollout
+# kubectl rollout history deployment web -n web-1
+
+deployment.apps/web 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+Obs: CHANGE-CAUSE está como "none" porque quando fizemos as atualizações não descrevemos o porquê...
+
+Para vermos o que tinhamos em cada versão...
+# kubectl rollout history deployment web -n web-1 --revision=1
+deployment.apps/web with revision #1
+Pod Template:
+  Labels:       app=web
+        pod-template-hash=5f794b999f
+  Containers:
+   meu-container-web:
+    Image:      nginx:1.20.2
+    Port:       <none>
+    Host Port:  <none>
+    Environment:        <none>
+    Mounts:     <none>
+  Volumes:      <none>
+
+# kubectl rollout history deployment web -n web-1 --revision=2
+deployment.apps/web with revision #2
+Pod Template:
+  Labels:       app=web
+        pod-template-hash=74789698d7
+  Containers:
+   meu-container-web:
+    Image:      nginx:1.20.2-alpine
+    Port:       <none>
+    Host Port:  <none>
+    Environment:        <none>
+    Mounts:     <none>
+  Volumes:      <none>
+
+
+
+Podemos ver que na primeira versão tinhamos a imagem do Nginx default e na segunda versão Nginx com Alpine...
+(ou Alpine com Nginx rsss)
+
+Vamos voltar para a versão 1...
+# kubectl rollout undo deployment web -n web-1 --to-revision=1
+deployment.apps/web rolled back
+
+# kubectl get pods -n web-1
+NAME                   READY   STATUS    RESTARTS   AGE
+web-5f794b999f-tggdx   1/1     Running   0          41s
+
+Já foi feito o rollback...
+
+# kubectl describe pod -n web-1
+
+"
+Containers:
+  meu-container-web:
+    Container ID:   docker://baf4ef858dc44c8b34143c6ae1d200812ba46a9cda83f2b13ac0dcc631d98b97
+    Image:          nginx:1.20.2
+"
+
+O container está na versão anterior...(revision 1)
+
+Caso quisessemos criar uma revision com a CHANGE-CAUSE...
+# kubectl create -f deployment-web-1.yaml --record=true
+Flag --record has been deprecated, --record will be removed in the future
+deployment.apps/web created
+
+# kubectl rollout history deployment web -n web-1
+REVISION  CHANGE-CAUSE
+1         kubectl create --filename=deployment-web-1.yaml --record=tr
+
+# kubectl scale deployment web -n web-1 --replicas 4 --record
+Flag --record has been deprecated, --record will be removed in the future
+deployment.apps/web scaled
+
+REVISION  CHANGE-CAUSE
+1         kubectl scale deployment web --namespace=web-1 --replicas=4 --record=true
+
+Obs: Fica gravado como uma annotation também...

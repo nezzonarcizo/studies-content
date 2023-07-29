@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: appsvc2
+spec:
+  selector:
+    app: app2
+  ports:
+  - port:  80
+    protocol: TCP
+    targetPort: 80

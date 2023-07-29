@@ -1,0 +1,890 @@
+-*- Questão 1 - Criar um pod com um volume não persistente.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pd
+spec:
+  containers:
+  - image: registry.k8s.io/test-webserver
+    name: test-container
+    volumeMounts:
+    - mountPath: /cache
+      name: cache-volume
+  volumes:
+  - name: cache-volume
+    emptyDir: {}
+
+
+Obs: A emptyDir deverá estar em "/var/lib/kubelet/pods/{podId}/volumes/kubernetes.io~empty-dir/" no node em que o seu
+pod foi escalado...
+
+Obs2: Para ver onde o Pod foi escalado "kubectl get pods -o wide"
+
+Obs3: Para pegar o id do Pod "kubectl get pods -n default test-pd -o jsonpath='{.metadata.uid}'"
+ddf2d4df-c477-47df-8d74-d07c6d2c1a48
+
+
+-*- Questão 2 - Criar um service/ep apontando para um pod.
+
+Para o pod ser exposto ele precisa de uma label pelo menos...
+Quando a port a não estiver especificada no pod voce deve especificar ele no comando "expose"
+
+Obs: Tive que adicionar label ao manifesto e tambem rodar o comando da porta porque usei um manifesto de exemplo
+da documentação kubernetes que estava com a imagem registry.k8s.io/test-webserver
+# kubectl expose pod test-pd --type=NodePort --name=test-pd-svc --port=80
+
+Melhor utilizar um pod com um container com uma imagem Nginx...
+
+# kubectl run questao2 --image=nginx --port=80
+# kubectl expose pod questao2 --type=NodePort --name=questao2-svc
+
+
+-*- Questão 3 - Colocar um node para que não execute nenhum containers.
+
+# kubectl taint nodes elliot-03 key1=value1:NoSchedule
+
+Para testar...
+
+# kubectl create deployment questao3 --image=nginx --port=80 --replicas=10
+
+root@elliot-01:~/day-7/simulado# kubectl get deploy
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+questao3   10/10   10           10          10s
+
+Verifique com "kubectl get pods -o wide" que nenhum pod estará rodando no node elliot-03
+
+
+-*- Questao 4 - Criar um PV Hostpath.
+
+# vim questao4.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pd
+spec:
+  containers:
+  - image: registry.k8s.io/test-webserver
+    name: test-container
+    volumeMounts:
+    - mountPath: /test-pd
+      name: test-volume
+  volumes:
+  - name: test-volume
+    hostPath:
+      # directory location on host
+      path: /tmp/simulado-hostpath
+      # this field is optional
+      type: DirectoryOrCreate
+
+Obs: Mudei o path
+Criei uma pasta simulado-hostpath no diretório tmp enquanto estava com o tipo Directory
+Quando mudei o type para DirectoryOrCreate observei a criação da pasta no node elliot-02
+
+
+-*- Questão 5 - Criar um initcontainer para executar uma tarefa necessária para a subida do container principal.
+
+# vim questao5.yaml
+
+- Pod yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app.kubernetes.io/name: MyApp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+  initContainers:
+  - name: init-myservice
+    image: busybox:1.28
+    command: ['sh', '-c', "until nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+  - name: init-mydb
+    image: busybox:1.28
+    command: ['sh', '-c', "until nslookup mydb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
+
+
+Podemos observar que o os init containers esperam os services do myapp container estarem prontos antes de subir a aplicacao em si
+
+- Service yaml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myservice
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9376
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mydb
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9377
+
+
+-*- Questão 6 - Criar um daemonset
+
+# vim questao6.yaml
+
+"
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-elasticsearch
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      name: fluentd-elasticsearch
+  template:
+    metadata:
+      labels:
+        name: fluentd-elasticsearch
+    spec:
+      tolerations:
+      # these tolerations are to have the daemonset runnable on control plane nodes
+      # remove them if your control plane nodes should not run pods
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: fluentd-elasticsearch
+        image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+"
+
+
+-*- Questão 7 - Criar um deployment do nginx com 5 replicas
+
+
+# kubectl create deployment "nome" "imagem" "porta" "namespace" "replicas" opcional(--dry-run=client -o yaml > arquivo.yaml)
+
+# kubectl create deployment nginx-deploy-7 --image=nginx --port=80 --replicas=5 --dry-run=client -o yaml > questao7.yaml
+
+NAME                              READY   STATUS    RESTARTS   AGE
+nginx-deploy-7-6c8578dc67-6j9hq   1/1     Running   0          17s
+nginx-deploy-7-6c8578dc67-9qps8   1/1     Running   0          17s
+nginx-deploy-7-6c8578dc67-knntg   1/1     Running   0          17s
+nginx-deploy-7-6c8578dc67-n9tsb   1/1     Running   0          17s
+nginx-deploy-7-6c8578dc67-nlrm2   1/1     Running   0          17s
+
+
+-*- Questão 8 - Ver quais pods que mais estão consumindo cpu através do kubectl top
+
+# kubectl top pod "pod-name"
+
+error: Metrics API not available
+
+
+# kubectl version --short
+Client Version: v1.23.6
+Server Version: v1.23.6
+
+
+https://github.com/kubernetes-sigs/metrics-server
+
+https://github.com/kubernetes-sigs/metrics-server
+
+
+releases/latest/download/components.yaml
+
+mv components.yaml metrics-server.yaml
+
+# vim metrics-server.yaml
+
+add to the deployment "--kubelet-insecure-tls"
+
+root@elliot-01:~/day-7/simulado# kubectl top pods
+NAME                              CPU(cores)   MEMORY(bytes)   
+nginx-deploy-7-6c8578dc67-9sqjj   0m           2Mi             
+nginx-deploy-7-6c8578dc67-fv2b7   0m           2Mi             
+nginx-deploy-7-6c8578dc67-gwkpw   0m           2Mi             
+nginx-deploy-7-6c8578dc67-nqrkt   0m           2Mi             
+nginx-deploy-7-6c8578dc67-p86wq   0m           2Mi
+
+
+-*- Questão 9 - Organizar a saída do comando "kubectl get pods" pelo tamanho do capacity storage
+
+- jsonpath examples
+
+kubectl exec wordpress-deployment-576435bcd87c4942a7154bc857b64bae-7b6crbvd4 -- env > deployment_envs_2_migrate.txt
+
+
+kubectl get deploy wordpress-deployment-576435bcd87c4942a7154bc857b64bae -n default --template '{{index .spec.template.metadata.labels "billing-plan"}}'
+
+with jsonpath
+kubectl get deploy wordpress-deployment-576435bcd87c4942a7154bc857b64bae -n default -o jsonpath='{.metadata.ownerReferences[].apiVersion}'
+
+Não fiz*******
+
+ORDER=kubectl get pv --sort-by=.spec.capacity.storage
+
+sel=${$(kubectl get pv --sort-by=.spec.capacity.storage --output=json)%?}
+
+kubectl get pods --sort-by=.volumes.persistentVolumeClaim.claimName --selector=$sel
+
+volumes:
+- name: nfs-pv
+  persistentVolumeClaim:
+    claimName: primeiro-pvc
+
+-*- Questão 10 - Qual a quantidade de nodes que estão aceitando novos containers
+
+spec:
+  taints:
+  - effect: NoSchedule
+
+
+JSONPATH='{range .items[*]}{@.spec.taints.effect}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}' \
+ && kubectl get nodes -o jsonpath="$JSONPATH" | grep "Ready=True"
+
+
+JSONPATH='{range .items[*]}{@.spec.unschedulable.false}'
+kubectl get nodes -o jsonpath="$JSONPATH" | grep "Unschedulable=false"
+
+- NoSchedule
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | awk 'NF==1 {print $0}'
+
+- Nodes are ready
+kubectl get nodes -o jsonpath="{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}"
+
+- Verifiyng node taints
+kubectl get nodes -o=custom-columns=NodeName:.metadata.name,TaintKey:.spec.taints[*].key,TaintValue:.spec.taints[*].value,TaintEffect:.spec.taints[*].effect
+
+- Catching just node with "NoSchedule"
+kubectl get nodes -o=custom-columns=NodeName:.metadata.name,TaintKey:.spec.taints[*].key,TaintValue:.spec.taints[*].value,TaintEffect:.spec.taints[*].effect | grep -i NoSchedule
+
+Resposta: 2
+
+
+-*- Questão 11 - Criar um secret e dois pods, um montando o secret em filesystem e outro como variável
+
+Utilizei a secret 'my-secret' que já estava criada como documento de texto...
+
+Em um pod declarei como variável...
+
+envFrom:
+  - secretRef:
+      name: mysecret
+
+        
+No outro Pod criei volume com a secret...
+
+  volumeMounts:
+  - name: foo
+    mountPath: "/etc/foo"
+    readOnly: true
+volumes:
+- name: foo
+  secret:
+    secretName: mysecret
+    optional: false
+
+-*- Questão 12 - Fazer a instalação do nginx em determinada versão, atualizar e depois realizar o rollback com o --record
+
+kubectl set image deployment/nginx nginx=nginx:1.161 --record=true
+
+kubectl set image deployment/nginx nginx=nginx:1.20 --record=true
+
+kubectl rollout history deployment nginx
+
+REVISION  CHANGE-CAUSE
+8         kubectl set image deployment/nginx nginx=nginx:1.161 --record=true
+9         kubectl set image deployment/nginx nginx=nginx:1.20 --record=true
+
+kubectl rollout undo deployment/nginx --to-revision=8
+
+7         <none>
+9         kubectl set image deployment/nginx nginx=nginx:1.20 --record=true
+10        kubectl set image deployment/nginx nginx=nginx:1.161 --record=true
+
+Obs: A versão 8 "deixa de existir"
+
+
+-*- Questão 13 - Realizar backup do etcd
+
+# Backup etcd
+
+# Getting the endpoint
+
+kubectl get endpoints
+
+NAME         ENDPOINTS           AGE
+kubernetes   172.31.7.162:6443   341d
+
+# Snapshot command
+
+ETCDCTL_API=3 etcdctl --endpoints $ENDPOINT snapshot save snapshot_etcd_08102022
+
+# Comando que deu certo
+
+# grep etcd kube-apiserver.yaml (To get the certs)
+
+ETCDCTL_API=3 etcdctl snapshot save snapshot_etcd_08102022 --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt
+
+# Verify the snapshot
+
+ETCDCTL_API=3 etcdctl --write-out=table snapshot status snapshot_etcd_08102022
+
++----------+----------+------------+------------+
+|   HASH   | REVISION | TOTAL KEYS | TOTAL SIZE |
++----------+----------+------------+------------+
+| e17a30eb |  1520227 |        910 |     6.0 MB |
++----------+----------+------------+------------+
+
+
+-*- Questão 14 - Identificar quais pods fazem parte de determinado service
+
+kubectl get svc 
+
+# NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+# kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP        342d
+# mydb         ClusterIP   10.110.27.10     <none>        80/TCP         29d
+# myservice    ClusterIP   10.108.165.132   <none>        80/TCP         29d
+# nginx-svc    NodePort    10.96.221.105    <none>        80:30628/TCP   4m17s
+
+kubectl describe svc nginx-svc
+
+# Name:                     nginx-svc
+# Namespace:                default
+" Labels:                   run=nginx"
+# Annotations:              <none>
+# Selector:                 run=nginx
+# Type:                     NodePort
+# IP Family Policy:         SingleStack
+# IP Families:              IPv4
+# IP:                       10.96.221.105
+# IPs:                      10.96.221.105
+# Port:                     <unset>  80/TCP
+# TargetPort:               80/TCP
+# NodePort:                 <unset>  30628/TCP
+# Endpoints:                10.40.0.4:80,10.40.0.5:80,10.40.0.6:80 + 7 more...
+# Session Affinity:         None
+# External Traffic Policy:  Cluster
+# Events:                   <none>
+
+kubectl get pods -l run=nginx
+
+# NAME                     READY   STATUS    RESTARTS   AGE
+# nginx-7f79d879c9-2d27k   1/1     Running   0          5m59s
+# nginx-7f79d879c9-6qcdl   1/1     Running   0          5m59s
+# nginx-7f79d879c9-726d9   1/1     Running   0          5m59s
+# nginx-7f79d879c9-7gxcm   1/1     Running   0          12m
+# nginx-7f79d879c9-842kh   1/1     Running   0          5m59s
+# nginx-7f79d879c9-9tx2g   1/1     Running   0          5m59s
+# nginx-7f79d879c9-kvslp   1/1     Running   0          5m59s
+# nginx-7f79d879c9-vfnx6   1/1     Running   0          5m59s
+# nginx-7f79d879c9-xbxpx   1/1     Running   0          5m59s
+# nginx-7f79d879c9-z6s2c   1/1     Running   0          5m59s
+
+
+-*- Questão 15 - Usar o nslookup e/ou outras ferramentas para pegar o dns do pod e do service
+
+kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+
+kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+
+# Server:         10.96.0.10
+# Address:        10.96.0.10#53
+# Name:   kubernetes.default.svc.cluster.local
+# Address: 10.96.0.1
+
+kubectl exec -ti dnsutils -- cat /etc/resolv.conf
+
+# nameserver 10.96.0.10
+# search default.svc.cluster.local svc.cluster.local cluster.local us-east-2.compute.internal
+# options ndots:5
+
+# Check if the DNS pod is running
+
+kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
+
+# NAME                      READY   STATUS    RESTARTS         AGE
+# coredns-64897985d-lgttt   1/1     Running   13 (5h57m ago)   139d
+# coredns-64897985d-w2j7k   1/1     Running   13 (5h57m ago)   139d
+
+# Check for errors in the DNS pod
+
+kubectl logs --namespace=kube-system -l k8s-app=kube-dns
+
+# Is DNS service up?
+
+kubectl get svc --namespace=kube-system
+
+kubectl exec -i -t dnsutils -- nslookup <service-name>
+
+# Server:         10.96.0.10
+# Address:        10.96.0.10#53
+
+# Name:   dnsutils.default.svc.cluster.local
+# Address: 10.106.160.0
+
+
+-*- Questão 16 - Adicionar mais um node no cluster
+
+
+Para pegar o "join command" para inclusão de outro node no cluster
+
+kubeadm join 172.31.7.162:6443 --token g55fcy.qls75rcf0hoz9fbf --discovery-token-ca-cert-hash sha256:b7d9350f9cbcbd9eb8f2b3887a8fdf88702237782a5f8f51c99b7a0d782b0863
+
+1 - Criar uma nova instancia
+2 - apt-get update && apt-get upgrade -y
+3 - hostname "name" (vim /etc/hostname) (reboot)
+4 - Install docker (curl -fsSL https://get.docker)
+5 - Install kubeadm and another tools
+6 - Corrigir container runtime
+7 - Usar o join command
+
+
+-*- Questão 17 - Adicionar um label no node
+
+kubectl label node elliot-01 disktype=ssd
+
+root@elliot-01:~# kubectl describe node elliot-01 | grep -i disktype
+root@elliot-01:~# kubectl label node elliot-01 disktype=ssd
+node/elliot-01 labeled
+root@elliot-01:~# kubectl describe node elliot-01 | grep -i disktype
+                    disktype=ssd
+
+
+-*- Questão 18 - Subir um pod com afinidade de node
+
+nodeSelector:
+  disktype: ssd
+
+  No spec do pod
+
+
+-*- Questao 19 - Ajustar o nome de uma imagem com nome errado de um deployment
+
+root@elliot-01:~/day-7/simulado# kubectl get deploy
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   1/1     1            1           27d
+root@elliot-01:~/day-7/simulado# kubectl edit deploy nginx
+Edit cancelled, no changes made.
+root@elliot-01:~/day-7/simulado# kubectl set image deployment/nginx nginx=latest
+deployment.apps/nginx image updated
+
+
+-*- Questão 20 - Criar um cronjob
+
+root@elliot-01:~/day-7/simulado# vim cronjob-questao20.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+
+root@elliot-01:~/day-7/simulado# kubectl apply -f cronjob-questao20.yaml
+
+root@elliot-01:~/day-7/simulado# kubectl get cronjob
+NAME    SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+hello   * * * * *   False     0        8s              21s
+root@elliot-01:~/day-7/simulado# kubectl get job
+NAME             COMPLETIONS   DURATION   AGE
+hello-27765818   1/1           2s         15s
+
+
+-*- Questão 21 - Criar um Pod com o parametro containerPort
+
+kubectl run questao21 --image=nginx --port=80
+
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: Always
+    name: questao21
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    resources: {}
+
+
+-*- Questão 22 - Declarar a variável NGINX_PORT no env do container
+
+kubectl run questao22 --image=nginx --port=80 --dry-run=client -o yaml > questao22.yaml
+
+spec:
+  containers:
+  - image: nginx
+    name: questao22
+    ports:
+    - containerPort: 80
+    env:
+    - name: NGINX_PORT
+      value: "80"
+
+kubectl apply -f questao22.yaml
+
+
+-*- Questao 23 - Declarar a variável no configmap e passar para o container
+
+configmap
+
+"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: game-demo
+data:
+  # property-like keys; each key maps to a simple value
+  player_initial_lives: "3"
+  ui_properties_file_name: "user-interface.properties"
+
+  # file-like keys
+  game.properties: |
+    enemy.types=aliens,monsters
+    player.maximum-lives=5    
+  user-interface.properties: |
+    color.good=purple
+    color.bad=yellow
+    allow.textmode=true 
+"
+
+spec container
+
+"
+spec:
+  containers:
+  - image: nginx:latest
+    name: questao23
+    ports:
+    - containerPort: 80
+    resources: {}
+    env:
+    - name: UI_PROPERTIES_FILE_NAME
+      valueFrom:
+        configMapKeyRef:
+          name: game-demo
+          key: ui_properties_file_name
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+"
+
+
+-*- Questão 24 - Declarar a variável no secret e passar para o container
+
+kubectl create secret generic mysecret \
+  --from-literal=username=Marlon \
+  --from-literal=password='S!B\*d$zDsb='
+
+Container Spec
+
+"
+spec:
+  containers:
+  - image: nginx:latest
+    name: questao24
+    ports:
+    - containerPort: 80
+    env:
+    - name: MY_DATA
+      valueFrom:
+        secretKeyRef:
+          name: mysecret
+          key: username
+          optional: false
+"
+
+
+-*- Questão 25 - Configurar resources limits no deployment
+
+spec:
+  containers:
+  - image: nginx:1.14.2
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+
+
+-*- Questão 26 - Configurar liveness e readiness no deployment
+
+"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      run: nginx
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: nginx
+    spec:
+      containers:
+      - envFrom:
+        - secretRef:
+            name: mysecret
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
+        args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
+        startupProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          failureThreshold: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        imagePullPolicy: Always
+        name: nginx
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /giropops
+          name: nfs-pv
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: nfs-pv
+        persistentVolumeClaim:
+          claimName: primeiro-pvc
+"
+
+
+-*- Questão 27 - Criar um volume Emptydir e compartilhar entre 2 containers
+
+Apenas dois containers com um volume emptyDir...
+Volume do mysql compartilhado com o php só pra testar...
+
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-lamp-site
+spec:
+    containers:
+    - name: mysql
+      image: mysql
+      env:
+      - name: MYSQL_ROOT_PASSWORD
+        value: "rootpasswd"
+      volumeMounts:
+      - mountPath: /var/lib/mysql
+        name: site-data
+    - name: php
+      image: php:7.0-apache
+      volumeMounts:
+      - mountPath: /var/www/html
+        name: site-data
+    volumes:
+    - name: site-data
+      emptyDir: {}
+"
+
+
+-*- Questão 28 - Customizar o parâmetro command do container
+
+Pod com comando para ver quais variaveis de ambiente existem...
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: command-demo
+  labels:
+    purpose: demonstrate-command
+spec:
+  containers:
+  - name: command-demo-container
+    image: debian
+    command: ["printenv"]
+  restartPolicy: OnFailure
+"
+
+Pod com comando para imprimir apenas as variáveis desejadas
+
+"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: command-demo
+  labels:
+    purpose: demonstrate-command
+spec:
+  containers:
+  - name: command-demo-container
+    image: debian
+    command: ["printenv"]
+    args: ["HOSTNAME", "KUBERNETES_PORT", "HOME"]
+  restartPolicy: OnFailure
+"
+
+
+-*- Questão 29 - Configurar um nodeselector para o Pod
+
+Node elliot-03 labeled
+
+Name:               elliot-03
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+----->              "environment=simulado"
+
+nodeSelector on Pod
+
+"
+spec:
+    nodeSelector:
+      environment: simulado
+    containers:
+    - name: mysql
+      image: mysql
+"
+
+-*- Questão 30 - Executar o kubectl rollback pause e resume
+
+kubectl get deployments
+
+"
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   1/1     1            1           107s
+"
+
+kubectl describe deployment nginx
+
+...
+nginx:
+  Image: nginx
+...
+
+kubectl rollout pause deployment/nginx
+
+"deployment.apps/nginx paused"
+
+kubectl set image deployment/nginx nginx=nginx:1.16.1
+
+"deployment.apps/nginx image updated"
+
+kubectl describe deployment nginx 
+
+...
+nginx:
+  Image: nginx:1.16.1
+...
+
+kubectl get pods
+
+nginx-b64b575f4-rbwbn   1/1     Running   0          6m43s
+
+kubectl describe pod nginx-b64b575f4-rbwbn
+
+...
+Containers:
+  nginx:
+    Container ID: docker://3815e755fa3d45c5269531f3aa341b03512a93ad115d79a8197db64cee328521
+    Image: nginx
+...
+
+kubectl rollout resume deployment/nginx
+
+"deployment.apps/nginx resumed"
+
+root@elliot-01:~/day-7/simulado# kubectl get pods
+NAME                    READY   STATUS    RESTARTS   AGE
+nginx-7c9874fb9-xtgd9   1/1     Running   0          8
+
+
+kubectl describe pod nginx-7c9874fb9-xtgd9
+
+Containers:
+  nginx:
+    Container ID: docker://ec2a11673e5654a8cff1804f9aa74bf672d5920abc5620518c8ed47b9407a871
+    Image: nginx:1.16.1
+

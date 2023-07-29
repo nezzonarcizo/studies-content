@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2beta2 # Versão do recurso, no caso HPA
+kind: HorizontalPodAutoscaler # Qual o tipo do recurso
+metadata:
+  name: portal-noticias-hpa # Nome deste recurso que está sendo criado 
+spec:
+  scaleTargetRef: # A que alvo queremos fazer referência
+    apiVersion: apps/v1 # Qual a versão do alvo que eu quero escalar 
+    kind: Deployment # Qual é o tipo do que eu quero escalar
+    name: portal-noticias-deployment # Qual é o nome do alvo que eu quero escalar
+  minReplicas: 1 # Qual é o número minímo permitido para o meu alvo
+  maxReplicas: 10 # Qual é o número máximo permitido de réplicas para o meu alvo
+  metrics: # Qual a métrica que vou definir para o meu HPA
+    - type: Resource # Recursos do sistema, não do Kubernetes
+      resource: # Qual recurso quero utilizar?
+        name: cpu # Recurso CPU
+        target: # Alvo da métrica
+          type: Utilization # Utilização do CPU citado acima 
+          averageUtilization: 50 # Consumo médio ficar acima de 50%, dos milicores que definimos no arquivo portal-noticias-deployment.yaml, que foi 10 milicores
+                                  # Ou seja, se o consumo passar de 5 milicores do CPU vai ser criada uma réplica.

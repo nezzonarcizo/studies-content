@@ -1,0 +1,239 @@
+Aula 01: VPC default da AWS -------
+
+    Nesta aula, aprendemos:
+
+        - O que é VPC
+        - Tipos de VPC
+        - Cenários de utilização do VPC
+        - Como subir a primeira instância EC2
+        - Os componentes da VPC padrão
+
+
+Questões aula 01:
+
+    1 - Sobre as VPCs, marque as alternativas corretas:
+
+        Selecione 2 alternativas
+
+        R1: Por default, toda região da AWS possui uma VPC padrão. Cada região da AWS já conta com uma VPC padrão. Quando você cria uma instância EC2, por padrão, 
+            a mesma já fica nesta VPC.
+
+        R2: As quantidades de sub-redes das VPCs padrões podem variar conforme a região.
+            Atualmente, a maior parte das regiões utilizam três sub-redes, com exceção da us-east-1 (N.Virgínia), que utiliza seis sub-redes.
+
+    
+    2 - As VPCs possuem vários componentes em sua estrutura. Entender cada um é necessário para uma correta utilização do serviço. Marque o que estiver correto:
+
+        Selecione 2 alternativas
+
+        R1: VPC é uma rede virtual isolada logicamente na nuvem da AWS
+            O objetivo da VPC é provisionar uma rede isolada, mesmo considerando que estamos utilizando um ambiente na internet.
+
+        R2: Sub-rede é um segmento da VPC onde é possível ter recursos (instâncias) de forma isolada
+            Cada VPC pode ter várias sub-redes, o que ajuda na organização da topologia do seu projeto, bem como o isolamento entre as mesmas, caso seja necessário.
+
+
+Aula 02: Conectividade na VPC padrão -------
+
+    Nesta aula, aprendemos:
+
+        - Como criar uma instância na mesma sub-rede
+        - Por que as máquinas não se falam
+        - Como aplicar regras via Security Group
+        - Como deixar aplicação em duas camadas, em redes separadas
+        - Como subir a aplicação Python
+
+Questões aula 02:
+
+    1 - Utilizando o security group, como podemos conceder acesso entre máquinas da mesma sub-rede?
+
+        Selecione 2 alternativas
+
+        R1: Criando uma regra Inbound, permitindo acesso a partir da faixa de IP da sub-rede
+            Pode ser criada uma nova regra (Inbound) concedendo o acesso proveniente da sub-rede em questão.
+
+        R2: Basta aplicar o Security Group default da VPC
+            A VPC padrão possui um security group default associado a ela. Basta aplicar para conceder a comunicação entre as máquinas.
+
+    
+    2 - Veja as referências abaixo:
+
+        us-east-2a
+        us-east-2b
+        us-east-2c
+
+        Elas correspondem a:
+
+        R: Três zonas diferentes na mesma região
+            A referência do exercício demostra três zonas de disponibilidade (fisicamente separadas) em uma mesma região, us-east-2, que corresponde ao Norte da Virgínia.
+
+    
+    3 - A comunicação entre as máquinas da mesma sub-rede:
+
+        R: Depende do security group que está aplicado
+            Independente da rede, o security group vinculado às instâncias irão permitir ou negar comunicação.
+
+
+Aula 03: Mais segurança com Network ACLs -------
+
+    Criando regras via ACLs (Access Control List):
+
+        Podemos utilizar somente Security Groups para limitar o acesso, podemos utilzar apenas ACLs para limitar o acesso e podemos também podemos utilizar
+        os dois combinados.
+
+        O primeiro "Portão" que é o Security Group pode liberar, mas se nas regras da ACLs estiver bloqueando todo o trafego, ou liberando apenas uma porta
+        não conseguiremos determinados tipos de acesso, mesmo que tudo esteja liberado no Security Group.
+
+        A ACL tem prioridade sobre os Security Groups.
+
+        Podemos alternar entre regras de acessos SSH e TCP de dentro e de fora da VPC e também entre subnets, mesmo que estejam dentro do mesmo 
+            Security Group.
+
+    
+    Nesta aula, aprendemos:
+
+        - Como criar regras via ACLs
+        - Diferença entre ACL e security group
+        - A atuação das ACLs
+
+
+Questões aula 03:
+
+    1 - Sobre a utilização das ACLs na VPC, marque as alternativas verdadeiras:
+
+        Selecione 2 alternativas
+
+        R1: Podem ser conjugadas com o Security Group
+            As ACLs podem ser utilizadas como uma camada adicional de segurança, complementando os Security Groups.
+
+        R2: Funcionam como uma camada adicional de segurança
+            As ACLs podem ser utilizadas como uma camada adicional de segurança, complementando os Security Groups.
+
+    
+    2 - Tendo como base o conjunto de regras abaixo:
+
+        Rule            Type            Protocol            Port Range          Source          Allow/Deny
+        50              HTTP(80)        TCP(6)              80                  0.0.0.0/0       DENY
+        100             ALL TCP         TCP(6)              ALL                 0.0.0.0/0       ALLOW
+        *               ALL Traffic     ALL                 ALL                 0.0.0.0/0       DENY
+
+        Podemos afirmar que:
+
+        R: Todo o tráfego TCP está liberado, exceto a porta 80
+            Mesmo existindo uma regra (número 100) que permite todo o tráfego, a regra de número 50 vem antes e por isso bloqueia a porta 80.
+
+            Obs: O número da regra não diz respeito a sua prioridade, é apenas o número dela, o que defini prioridade é a posição dela na lista.
+
+
+Aula 04: VPC com redes públicas e privadas -------
+
+    VPC Wizard:
+
+        Na VPC padrão da Amazon, temos apenas uma rede pública onde podemos ter diversas subredes, e também podemos ter acesso à partir de qualquer lugar 
+        dependendo das nossas regras de Security Groups ou ACL's. Já em uma VPC personalizada podemos escolher ter duas redes distintas, uma rede pública
+        onde podemos ter diversas subredes e uma rede privada com diversas subredes. A utilidade disto é quando queremos proteger ao máximo nossa aplicação.
+        Colocando ela dentro de instâncias em uma subrede na rede privada dentro da VPC, temos a garantia que de forma alguma ela será acessada de um micro
+        ou local externo à VPC.
+
+        A rede pública dentro da VPC tem um NAT que faz ela se comunicar com a rede privada. Mas isto normalmente utilizando uma instância que serve 
+        praticamente como "micro administrativo" para que possamos trabalhar com algum micro dentro da rede privada se houver necessidade.
+
+        Podemos ter as duas redes na mesma zona e mesmo assim elas ficarem isoladas, exemplo: us-east-2a.
+
+        Sobre o NAT Gateway...
+            Apesar criarmos uma rede privada para que nenhum computador do mundo externo as acesse, precisamos que elas se comuniquem com o mundo externo.
+            Por que? Simplesmente pelo fato de elas precisarem de recursos como atualizações, exemplo:
+                Temos uma instância com Ubuntu na rede privada e precisamos que ela atualize um pacote. Esta máquina precisará acessar a WEB para buscar
+                este pacote atualizado.
+
+            Lembrando que neste caso teremos sim um retorno da resposta do mundo externo, mas isso porquê, como já dito, é apenas uma resposta.
+
+    
+    Subindo a instância em redes públicas:
+
+        Subimos duas instâncias na rede pública uma da aplicação web e uma de gerencia...
+        Na rede privada subimos a instância de banco de dados.
+
+
+    Ajustando as regras de acesso:
+
+        Comando utilizado na máquina de gerencia para acessar a máquina web enviando, é claro, o conteúdo do arquivo .pem que tem as chaves para
+        autenticação SSH.
+
+            scp -i "nezzonarcizo-nvirginia.pem"  nezzonarcizo-nvirginia.pem ec2-user@ec2-54-80-69-183.compute-1.amazonaws.com:~/
+
+            (Comando 'SCP' com o "nome do arquivo" que receberá o conteúdo da chave e ficará na raiz (~/) 
+                do host ec2-user@ec2-54-80-69-183.compute-1.amazonaws.com)
+
+        O comando abaixo foi utilizado para realizar autenticação e conexão via SSH dentro da mesma rede da máquina de gerencia para a máquina web
+
+            ssh -i nezzonarcizo-nvirginia.pem ec2-user@10.0.0.10
+
+            Conectamos a máquina 'web' subimos uma aplicação python simples com o comando: sudo python -m SimpleHTTPServer 80
+            E então voltamos na AWS e testamos o ip público da máquina web no browser...
+
+                Directory listing for /
+                    .bash_logout
+                    .bash_profile
+                    .bashrc
+                    .ssh/
+
+        Depois testando a máquina de banco através da máquina web
+
+            - Realizei a conexão via SSH da máquina de gerencia para máquina de banco de dados com o comando:
+
+                ssh -i nezzonarcizo-nvirginia.pem ec2-user@10.0.10.10
+
+                Depois subi um banco de dados "fake" na porta 3306 que é o padrão do banco MySQL...
+
+                sudo python -m SimpleHTTPServer 3306 (Não esquecer a porta do banco, pois no grupo de segurança na regra 'INBOUND' liberamos apenas ela)
+
+        
+    Nesta aula, aprendemos:
+
+        - Como utilizar o wizard para a criação da VPC
+        - Como subir a instância em redes pública e privada
+        - Como gerenciar e atualizar as máquinas na rede privada
+
+
+
+Questões aula 04:
+
+    1 - Utilizando o VPC Wizard, temos como criar de forma rápida os seguintes tipos de VPCs:
+
+        Selecione 2 alternativas
+
+        R1: VPC com uma única sub-rede pública
+            Nesta opção do wizard, temos a possibilidade de criar uma nova VPC com acesso à internet
+
+        R2: VPC com sub-redes pública e privada
+            Neste modelo, é criada toda a estrutura, inclusive o Internet Gateway para que você tenha um ambiente "misto", ou seja, uma rede privada e uma 
+            rede pública.
+
+    
+    2 - No cenário VPC (default) com sub-redes pública e privada, temos as seguintes características:
+
+        Selecione 2 alternativas
+
+        R1: O acesso à internet originado na rede privada se dá através de um NAT Gateway
+            Sim, se você precisar, por exemplo, que um servidor acesse a internet para atualização ou outra atividade, o mesmo se dá pelo NAT Gateway.
+
+        R2: O acesso à rede privada só é possível através da rede pública
+            Exatamente, quando criamos uma rede privada na AWS, a mesma fica isolada por questões de segurança.
+
+
+Aula 05: Combinando sua rede local com a nuvem -------
+
+    Cenário Site to Site:
+
+
+Questões aula 05:
+
+    
+
+
+
+
+
+        
+

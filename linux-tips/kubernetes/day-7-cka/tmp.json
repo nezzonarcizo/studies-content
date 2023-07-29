@@ -1,0 +1,22 @@
+{
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+        "creationTimestamp": "2022-08-06T21:18:09Z",
+        "deletionTimestamp": "2022-08-06T21:21:10Z",
+        "labels": {
+            "kubernetes.io/metadata.name": "contexts-test"
+        },
+        "name": "contexts-test",
+        "resourceVersion": "3020",
+        "uid": "d399665b-7b5e-49dd-9908-13e531494a22"
+    },
+    "spec": {
+        "finalizers": [
+           
+        ]
+    },
+    "status": {
+        "phase": "Terminating"
+    }
+}

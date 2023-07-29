@@ -1,0 +1,2312 @@
+-*- Services
+
+Creating a NodePort with kubectl
+
+kubectl create service nodeport webapp-service --node-port=30080 --tcp=8080 --dry-run=client -o yaml > service.yaml
+
+ou seja
+
+"Kube control crie um servico do tipo nodeport chamado webapp-service onde a porta do node 
+usada será 30080 protocolo tcp na porta 8080 do cluster ip e da aplicacao crie o manifesto
+mas nao o recurso e envie para o arquivo service.yaml"
+
+
+-*- Scheduling
+
+To see kubernetes configs
+
+# kubectl config view
+
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://controlplane:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: DATA+OMITTED
+    client-key-data: DATA+OMITTED
+
+
+
+Using a binding resource to manual schedule a pod
+
+apiVersion: v1
+kind: Binding
+metadata:
+  name: nginx
+target:
+  apiVersion: v1
+  kind: Node
+  name: node01
+
+Então ele envia um POST request para o pod
+
+curl --header "Content-Type:application/json" --request POST --data http://$SERVER/api/v1/namespaces/default/pods/$PODNAME/binding/
+
+kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"nginx","namespace":"default"},"spec":{"containers":[{"image":"nginx","name":"nginx"}]}}
+
+nodeName: node01
+
+
+-*- Labels and Selectors
+
+- To find pods that have labels env=dev (default namespace)
+# kubectl get pods --selector env=dev --no-headers | wc -l
+
+- To get all resources that have selector env=prod (default namespace)
+# kubectl get all --selector env=prod --no-headers | wc -l
+
+- To get the pod which is part of the prod envionment, the finance BU and of frontend tier (BU is Business Unit)
+# kubectl get pod --selector "env=prod,bu=finance,tier=frontend"
+
+
+
+-*- Node Affinity
+
+- Show all labels of a node
+# kubectl get node node-name --show-labels
+
+- Label a node
+# kubectl label node node-name color=blue
+
+- Affinity to configure on pod/deployment
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: color
+          operator: In
+          values: 
+          - blue
+
+When we have just the key of a label, like:
+
+node-role.kubernetes.io/control-plane
+
+Then we use the operator: Exists
+
+Like...
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+
+
+-*- Resource Requirements and Limits
+
+- Creating a limit range in the namespaces
+
+
+- Memory Limit
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-limit-range
+spec:
+  limits:
+  - default:
+      memory: 512Mi
+    defaultRequest:
+      memory: 256Mi
+    type: Container
+
+- CPU Limit
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: cpu-limit-range
+spec:
+  limits:
+  - default:
+      cpu: 1
+    defaultRequest:
+      cpu: 0.5
+    type: Container
+
+
+- Observation
+
+We cannot change SPEC values on a pod other than than the bellow
+
+spec.containers[*].image
+
+spec.initContainers[*].image
+
+spec.activeDeadlineSeconds
+
+spec.tolerations
+
+Edit Deployments
+With Deployments you can easily edit any field/property of the POD template. 
+Since the pod template is a child of the deployment specification,  with every change the 
+deployment will automatically delete and create a new pod with the new changes. 
+So if you are asked to edit a property of a POD part of a deployment you may do that simply by
+running the command
+
+
+resources:
+  requests:
+    cpu: 256m
+    memory: 15Mi
+  limits:
+    cpu: 512m
+    memory: 20Mi
+
+
+-*- Multiple Schedulers
+
+- Setting a new image to a pod
+
+# kubectl set image pod "pod-name" "container-name=image-name:version" -n "namespace"
+
+- Using a new scheduler in a pod
+
+apiVersion: v1 
+kind: Pod 
+metadata:
+  name: nginx 
+spec:
+  schedulerName: my-scheduler
+  containers:
+  - image: nginx
+    name: nginx
+
+- The scheduling three phases
+
+- Extension Points
+Obs: Each one has your own extensions points which use to connect the plugins to execute the phases
+
+1 - Scheduling Queue (PrioritySort)
+- Ranking the priority of the pod
+Extension Point: queueSort
+
+In the pod the field "priorityClassName" that defines which class is yours
+In the cluster we have a resource of "PriorityClass" kind, that defines a class name and value of priority
+
+2 - Filtering (NodeResourcesFit (Node Name?) (NodeUnschedulable?))
+- Filtering the node that have the pod requirements
+Extension Point: filter
+
+3 - Scoring (NodeResourcesFit - ImageLocality Plugin)
+- What the node have more resources available?
+Extension Point: score
+
+4 - Binding (DefaultBinder)
+- Where finally pod is bounded on a node
+Extension Point: bind
+
+Obs: There are more Extension Point that are intermediaries in the phases....
+
+Since the Kubernetes 1.18 version the different schedulers use the same binary.
+So you have to configure a new profile if we want to use a different scheduler on the resource "KubeSchedulerConfiguration"
+
+
+References: 
+
+https://github.com/kubernetes/community/blob/master/contributors/devel/sig-scheduling/scheduling_code_hierarchy_overview.md
+
+https://kubernetes.io/blog/2017/03/advanced-scheduling-in-kubernetes/
+
+https://jvns.ca/blog/2017/07/27/how-does-the-kubernetes-scheduler-work/
+
+https://stackoverflow.com/questions/28857993/how-does-kubernetes-scheduler-work
+
+
+-*- Logging & Monitoring
+
+Kubelet -> cAdvisor (container advisor)
+Responsável por reter métricas de performance dos pods e expo-las ao o Kubelet API para deixar
+as métricas disponíveis para o Metric Server
+
+- Ativando o Metrics Server
+
+minikube -> minikube addons enable metrics-server
+
+outros -> git clone https://github.com/kubernetes-incubator/metrics-serve
+
+                      então... kubectl create -f deploy/1.8+/
+
+(Obs: Just for studies, not for production environment) kodekloud distribution -> git clone https://github.com/kodekloudhub/kubernetes-metrics-server.git
+                      então... kubectl create -f .
+
+
+Commands:
+
+# kubectl top nodes
+# kubectl top pods
+
+Logs ...
+
+We have 3 commands to see the logs...
+
+kubectl logs -f pod-name (It shows the logs of the main container)
+kubectl logs -f pod-name container-name
+kubectl logs -f pod-name -c container-name
+
+
+-*- Application Lifecycle Management
+
+- To create a pod with command
+kubectl run nginx --image=nginx --command -- <cmd> <arg1> ... <argN>
+
+- To create a pod just with args
+kubectl run nginx --image=nginx -- <arg1> <arg2> ... <argN>
+
+command = entrypoint
+args = cmd
+
+
+We have to use array format...
+command: ["...", "..."]
+
+or
+
+command:
+- "..."
+- "..."
+
+The same with "args"
+
+
+
+- About Secrets
+For default secrets are not encrypted, only encoded
+
+So, its important keep in mind this, and take a look at
+
+https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/
+
+
+VERY IMPORTANT!!!
+
+Anyone able to create pods/deployments in the same namespace can access the secrets
+
+So, configure least-privilege access to secrets - RBAC
+
+Read about the protections and risks of using secrets here...
+
+https://kubernetes.io/docs/concepts/configuration/secret/#risks
+
+
+
+- Configure Encryption Config at Rest
+
+if we look at the etcd secrets no one are encrypted, so for security, we have to configure
+the flag "--encryption-provider-config" in the kube-apiserver.yaml
+
+Also, we need to configurate a configuration file which kind is EncryptionConfiguration
+and in this configuration we have to define our secrets...
+
+This config file has to be in the path specified in the kube-apiserver.yaml
+
+
+
+- Multi-container Pod
+
+Volumes to shared between the containers
+https://kubernetes.io/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/
+
+Multi-container Pods Design Patterns
+There are 3 common patterns, when it comes to designing multi-container PODs. The first and what we just saw with the logging service example is known as a side car pattern. The others are the adapter and the ambassador pattern.
+
+But these fall under the CKAD curriculum and are not required for the CKA exam. So we will be discuss these in more detail in the CKAD course.
+
+
+
+
+- Self Healing Applications
+
+Kubernetes supports self-healing applications through ReplicaSets and Replication Controllers. The replication 
+controller helps in ensuring that a POD is re-created automatically when the application within the POD crashes. 
+It helps in ensuring enough replicas of the application are running at all times.
+
+Kubernetes provides additional support to check the health of applications running within PODs and take necessary 
+actions through Liveness and Readiness Probes. However these are not required for the CKA exam and as such they 
+are not covered here. These are topics for the Certified Kubernetes Application Developers (CKAD) exam and are 
+covered in the CKAD course.
+
+
+
+-*- Cluster Maintenence
+
+When a node die, the 'kube-controller-manager' wait for 5 minutes for default
+As is configured in the option '--pod-eviction-timeout'
+
+So if a pod dont have a 'replication controller', he dies after five minutes and dont come back
+The node come back online blank
+
+So thats why we need to use the 'kubectl drain node-name'
+To mark the node as unschedulable we need to use 'kubectl cordon node-name'
+
+
+- Kubernetes Versions
+
+Look at .pdf
+
+- References to Kubernetes versions
+
+https://blog.risingstack.com/the-history-of-kubernetes/
+
+https://kubernetes.io/docs/setup/version-skew-policy/
+
+https://kubernetes.io/docs/concepts/overview/kubernetes-api/
+
+Here is a link to kubernetes documentation if you want to learn more about this topic 
+(You don't need it for the exam though):
+
+https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md
+
+https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md
+
+
+-*- Working with ETCDCTL
+
+
+etcdctl is a command line client for etcd.
+
+In all our Kubernetes Hands-on labs, the ETCD key-value database is deployed as a static pod on the master. The 
+version used is v3.
+
+To make use of etcdctl for tasks such as back up and restore, make sure that you set the ETCDCTL_API to 3.
+
+You can do this by exporting the variable ETCDCTL_API prior to using the etcdctl client. This can be done as 
+follows:
+
+# export ETCDCTL_API=3
+
+On the Master Node:
+
+# master $ export ETCDCTL_API=3
+# master $ etcdctl version
+# etcdctl version: 3.3.13
+# API version: 3.3
+# master $
+
+
+To see all the options for a specific sub-command, make use of the '-h or --help' flag.
+
+For example, if you want to take a snapshot of etcd, use:
+
+'etcdctl snapshot save -h' and keep a note of the mandatory global options.
+
+
+Since our ETCD database is TLS-Enabled, the following options are mandatory:
+
+'--cacert'   verify certificates of TLS-enabled secure servers using this CA bundle
+
+'--cert'     identify secure client using this TLS certificate file
+
+'--endpoints=[127.0.0.1:2379]'' This is the default as ETCD is running on master node and exposed on localhost 2379.
+
+'--key'      identify secure client using this TLS key file
+
+
+Similarly use the help option for 'snapshot restore' to see all available options for restoring the backup.
+
+# etcdctl snapshot restore -h
+
+For a detailed explanation on how to make use of the etcdctl command line tool and work with the -h flags, check 
+out the solution video for the Backup and Restore Lab.
+
+Basically, the command is...
+
+# etcdctl snapshot restore --data-dir 'NEW-ETCD-DATA-FOLDER' 'BACKUP.DB'
+
+Adter this, we need to change the 'hostPath' in the 'etcd.yaml'...
+If you change the etcd folder in the volumeMount you need to change the '--data-dir' in the 'command'
+
+- To solve questions
+
+Server cert...
+--cert-file=/etc/kubernetes/pki/etcd/server.crt
+
+ETC CA Certificate...
+/etc/kubernetes/pki/etcd/ca.crt
+
+
+- ETCD
+
+To know if we are using a External ou Stacked ETCD, we need to realize "kubectl get pods -n kube-system", if we see a pod
+etcd-*** it means that we are using a Stacked ETCD.
+
+If we are using a external etcd we can know what is the server by "kubectl describe" on kube-api-server pod on the
+kube-system namespace.
+
+We need to search the following command "--etcd-servers=https://ip:port"
+
+To confirm, we can go in the path "/etc/kubernetes/manifests/" and see how static pod is configured...
+Obs: This need to be done in the controlplane node...
+
+- What is the default data directory used for ETC datastore when it is external?
+
+We can see all the informations about the process with
+
+ps -ef | grep -i "process" 
+
+in our case
+
+ps -ef / grep -i etcd
+
+- How can we know how many nodes are part of the ETCD cluster has?
+
+# export ETCDCTL_API=3
+
+then
+
+# etcdctl --enpoints="The endpoint in --listen-cluent-urls" --cacert="/path/ca.pen" --cert="/path/etcd.pem"
+#         --key="/path/etcd-key.pem" member list
+
+
+- To copy the backup to our host...
+
+# scp node-name:/path/file /our/local/path/
+
+We can copy a backup to inside of a external etcd
+
+# scp /our/local/path/ node-name:/path/file
+
+Then we can restore the backup to a new folder with etcdctl snapshot restore command...
+
+Obs: We need to change the owner user of the folder and file in the OS...
+
+chown -R etcd:etcd "diretory"
+
+- To change the path of etcd --data-dir when we using a external etcd
+
+We need to change the process configuration, because it is not configured as a static pod
+
+So...
+
+# vi /etc/systemd/system/etcd.service
+
+and then, change the "--data-dir" exec start command...
+
+After we make this change, we going to have to do...
+
+# systemctl daemon-reload
+# systemctl restart etcd
+
+We have to restart to the controlplane components...
+
+kube-controller-manager
+kube-scheduler
+kubelet
+
+For the "kube-controller-manager" and "kube-scheduler" we can do that deleting the pods in the kube-system namespace
+
+For the kubelet, we need to go to the controlplane node and restart the kubelet process...
+
+# systemctl restart kubelet
+
+Certification Exam Tip!
+
+Here's a quick tip. In the exam, you won't know if what you did is correct or not as in the practice tests in this
+ course. You must verify your work yourself. For example, if the question is to create a pod with a specific image,
+you must run the the kubectl describe pod command to verify the pod is created with the correct name and correct
+ image.
+
+
+References
+
+https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster
+
+https://github.com/etcd-io/website/blob/main/content/en/docs/v3.5/op-guide/recovery.md
+ 
+https://www.youtube.com/watch?v=qRPNuT080Hk
+
+- RESUME ETCD RESTORE WHEN WE ARE USING EXTERNAL ETCD
+
+- transfer file
+- snapshot restore
+- permission
+- process data-dir
+- daemon-reload and restart etcd
+- restart controlplane components
+- restart kubelet and status kubelet
+
+
+-*- Security
+
+- Article on Setting up Basic Authentication
+
+Setup basic authentication on Kubernetes (Deprecated in 1.19)
+Note: This is not recommended in a production environment. This is only for learning purposes. Also note that this
+ approach is deprecated in Kubernetes version 1.19 and is no longer available in later releases
+
+Follow the below instructions to configure basic authentication in a kubeadm setup.
+
+Create a file with user details locally at /tmp/users/user-details.csv
+
+# User File Contents
+password123,user1,u0001
+password123,user2,u0002
+password123,user3,u0003
+password123,user4,u0004
+password123,user5,u0005
+
+
+Edit the kube-apiserver static pod configured by kubeadm to pass in the user details. The file is located at 
+/etc/kubernetes/manifests/kube-apiserver.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+      <content-hidden>
+    image: k8s.gcr.io/kube-apiserver-amd64:v1.11.3
+    name: kube-apiserver
+    volumeMounts:
+    - mountPath: /tmp/users
+      name: usr-details
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: /tmp/users
+      type: DirectoryOrCreate
+    name: usr-details
+
+
+Modify the kube-apiserver startup options to include the basic-auth file
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --authorization-mode=Node,RBAC
+      <content-hidden>
+    - --basic-auth-file=/tmp/users/user-details.csv
+
+    
+
+Create the necessary roles and role bindings for these users:
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+ 
+---
+
+# This role binding allows "jane" to read pods in the "default" namespace.
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: User
+  name: user1 # Name is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: pod-reader # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+Once created, you may authenticate into the kube-api server using the users credentials
+
+curl -v -k https://localhost:6443/api/v1/pods -u "user1:password123"
+
+
+- A note on Service Accounts
+
+I said in the lecture that we have a separate video on Service Accounts. However Service Accounts are not part of 
+CKA curriculum, instead, they are part of CKAD. So the video and labs on Service Accounts are available in the 
+CKAD course.
+
+
+- Resource: Download Kubernetes Certificate Health Check Spreadsheet
+
+I have uploaded the Kubernetes Certificate Health Check Spreadsheet here:
+
+https://github.com/mmumshad/kubernetes-the-hard-way/tree/master/tools
+
+Feel free to send in a pull request if you improve it.
+
+
+- OpenSSL Syntax to legible format
+
+OpenSSL Syntax: openssl x509 -in file-path.crt -text -noout
+
+
+- CA Server
+
+What is the CA Server and where is it located?
+The CA is really just the pair of key and certificate files!
+
+The CA Server is just the security place that you keet those keys.
+
+The master node is also a CA Server
+
+- To create a CertificateSigningRequest
+
+cat <<EOF | kubectl apply -f -
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: akshay
+spec:
+  request: $(cat akshay.csr | base64 | tr -d '\n')
+  signerName: example.com/serving
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+EOF
+
+Obs: When we get a file.csr certificate, we need to put in base64 and in a single line too, so we need to do this:
+
+# cat file.csr | base64 -w 0
+
+- Kubeconfig
+
+The kubeconfig structure
+
+apiVersion: v1
+kind: Config
+
+clusters:
+
+contexts:
+
+users:
+
+- To use a context from another kubeconfig
+
+kubectl config use-context "context" --kubeconfig=my-kube-config 
+
+
+
+- Authentication
+
+We can see if we can do some action with another user with....
+
+# kubectl get pod --as "user"
+
+we can even if we can do something with a specific resource...
+
+# kubectl --as "user-name" get pod "pod-name" -n "namespace"
+
+
+To see all resources that are namespaced or cluster scoped...
+
+# kubectl api-resources --namespaced=true/false
+
+To get the spec resources from the API...
+
+# kubectl api-resources
+
+- Role, Clusterrole, RoleBinding and ClusterRoleBinding
+
+To create a clusterrole with apigroups defined...
+
+# kubectl create clusterrole storage-access --verb=* --resource=*.storage.k8s.io/v1
+
+Obs: No need to specified the apigroups because they are set with the default, or separated in groups, even when we input in the sabe 
+field verb with comma...
+
+
+- ServiceAccounts
+
+Service accounts when created are binded automatically to a secret...
+
+Every namespace have a secret. When a pod was created, it has the default secret inserted into your configuration.
+The default secret is attached as a volume, and his path is /var/run/secret/kubernetes.io/serviceaccount. 
+
+This default secret is very restricted. It only has permission to run basic kubernetes API queries...
+
+
+Obs: In the kubernetes version 1.24, the secret is no longer generated automatically, you need to create a secret
+with the name of the service account.
+
+ALWAYS CREATE SERVICE ACCOUNT BEFORE SECRET
+
+"OBS: EVERY NAMESPACE HAS THE DEFAULT SERVICE ACCOUNT...
+    THE DEFAULT SERVICE ACCOUNT, HAS ONLY PERMISSION TO RUN BASIC KUBERNETES API QUERIES"
+
+- To see a content of a path inside a container you can run the following command
+
+# kubectl exec -it "pod" -- ls /path/to/my/folder
+
+- TIP
+
+To decode a token with a command...
+
+# jq -R 'split(".") | select(length > 0) | .[0],.[1] | @base64 | fromjson' <<< "token"
+
+Or, we can use https://jwt.io
+
+
+To configure other than default serviceAccount...
+
+In the spec...
+serviceAccountName: build-robot
+automountServiceAccountToken: false
+
+- To set a new image to a deployment
+
+# kubectl set image deployment "deployment_name" "container_name"="image"
+
+- To use a image of a private registry
+
+# kubectl set image deployment web nginx=myprivateregistry.com:5000/nginx:alpine
+
+- To create a docker registry secret to pull image from a private repository
+
+"kubectl create secret docker-registry private-reg-cred 
+                --docker-server=myprivateregistry.com:5000 
+                --docker-username=dock_user
+                --docker-password=dock_password 
+                --docker-email=dock_user@myprivateregistry.com"
+
+
+- To use a secret to pull images
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-reg
+spec:
+  containers:
+  - name: private-reg-container
+    image: <your-private-image>
+  imagePullSecrets:
+  - name: regcred
+
+- To set the user that will run the docker image
+
+# docker run --user=1000 ubuntu sleep 3600
+
+--- In the dockerfile ---
+FROM ubuntu
+
+USER 1000
+
+
+The default image user, has a limitade number of capabilities. 
+The default user, do not has the capabilities to manage the host, for example.
+
+If you wish to override this behavior and provide additional privileges than what is available use the cap add option
+in the Docker run command.
+
+# docker run --cap-add MAC_A ubuntu
+
+Similarly, you can drop privileges as well using the cap drop option...
+
+# docker run --cap-drop KILL ubuntu
+
+Or in case you wish to run the container with all privileges enabled, use the privileged flag...
+
+# docker run --privileged ubuntu
+
+
+- To see all linux system capabilities
+
+# /usr/include/linux/capability.h
+
+All this can be configured in kubernetes as well...
+
+- To know what user you're logged in as
+
+# kubectl exec "pod-name" -- whoami
+
+This can be done in container level or in pod level...
+
+If you configure it at a Pod level, the settings will carry over to all the containers...
+
+If you configure it at both, the Pod and the container, the settings on the container, will override the settings
+on the Pod.
+
+The fields...
+
+securityContext:
+  runAsUser: 1000
+  capabilities:
+    add: ["MAC_ADMIN"]
+
+are the same in the both levels...
+
+
+- Network Policy
+
+- To get all network policies
+
+# kubectl get networkpolicies
+
+or
+
+# kubectl get networkpolicy
+
+or 
+
+# kubectl get netpol
+
+Kubectx and Kubens – Command line Utilities
+Through out the course, you have had to work on several different namespaces in the practice lab environments. 
+In some labs, you also had to switch between several contexts.
+
+While this is excellent for hands-on practice, in a real “live” kubernetes cluster implemented for production, 
+there could be a possibility of often switching between a large number of namespaces and clusters.
+
+This can quickly become and confusing and overwhelming task if you had to rely on kubectl alone.
+
+This is where command line tools such as kubectx and kubens come in to picture.
+
+Reference: https://github.com/ahmetb/kubectx
+
+Kubectx:
+
+With this tool, you don't have to make use of lengthy “kubectl config” commands to switch between contexts. This 
+tool is particularly useful to switch context between clusters in a multi-cluster environment.
+
+Installation:
+
+sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx
+sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
+
+Syntax:
+
+To list all contexts:
+
+kubectx
+
+To switch to a new context:
+
+kubectx <context_name>
+
+To switch back to previous context:
+
+kubectx -
+
+To see current context:
+
+kubectx -c
+
+Kubens:
+
+This tool allows users to switch between namespaces quickly with a simple command.
+
+Installation:
+
+sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx
+sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens
+
+Syntax:
+
+To switch to a new namespace:
+
+kubens <new_namespace>
+
+To switch back to previous namespace:
+
+kubens -
+
+
+
+-*- Storage
+
+- Docker File System
+
+/var/lib/docker -> (Images and Containers runnning on the Docker host)
+
+- To create a Docker volume to persist data
+
+# docker volume create data_volume
+
+this will be in the...
+
+/var/libe/docker
+  /volumes
+    /data_volume
+
+Them, to mount volume on the container...
+
+# docker run -v data_volume:/var/lib/mysql mysql
+Which is, the default path to the mysql data
+
+If i run a command, using a path that dont exists in my Docker host volumes folder, the docker will create a new path
+automatically and mount in the container...
+
+If we want to use another docker host volume path, other than the default, we need to declare the complete path
+on the "docker run v" command...Like...
+
+# docker run -v /data/mysql:/var/lib/mysql mysql
+
+So, the Docker will create a container and mount the folder to the container, this is called bind mounting...
+
+So we have to types of mounting, "volume mounting" and "binding mounting"
+
+Volume mounts mount a volume from the volume directory and Bind mount mounts a directory from any location on the
+Docker host...
+
+One final point...
+
+the parameter "-v" in the Docker command is deprecated, the new way is to use "--mount"
+It is more verbose, so we have to specify each parameter in a key equals value format...
+
+For example...
+
+# docker run --mount type=bind,source=/data/mysql,target=/var/lib/mysql mysql
+
+type: bind, volume or tmpfs
+source: Is the location on my host 
+target: Is the location on my container
+
+- So who is responsible for doing all of these operations?
+Like, maintaining the layered architecture, creating a writeable layer, moving files accross layers to enable copy
+and write, etcetera. It's the Storage Drivers.
+
+STORAGE DRIVERS:
+
+AUFS
+ZFS
+BTRFS
+Device Mapper
+Overlay
+Overlay2
+
+The selection of storage driver depends on the underlying OS being used, for example, with Ubuntu the default
+storage driver is AUFS, whereas this storage driver is not available on other operating systems like fedora
+or CentOS. In this case, device mapper may be a better option.
+
+Docker will choose the best storage driver available automatically based on the operating system.
+The different storage drivers also provide different performance and stability characteristics. So you may to 
+choose one that fits the needs of your application and your organization.
+
+If you would like to read more on any of these storage drivers, please refer to the links in the attached
+documentation.
+
+
+Obs: Volumes are handled by Volume Drivers, not by Storage Drivers
+
+The default volume driver is "LOCAL"
+Local Volume Plugin helps create a volume
+
+The 'RexRay' Volume Driver, can be used to provision storage on AWS EBS, S3, etc
+
+Example of run a docker container specifing a driver...
+
+# docker run -it \
+#   --name mysql
+#   --volume-driver rexray/ebs
+#   --mount src=ebs-vol,target=/var/lib/mysql
+#   mysql
+
+
+- Container Runtime Interface (CRI)
+
+The CRI defines how kubernetes interact with Containers Runtime like:
+
+rkt (rocket)
+docker
+cri-o
+podman
+containerD
+
+etc
+
+- Container Network Interface (CNI)
+
+With CNI happens the same...
+
+Now any new networking vendors could simply develop their plugin based on the CNI standards, like:
+
+weaveworks
+flannel
+cilium
+
+- Container Storage Interface (CSI)
+
+And as you can guess, the Container Storage Interface was developed to support multiple storage solutions...
+With CSI, you can now write your own drivers for your own storage to work with kubernetes...
+Examples:
+
+portworx
+amazon ebs
+dell emc isilon
+glusterFS
+azure desk
+powerMax
+unity
+xtremIO
+netApp
+nutanix
+hpe
+hitachi
+pure storage
+
+CSI is not a Kubernetes standards, this is a universal standard, and if implemented allows any container
+orchestration tool to work with any storage vendor with a supported plugin...
+
+currently:
+
+Kubernetes
+Cloud Foundry
+Mesos
+
+..are on board with CSI...
+What CSI do? It defines a set of RPCs, or remote procedure calls, that will be called by the container orchestrator
+and these must be implemented by the storage drivers...
+
+Like...
+
+SHOULD call to provision a new volume
+SHOULD call to delete a volume
+SHOULD call to place a workload that uses the volume into a node
+SHOULD provision a new volume on the storage
+SHOULD decommission a volume
+SHOULD make the volume available on a node
+
+The specifications says what parameters has to be send by the caller to execute the call...
+
+
+- PV, PVC and STORAGE CLASSES
+
+Using PVCs in Pods
+Once you create a PVC use it in a POD definition file by specifying the PVC Claim name under persistentVolumeClaim 
+section in the volumes section like this:
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+    - name: myfrontend
+      image: nginx
+      volumeMounts:
+      - mountPath: "/var/www/html"
+        name: mypd
+  volumes:
+    - name: mypd
+      persistentVolumeClaim:
+        claimName: myclaim
+
+The same is true for ReplicaSets or Deployments. Add this to the pod template section of a Deployment on ReplicaSet.
+
+Reference URL: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+
+
+- A PV to host
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-log
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+  - ReadWriteMany
+  hostPath:
+    path: /pv/log
+  persistentVolumeReclaimPolicy: Retain
+
+
+- Application Configuration
+
+We discussed how to configure an application to use a volume in the "Volumes" lecture using volumeMounts. 
+This along with the practice test should be sufficient for the exam.
+
+- Additional Topics
+
+Additional topics such as StatefulSets are out of scope for the exam. However, if you wish to learn them, 
+they are covered in the  Certified Kubernetes Application Developer (CKAD) course.
+
+- Storage Classes
+
+PVC {
+
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: local-pvc
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    volumeMode: Filesystem
+    resources:
+      requests:
+        storage: 500Mi
+    storageClassName: local-storage
+
+}
+
+
+-*- Networking
+
+In our host, the resolution ip/name was configured on the /etc/hosts file
+
+and, if i want to choose a dns server?
+
+Every host has a DNS resolution configuration file at /etc/resolv.conf
+
+nameserver XXX.XXX.X.XXX (ip address)
+
+
+- Prerequisite - CoreDNS
+
+In the previous lecture we saw why you need a DNS server and how it can help manage name resolution in large 
+environments with many hostnames and Ips and how you can configure your hosts to point to a DNS server. 
+In this article we will see how to configure a host as a DNS server.
+
+We are given a server dedicated as the DNS server, and a set of Ips to configure as entries in the server.
+There are many DNS server solutions out there, in this lecture we will focus on a particular one – CoreDNS.
+
+So how do you get core dns? CoreDNS binaries can be downloaded from their Github releases page or as a docker image.
+Let’s go the traditional route. Download the binary using curl or wget. And extract it. You get the coredns 
+executable.
+
+Run the executable to start a DNS server. It by default listens on port 53, which is the default port for a DNS 
+server.
+
+Now we haven’t specified the IP to hostname mappings. For that you need to provide some configurations. 
+There are multiple ways to do that. We will look at one. First we put all of the entries into the DNS servers
+/etc/hosts file.
+
+And then we configure CoreDNS to use that file. CoreDNS loads it’s configuration from a file named Corefile. 
+Here is a simple configuration that instructs CoreDNS to fetch the IP to hostname mappings from the file /etc/hosts.
+When the DNS server is run, it now picks the Ips and names from the /etc/hosts file on the server.
+
+
+CoreDNS also supports other ways of configuring DNS entries through plugins. We will look at the plugin that it 
+uses for Kubernetes in a later section.
+
+Read more about CoreDNS here:
+
+https://github.com/kubernetes/dns/blob/master/docs/specification.md
+
+https://coredns.io/plugins/kubernetes/
+
+- Namespaces in Linux
+
+- Inside a container to see only the process that runs on its namespace
+# ps aux 
+
+- To create Network Namespace
+# ip netns add "namespace_name"
+
+- To list network namespaces
+# ip netns
+
+- To list the interfaces on my host
+# ip link
+    To run this command in a specific namespace
+    # ip netns exec "namespace_name" ip link
+    or
+    # ip -n red link
+
+- Obs: This granted to you just the loopback interface, you cannot see the 80 interface for example
+
+With network namespaces, we prevent the container from seing the host interfaces 
+
+- To see internet-to-adapater address translation tables
+# arp
+    To see the arp in one specific namespace
+    # ip netns exec "namespace_name" arp
+
+
+- To see route table
+# route
+    To see the route tables in a specific namespace
+    # ip netns exec "namespace_name" route
+
+By default, namespaces in linux dont have connectivity.
+But we can connect two namespaces together using a virtual ethernet pair, or a virtual cable, it's often referred
+to as a pipe.
+
+- To create the cable/pipe
+# ip link add veth-"namespace_name_1" veth peer name veth-"namespace_name_2"
+  (The "cable was created, now we neet to attach to the namespaces")
+  # ip link set "veth-namespace_name_1 netns namespace_name (red)"
+  # ip link set "veth-namespace_name_2 netns namespace_name (blue)"
+
+  Each namespace need a IP. So we need to attach their ips
+  # ip -n red addr add 192.168.15.1 dev veth-red
+  # ip -n blue addr add 192.168.15.2 dev veth-blue
+
+  Now we need to activate the link
+  # ip -n red link set veth-red up
+  # ip -n blue link set veth-blue up
+
+  Now we exec a ping to test
+  # ip netns exec red ping 192.168.15.2 (blue namespace ip)
+
+  If we look at the arp table in the red namespaces, we'll see the namespace blue ip
+  # ip netns exec red arp
+
+  Similarly with the blue namespace...
+
+  Obs: The host arp table has no idea about these new namespaces we have created and no idea about the interfaces
+  we created in them.
+
+If we have more than two namespaces, we need to do like in the physical world, we need to create a virtual network
+But, to connect networks we need a switch, so when we have virtual networks, we need a virtual switch. So we create
+a virtual switch and connect the namespaces to it.
+
+How do you create a virtual switch within a host?
+
+There are multiple solutions available, such as the native solution, called as Linux Bridge.
+Also exists:
+
+Open vSwitch
+etc
+
+In this example, we will use the Linux bridge option.
+To create an internal bridge network, we add a new interface to the host using the ip link add command with the
+type set to bridge.
+
+# ip link add v-net-0 type bridge
+
+We named "v-net-0"
+
+To our host, it is just another interface, it appears in the output of the ip link command along with the other
+interfaces...
+
+# ip link
+
+It's currently down, so you need to turn it up...
+
+# ip link set dev v-net-0 up
+
+
+Now for the namespaces, this interface is like a switch that it can connect to.
+Now we need to create another type of the cable/pipe
+
+to delete the veth-red and veth-blue cable
+# ip -n red link del veth-red
+Since they are a pair, the other end is deleted automatically
+
+
+To create new cables to the namespaces and switch...
+Considering namespaces red, blue, orange and gray
+
+The command...
+
+# ip link add veth-red type veth peer name veth-red-br
+(This models follow the convention name)
+
+ Them
+
+(To connect one end to the namespace red)
+# ip link set veth-red netns red 
+
+(To connect the other end to the switch)
+# ip link set veth-red-br master v-net-0
+
+(To atach ip address again)
+# ip -n red addr add 192.168.15.1 dev veth-red
+
+(Finally, turn the devices up)
+# ip -n red link set veth-red up
+
+Now, containers can reach each other and the network too
+
+- Obs: Our host cant reach the namespaces because it are in another network
+
+If we want to establish connectivity between our host and these namespaces?
+Remember that we said that the virtual switch is actually a network interface for the host...
+So we do have an interface on the 192.168.15 network on our host, since this just another interface, all we need
+to do is assign an ip address to it, so we can reach the namespaces through it.
+
+Run the ip addr command to set the IP 192.168.15.5 to this interface
+# ip addr add 192.168.15.5/24 dev v-net-0
+
+We can now ping the red namespace from our local host
+# ping 192.168.15.1
+
+Now remember, this entire network is still private and restricted within the host.
+From within the namespaces you cant reach the outsite world, nor can anyone from the outside world reach the
+services our applications hosted inside. The only door to the outside world is the ethernet port on the host.
+
+So how do we configure this bridge to reach the line network throught the ethernet port?
+
+What happens if i try to ping this host from my namespace?
+The blue namespace sees that I'm trying to reach a network at 192.168.1, which is different from my current network
+of 192.168.15. So it looks at its routing table to see how to find that network. The routing table has no information
+about other network, so it comes back saying that network is unreachable.
+
+So we need to add an entry into the routing table to provide a gateway or door to the outsite world.
+So how do we find that gateway?
+
+A door or a gateway, as we discussed before, is a system on the local network that connects to the other network.
+So what is a system that has one interface on the network local to the blue namespace which is the 192.168.15 network
+and is also connected to the outside LAN network?
+
+Here is a logical view...
+It's the local host that have all these namespaces on, so you can ping the namespaces.
+Remember, our local host has an interface to attach the private network so you can ping the namespaces.
+
+So our local host is the gateway that connects the two networks together.
+We can now add a row entry in the blue namespace to say route all traffic to the 192.168.1 network through the
+gateway at 192.168.15.5.
+
+Now remember, our host hast two ip addresses;
+
+One on the bridge network at 192.168.15.5 and another on the external network at 192.168.1.2
+
+Can you use any in the route?
+
+No, because the blue namespace can only reach the gateway in its local network at 192.168.15.5.
+The default gateway should be reachable from your namespace when you add it to you route.
+
+# ip netns exec blue ip route add 192.168.1.0/24 via 192.168.15.5
+
+When you try to ping now, you no longer get network unreachable message, but you still don't get any response
+back from the ping.
+
+# ip netns exec blue ping 192.168.1.3
+
+What might be the problem?
+
+We talked about a similar situation in one of our earlier lectures where, from our home network, we tried to reach
+the external internet through our router. Our home network has our internal private ip addresses that the 
+destination network don't know about, so they cannot reach back. For this, we need NAT enable on our host acting
+as a gateway here so that it can send the messages to the LAN in its own name with its own address.
+
+So how do we add NAT functionality to our host? You should do that using IP Tables.
+Add a new rule in the NAT IP table in the post routing chain to masquerade or replace the from address on all 
+packats coming from the source network 192.168.15.0 with its own ip address.
+
+# iptables -t nat -A POSTROUTING -s 192.168.15.0/24 -j MASQUERADE
+
+That way, anyone receiving these packets outside the network will think that they're coming from the host and
+not from within the namespaces. When we try to ping now, we see that we are able to reach the outside world.
+
+Finally, say the LAN is connected to the internet. We want the namespaces to reach the internet. So we try to 
+ping a server on the internet at 8.8.8.8 from the blue namespace. We receive a similar message that the network is
+unreachable. But now we know why that is. We look at the routing table and see that we have routes to the network,
+192.168.1, but not to anything else.
+
+# ip netns exec blue route
+
+Since these namespaces can reach any network our host can reach, we can simply say that, to reach any external
+network, talk to our host. So we add a default gateway specifying our host:
+
+# ip netns exec blue ip route add default via 192.168.15.5
+
+We should now be able to reach the outside world  from within these namespaces.
+
+Now, what about connectivity from the outside world to inside the namespaces?
+Say for example, the blue namespace hosts a web application on Port 80. As of now, the namespaces are on an
+internal private network and no one from the outside world knows about them.
+We can only access these from the host itself.
+
+If you try to ping the private IP of the namespace from another host on another network, you will see that it's
+not reachable, obviously, becausa that host doesn't know about this private network. In order to make that 
+communication possible you have two options. The two options that we saw in the previous lecture on that:
+
+The first is to give away the identity of the private network to the second host. So we basically add an IP route
+entry to the second host telling the host that the network 192.168.15 can be reached through the host at 192.168.1.2.
+
+But we don't want to do that.
+
+The other option is to add a port forwarding role using IP tables to say any traffic coming to Port 80 on the local
+host is to be forwarded to port 80 on the IP assigned to the blue namespace.
+
+# iptables -t nat -A PREROUTING --dport 80 --t
+
+
+
+------- FAQ
+
+While testing the Network Namespaces, if you come across issues where you can't ping one namespace from the other, 
+make sure you set the NETMASK while setting IP Address. ie: 192.168.1.10/24
+
+ip -n red addr add 192.168.1.10/24 dev veth-red
+
+Another thing to check is FirewallD/IP Table rules. Either add rules to IP Tables to allow traffic from one 
+namespace to another. Or disable IP Tables all together (Only in a learning environment).
+
+
+
+- PRE-REQUISITE: DOCKER NETWORKING
+
+Basically docker host uses the local network trough eth0 internet interface, thats connect to the local network
+with the ip address 192.168.1.10
+
+When we run a container, we have different network options:
+
+
+- None network
+# docker run --network none nginx
+''is not attached to any network'' the container cannot reach the outside world and no one from the outside world
+can reach the container. Even multiples containers in the same host, with the none network, no one can talk each other.
+
+- Host network
+# docker run --network host nginx
+''is attached to the host network'' there is no network isolation between the host and the container.
+If you deploy a web application listening on port 80 in the container, then the web application is available on port
+80 on the host (docker host - 192.168.1.10:80), without having to do any additional port mapping. We cannot use this port anymore.
+
+- Bridge network
+# docker run --network host bridge
+''an internal private network is created which the docker host and containers attach to''
+The network has an address 172.17.0.0 by default and each device connecting to this network get their own internal
+private network address on this network...
+
+container1 network: 172.17.0.2
+container2 network: 172.12.0.3
+
+This is the network that we are most interested in...
+
+When the docker is installed on the host it creates an internal private network called Bridge by default...
+You can see this, when you run the Docker network ls command...
+
+# docker network ls
+
+On the host, the network is created by the name Docker0
+
+Docker internally uses a technique similar to what we saw in the video on namespaces by running the IP link
+add command with the type set to bridge. So, remember, the name bridge in the Docker network is output refers to
+the name Docker0 on the host.
+
+- To see the namespaces created by docker
+# ip netns
+
+- Commands:
+
+# ip link
+
+# ip addr
+  - to show a specific interface...
+  # ip address show eth0
+    To see a specific information about nodes/virtual machine/container
+    we need to go inside and exec the same commands
+
+- To show the bridges networks that we have
+# ip address show type bridge
+
+# ip addr add 192.168.1.10/24 dev eth0
+
+- To know what the routes of the hosts/networks
+# ip route
+
+# ip route add 192.168.1.0/24 via 192.168.2.1
+
+# cat /proc/sys/net/ipv4/ip_forward
+
+# arp
+
+- tip "NET STATUS"
+# netstat -plnt
+  - netstat -h or netstat --help to get more flags
+
+  Example: To get the port the listening a specific service
+  # netstat -npl | grep -i scheduler
+
+  Example: ETCD is listening on two ports. Which of these have more clients connections established?
+  - To know what ports are
+  # netstat -npl | grep -i etcd 
+  Obs: The localhost is the one that we want
+  - To know how many clients each one
+  # netstat -npa | grep -i etcd | grep -i 2379 | wc -l
+  # netstat -npa | grep -i etcd | grep -i 2380 | wc -l
+
+Important Note about CNI and CKA Exam
+An important tip about deploying Network Addons in a Kubernetes cluster.
+
+In the upcoming labs, we will work with Network Addons. This includes installing a network plugin in the cluster. 
+While we have used weave-net as an example, please bear in mind that you can use any of the plugins which are described here:
+
+https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-implement-the-kubernetes-networking-model
+
+
+In the CKA exam, for a question that requires you to deploy a network addon, unless specifically directed, you may 
+use any of the solutions described in the link above.
+
+However, the documentation currently does not contain a direct reference to the exact command to be used to deploy 
+a third party network addon.
+
+The links above redirect to third party/ vendor sites or GitHub repositories which cannot be used in the exam. 
+This has been intentionally done to keep the content in the Kubernetes documentation vendor-neutral.
+
+At this moment in time, there is still one place within the documentation where you can find the exact command to 
+deploy weave network addon:
+
+https://v1-22.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/#steps-for-the-first-control-plane-node (step 2)
+
+
+- About ETCD ports...
+2379 is the port of ETCD to which all control plane components connect to. 
+2380 is only for etcd peer-to-peer connectivity. When you have multiple controlplane nodes. In this case we don't.
+
+So, sometimes is more "clients" using the 2379 port...
+
+
+
+-*- Pod Networking
+
+Note CNI Weave
+Important Update: -
+
+Before going to the CNI weave lecture, we have an update for the Weave Net installation link. They have announced 
+the end of service for Weave Cloud.
+
+To know more about this, read the blog from the link below: -
+
+https://www.weave.works/blog/weave-cloud-end-of-service
+
+As an impact, the old weave net installation link won’t work anymore: -
+
+(Deprecated) kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+Instead of that, use the below latest link to install the weave net: -
+
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+Reference links: -
+
+https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#-installation
+
+https://github.com/weaveworks/weave/releases
+
+- The weaveworks cni solutions gives IP's from range 10.32.0.1 to 10.47.255.254
+
+That's about a million IP's that you can use for pods on the network.
+From this range, the peers devide to split the IP addresses equally between them (nodes) and assisgns one portion to 
+each node.
+
+Obs: Of course, these ranges are configurable with additional options past while deploying the weave plugin to 
+a cluster.
+
+
+-*- Ingress
+
+- Article: Ingress
+
+As we already discussed Ingress in our previous lecture. Here is an update.
+
+In this article, we will see what changes have been made in previous and current versions in Ingress.
+
+Like in apiVersion, serviceName and servicePort etc.
+
+
+Now, in k8s version 1.20+ we can create an Ingress resource from the imperative way like this:-
+
+Format - kubectl create ingress <ingress-name> --rule="host/path=service:port"
+
+Example - kubectl create ingress ingress-test --rule="wear.my-online-store.com/wear*=wear-service:80"
+
+Find more information and examples in the below reference link:-
+
+https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-ingress-em-
+
+References:-
+
+https://kubernetes.io/docs/concepts/services-networking/ingress
+
+https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+
+
+
+- Ingress - Annotations and rewrite-target
+
+Different ingress controllers have different options that can be used to customise the way it works. NGINX Ingress 
+controller has many options that can be seen here. I would like to explain one such option that we will use in our 
+labs. The Rewrite target option.
+
+Our watch app displays the video streaming webpage at http://<watch-service>:<port>/
+
+Our wear app displays the apparel webpage at http://<wear-service>:<port>/
+
+We must configure Ingress to achieve the below. When user visits the URL on the left, his request should be 
+forwarded internally to the URL on the right. Note that the /watch and /wear URL path are what we configure on the 
+ingress controller so we can forwarded users to the appropriate application in the backend. The applications don't 
+have this URL/Path configured on them:
+
+http://<ingress-service>:<ingress-port>/watch --> http://<watch-service>:<port>/
+
+http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/
+
+Without the rewrite-target option, this is what would happen:
+
+http://<ingress-service>:<ingress-port>/watch --> http://<watch-service>:<port>/watch
+
+http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/wear
+
+Notice watch and wear at the end of the target URLs. The target applications are not configured with /watch or 
+/wear paths. They are different applications built specifically for their purpose, so they don't expect /watch or 
+/wear in the URLs. And as such the requests would fail and throw a 404 not found error.
+
+To fix that we want to "ReWrite" the URL when the request is passed on to the watch or wear applications. 
+We don't want to pass in the same path that user typed in. So we specify the rewrite-target option. 
+This rewrites the URL by replacing whatever is under rules->http->paths->path which happens to be /pay in this case
+with the value in rewrite-target. This works just like a search and replace function.
+
+For example: replace(path, rewrite-target)
+In our case: replace("/path","/")
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: critical-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /pay
+        backend:
+          serviceName: pay-service
+          servicePort: 8282
+
+
+In another example given here, this could also be:
+
+replace("/something(/|$)(.*)", "/$2")
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: rewrite
+  namespace: default
+spec:
+  rules:
+  - host: rewrite.bar.com
+    http:
+      paths:
+      - backend:
+          serviceName: http-svc
+          servicePort: 80
+        path: /something(/|$)(.*)
+"
+
+
+- Create ingress practice test model 
+
+kubectl create ingress "ingress-name" -n "namespace"  --rule="/path*=service:port" \ 
+                              --annotation nginx.ingress.kubernetes.io/rewrite-target=/ 
+                              --annotation nginx.ingress.kubernetes.io/ssl-redirect="false"
+
+
+
+-*- Design and Install a Kubernetes Cluster
+
+- Important Update: Kubernetes the Hard Way
+
+Installing Kubernetes the hard way can help you gain a better understanding of putting together the different 
+components manually.
+
+An optional series on this is available at our youtube channel here:
+
+https://www.youtube.com/watch?v=uUupRagM7m0&list=PL2We04F3Y_41jYdadX55fdJplDvgNGENo
+
+The GIT Repo for this tutorial can be found here: https://github.com/mmumshad/kubernetes-the-hard-way
+
+
+- Resources
+
+The vagrant file used in the next video is available here:
+
+https://github.com/kodekloudhub/certified-kubernetes-administrator-course
+
+Here's the link to the documentation:
+
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+
+- Install cluster by kubeadm
+
+- Installing kubeadm
+
+- Container Runtimes
+
+1 - Forwarding IPv4 and letting iptables see bridged traffic 
+
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+
+2 - Verify that the br_netfilter, overlay modules are loaded by running the following commands:
+
+lsmod | grep br_netfilter
+lsmod | grep overlay
+
+3 - Verify that the net.bridge.bridge-nf-call-iptables, net.bridge.bridge-nf-call-ip6tables, and 
+net.ipv4.ip_forward system variables are set to 1 in your sysctl config by running the following command:
+
+sysctl net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables net.ipv4.ip_forward
+
+4 - Choose the container runtime
+This page provides an outline of how to use several common container runtimes with Kubernetes.
+
+containerd
+CRI-O
+Docker Engine
+Mirantis Container Runtime
+
+5 - apt-get install (containerD)
+
+https://github.com/containerd/containerd/blob/main/docs/getting-started.md
+
+CentOS
+Debian
+Fedora
+'Ubuntu'
+
+https://docs.docker.com/engine/install/ubuntu/ -> just until "sudo apt-get install containerd.io"
+
+systemctl status containerd
+
+6 - cgroup drivers
+
+https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers
+
+"Obs: One thing is important when we talk about cgroup driver...
+
+Exists two groups of drivers.....cgroupfs and systemd
+
+both need to use the same cgroup driver, the container runtime and kubelet....
+
+We cant have the container runtime using a group and the kubelet another
+
+"It's critical that the kubelet and the container runtime use the same cgroup driver and are configured the same."
+"
+
+Obs2: Its important to say that the cgroupfs is the default for the containers runtime...
+
+To verify what cgroup driver we are using
+
+ps -p 1
+In the class case, the systemd was the output of this command
+
+Then we have to configure the systemd cgroup driver (containerd session)
+
+https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
+
+7 - (Back to the kubeadm install page) 
+
+Install...
+
+- kubeadm
+- kubelet
+- kubectl
+
+I - Update the apt package index and install packages needed to use the Kubernetes apt repository:
+
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+
+
+II - Download the Google Cloud public signing key:
+
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+
+
+III - Add the Kubernetes apt repository:
+
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+
+IV - Update apt package index, install kubelet, kubeadm and kubectl, and pin their version:
+
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+
+8 - (Using kubeadm to Create a Cluster)
+
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+
+I - Initializing your control-plane node
+
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#initializing-your-control-plane-node
+
+Then...
+
+(Just in the master node)
+kubeadm init <args> (--pod-network-cidr and --apiserver-advertise-address=$MASTER_NODE_IP) 
+
+kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.56.2
+
+
+II - Kubeconfig admin (Command in the end of 'kubeadm init' command output)
+
+after the message: "To start using your cluster, you need to run the following as a regular user:"
+
+Obs: After that, run a kubectl command to see if works...
+
+
+III - Now deploy the pod network and use "kubeadm join command" in the others nodes
+
+
+(In the master node)
+Pod networking: https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+In the course, we using the 'Weave Net' - https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+
+$ kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+Obs: Is always good read ALL THE DOCUMENTATION
+
+One thing to take care with weave net...
+
+https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#-changing-configuration-options
+
+The IPALLOC_RANGE (env variable on the weave net daemonset) have to be the sabe that we has declared in the 
+command kubeadm init --pod-network-cidr=10.244.0.0/16...
+
+(In the worker nodes)
+
+kubeadm join XXX.XXX.XX.X:6443 --token koodby."hash" \
+        --discovery-token-ca-cert-hash sha256:"hash"
+
+
+
+-*- End to End Tests on a Kubernetes Cluster
+
+Important Update: End to End Section
+As per the CKA exam changes (effective September 2020), End to End tests is no longer part of the exam and 
+hence it has been removed from the course.
+
+If you are still interested to learn this, please check out the complete tutorial and demos in our YouTube 
+playlist:
+
+https://www.youtube.com/watch?v=-ovJrIIED88&list=PL2We04F3Y_41jYdadX55fdJplDvgNGENo&index=18
+
+
+-*- Troubleshooting
+
+
+- References: Troubleshoot Clusters
+
+https://kubernetes.io/docs/tasks/debug-application-cluster/debug-cluster/
+
+
+- Network Troubleshooting
+
+Network Troubleshooting
+Network Plugin in Kubernetes
+--------------------
+
+There are several plugins available and these are some.
+
+1. Weave Net:
+
+To install,
+
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+You can find details about the network plugins in the following documentation :
+
+https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy
+
+
+2. Flannel :
+
+To install,
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+
+Note: As of now flannel does not support kubernetes network policies.
+
+
+3. Calico :
+
+To install,
+
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml -O
+
+Apply the manifest using the following command.
+
+  kubectl apply -f calico.yaml
+
+  Calico is said to have most advanced cni network plugin.
+
+
+In CKA and CKAD exam, you won't be asked to install the CNI plugin. But if asked you will be provided with the 
+exact URL to install it.
+
+Note: If there are multiple CNI configuration files in the directory, the kubelet uses the configuration file that
+comes first by name in lexicographic order.
+
+
+- DNS in Kubernetes
+-----------------
+Kubernetes uses CoreDNS. CoreDNS is a flexible, extensible DNS server that can serve as the Kubernetes cluster DNS.
+
+
+- Memory and Pods
+
+In large scale Kubernetes clusters, CoreDNS's memory usage is predominantly affected by the number of Pods and 
+Services in the cluster. Other factors include the size of the filled DNS answer cache, and the rate of queries 
+received (QPS) per CoreDNS instance.
+
+
+- Kubernetes resources for coreDNS are:   
+
+a service account named coredns,
+
+cluster-roles named coredns and kube-dns
+
+clusterrolebindings named coredns and kube-dns, 
+
+a deployment named coredns,
+
+a configmap named coredns and a
+
+service named kube-dns.
+
+
+
+While analyzing the coreDNS deployment you can see that the the Corefile plugin consists of important configuration
+which is defined as a configmap.
+
+Port 53 is used for for DNS resolution.
+
+  kubernetes cluster.local in-addr.arpa ip6.arpa {
+      pods insecure
+      fallthrough in-addr.arpa ip6.arpa
+      ttl 30
+  }
+
+This is the backend to k8s for cluster.local and reverse domains.
+
+proxy . /etc/resolv.conf
+
+Forward out of cluster domains directly to right authoritative DNS server.
+
+
+- Troubleshooting issues related to coreDNS
+
+1. If you find CoreDNS pods in pending state first check network plugin is installed.
+
+2. coredns pods have CrashLoopBackOff or Error state
+
+If you have nodes that are running SELinux with an older version of Docker you might experience a scenario where
+the coredns pods are not starting. To solve that you can try one of the following options:
+
+a)Upgrade to a newer version of Docker.
+
+b)Disable SELinux.
+
+c)Modify the coredns deployment to set allowPrivilegeEscalation to true:
+
+
+kubectl -n kube-system get deployment coredns -o yaml | \
+  sed 's/allowPrivilegeEscalation: false/allowPrivilegeEscalation: true/g' | \
+  kubectl apply -f -
+
+  d)Another cause for CoreDNS to have CrashLoopBackOff is when a CoreDNS Pod deployed in Kubernetes detects a loop.
+
+  There are many ways to work around this issue, some are listed here:
+
+
+  Add the following to your kubelet config yaml: resolvConf: <path-to-your-real-resolv-conf-file> This flag tells 
+  kubelet to pass an alternate resolv.conf to Pods. For systems using systemd-resolved, 
+  /run/systemd/resolve/resolv.conf is typically the location of the "real" resolv.conf, although this can be 
+  different depending on your distribution.
+
+Disable the local DNS cache on host nodes, and restore /etc/resolv.conf to the original.
+
+A quick fix is to edit your Corefile, replacing forward . /etc/resolv.conf with the IP address of your upstream 
+DNS, for example forward . 8.8.8.8. But this only fixes the issue for CoreDNS, kubelet will continue to forward 
+the invalid resolv.conf to all default dnsPolicy Pods, leaving them unable to resolve DNS.
+
+
+3. If CoreDNS pods and the kube-dns service is working fine, check the kube-dns service has valid endpoints.
+
+  kubectl -n kube-system get ep kube-dns
+
+If there are no endpoints for the service, inspect the service and make sure it uses the correct selectors and 
+ports.
+
+
+- Kube-Proxy
+---------
+kube-proxy is a network proxy that runs on each node in the cluster. kube-proxy maintains network rules on nodes. 
+These network rules allow network communication to the Pods from network sessions inside or outside of the cluster.
+
+In a cluster configured with kubeadm, you can find kube-proxy as a daemonset.
+
+kubeproxy is responsible for watching services and endpoint associated with each service. When the client is going
+to connect to the service using the virtual IP the kubeproxy is responsible for sending traffic to actual pods.
+
+If you run a kubectl describe ds kube-proxy -n kube-system you can see that the kube-proxy binary runs with 
+following command inside the kube-proxy container.
+
+  Command:
+    /usr/local/bin/kube-proxy
+    --config=/var/lib/kube-proxy/config.conf
+    --hostname-override=$(NODE_NAME)
+ 
+
+  So it fetches the configuration from a configuration file ie, /var/lib/kube-proxy/config.conf and we can 
+  override the hostname with the node name of at which the pod is running.
+
+  In the config file we define the clusterCIDR, kubeproxy mode, ipvs, iptables, bindaddress, kube-config etc.
+
+
+- Troubleshooting issues related to kube-proxy
+
+1. Check kube-proxy pod in the kube-system namespace is running.
+
+2. Check kube-proxy logs.
+
+3. Check configmap is correctly defined and the config file for running kube-proxy binary is correct.
+
+4. kube-config is defined in the config map.
+
+5. check kube-proxy is running inside the container
+
+# netstat -plan | grep kube-proxy
+tcp        0      0 0.0.0.0:30081           0.0.0.0:*               LISTEN      1/kube-proxy
+tcp        0      0 127.0.0.1:10249         0.0.0.0:*               LISTEN      1/kube-proxy
+tcp        0      0 172.17.0.12:33706       172.17.0.12:6443        ESTABLISHED 1/kube-proxy
+tcp6       0      0 :::10256                :::*                    LISTEN      1/kube-proxy
+
+
+- References:
+
+Debug Service issues:
+
+  https://kubernetes.io/docs/tasks/debug-application-cluster/debug-service/
+
+DNS Troubleshooting:
+
+  https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
+
+
+
+-*- Other Topics
+
+- Pre-Requisites - JSON PATH
+In the upcoming lecture we will explore some advanced commands with kubectl utility. But that requires JSON PATH.
+If you are new to JSON PATH queries get introduced to it first by going through the lectures and practice tests 
+available here.
+
+https://kodekloud.com/p/json-path-quiz
+
+Once you are comfortable head back here:
+
+I also have some JSON PATH exercises with Kubernetes Data Objects. Make sure you go through these:
+
+https://mmumshad.github.io/json-path-quiz/index.html#!/?questions=questionskub1
+
+https://mmumshad.github.io/json-path-quiz/index.html#!/?questions=questionskub2
+
+
+
+- JSON path to test
+
+kubectl get pods --all-namespaces -o=json | jq -c \
+'.items[] | {name: .metadata.name, namespace: .metadata.namespace, claimName:.spec.volumes[] | select( has ("persistentVolumeClaim") ).persistentVolumeClaim.claimName }'
+
+- JSON tips:
+
+# to get information in a better visible way
+kubectl get nodes -o json | jq
+
+Obs: You need to have the jq installed
+
+# to get more than default output information
+kubectl get nodes -o json | jq | more
+
+# using the flag '-B' to see what has before the key word in the grep command, the number 100 after -B is about
+# how many lines do you want see before that keyword
+kubectl get nodes -o json | jq | grep -i internalip -B 100
+
+# to see all the paths of a json document
+kubectl get nodes -o json | jq -c 'paths'
+
+# to grep just the path of the item that you want
+kubectl get nodes -o json | jq -c 'paths' | grep type
+  # to remove some result that have some atributes that you dont want, use the flag -v, in our case results
+  # that has the field condition
+  kubectl get nodes -o json | jq -c 'paths' | grep type | grep -v condition
+
+
+
+# to check if a pod has pvc
+kubectl get pods --all-namespaces -o=json | jq -c '.items[] |
+ {name: .metadata.name, namespace: .metadata.namespace, claimName: .spec |  
+  select( has ("volumes") ).volumes[] |
+  select( has ("persistentVolumeClaim") ).persistentVolumeClaim.claimName }'
+
+-*- Lightning Labs
+
+- Lightning Lab Introduction
+
+Welcome to the KodeKloud CKA Lightning Labs!
+
+This section has been created to give you hands-on practice in solving questions of mixed difficulty in a short 
+period of time.
+
+This environment is valid for 60 minutes, challenge yourself and try to complete all 5-8 questions within 30 
+minutes.
+
+You can toggle between the questions but make sure that you click on END EXAM before the timer runs out. To pass, 
+you need to secure 80%.
+
+
+Good Luck!!!
+
+Disclaimer:
+
+Please note that this exam is not a replica of the actual exam
+
+Please note that the questions in these exams are not the same as in the actual exam
+
+Please note that the interface is not the same as in the actual exam
+
+Please note that the scoring system may not be the same as in the actual exam
+
+Please note that the difficulty level may not be the same as in the actual exam
+
+
+-*- Mock Exams
+
+- Mock Exam - 1
+
+Note: These tests are in beta/experimental phase as of now. Please report any issues/concerns through the slack 
+channel or Q&A section.
+
+These exams were built to give you a real exam like feel in terms of your ability to read and interpret a given 
+question, validate your own work, manage time to complete given tasks within the given time, and see where you 
+went wrong.
+
+Having said that:
+
+Please note that this exam is not a replica of the actual exam
+
+Please note that the questions in these exams are not the same as in the actual exam
+
+Please note that the interface is not the same as in the actual exam
+
+Please note that the scoring system may not be the same as in the actual exam
+
+Please note that the difficulty level may not be the same as in the actual exam
+
+Mock Test Link - https://uklabs.kodekloud.com/topic/mock-exam-1-4/
+
+This is the first of its kind. More on the way!
+
+
+- Mock Exam - 2
+
+Mock Test Link - https://uklabs.kodekloud.com/topic/mock-exam-2-4/
+
+ipadress.namespace.resource.cluster.local
+
+
+-*- Course Conclusion
+
+I’m happy to share that I’ve obtained a new certification: CKA: Certified Kubernetes Administrator from The Linux Foundation!
+
+I would like to express my gratitude to  and KodeKloud for providing an excellent course at such
+ an affordable price!
+
+
+- Frequently Asked Questions!
+
+Q. Am I ready for the real exam?
+
+A. If you have completed all lectures, labs and mock exams in this course, you are almost ready for the exam. 
+To be sure, randomly different labs or mock exams and see how you perform. If you can breeze through those without
+having to peek at the hints or answer files, consider yourself ready. Remember, you only need 66% to clear the real 
+exam, and you also have a free retake. So go for it!
+
+Keep the code - 20KLOUD handy while registering for the CKA or CKAD exams at Linux Foundation to get a 20% 
+discount.
+
+Q. How much time does it take to get results after the exam?
+
+A. Results will be emailed within 48 hours.
+
+
+
+Q. Is this course and mock exams sufficient for the exam?
+
+A. Yes! The course covers all the topics required for the exam. If you practice the practice tests and mock exams 
+enough times and make peace with the Kubernetes documentation pages, you should be good.
+
+
+
+Q. Are the difficulty level of the mock exams similar to the ones in the exam?
+
+A. We have created 2 new mock exams (2 & 3) that have a difficulty level more similar to the ones in the exam. 
+So please check them out.
+
+
+
+Q. Is auto-completion available in the exam environment?
+
+A. Yes.
+
+
+
+Q. How do I switch between clusters/environments in the exam environment?
+
+A. The command to switch to the right cluster/context will be given at the top of each question. 
+Make sure you run that always. Even if you think you are on the right cluster/context!
+
+
+More FAQs here: https://www.cncf.io/certification/cka/faq/
+
+
+
+- More Certification Tips!
+
+Official Tips:
+
+https://docs.linuxfoundation.org/tc-docs/certification/tips-cka-and-ckad
+
+
+# get logs from a container in other machine
+ssh cluster1-node2 'crictl logs b01edbe6f89ed' &> /opt/course/17/pod-container.log

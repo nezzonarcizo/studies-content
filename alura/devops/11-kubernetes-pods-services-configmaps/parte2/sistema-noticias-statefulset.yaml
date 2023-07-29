@@ -1,0 +1,50 @@
+apiVersion: apps/v1 # Versão da API do StatefulSet
+kind: StatefulSet
+metadata:
+  name: sistema-noticias-statefulset 
+spec: # Especificações do StatefulSet
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sistema-noticias
+      name: sistema-noticias
+    spec: # Especificações do(s) POD(s)
+      containers:
+        - name: sistema-noticias-container
+          image: aluracursos/sistema-noticias:1
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: sistema-configmap
+          volumeMounts: # Definindo montagem de volumes, tanto para as nossas imagens quando para os dados da sessão, para que não realize logoff quando o POD ficar Down
+            - name: imagens
+              mountPath: /var/www/html/uploads
+            - name: sessao
+              mountPath: /tmp
+          livenessProbe: # Declaração do bloco da "PROVA DE VIDA"
+            httpGet: # Requisição utilizando o verbo Get
+              path: / # Caminho da aplicação, como estamos utilizando direto o localhost:30000, colocamos somente o '/'
+              port: 80 # Aqui deve ser definida em qual porta o container está escutando e não a porta de saída, de acesso do Load Balancer ou servidor web
+            periodSeconds: 10 # De quanto em quanto tempo queremos fazer o teste da aplicação, a cada 10 segundos eu quero fazer a validação deste container
+            failureThreshold: 3 # Número de falhas antes de realizar o reinicio do container
+            initialDelaySeconds: 20 # Atraso inicial antes de começar a realizar os testes. Container sobe, mas nem sempre de imediato a aplicação está pronta
+          readinessProbe: # Declaração do bloco da prova que ele está "PRONTO"
+            httpGet: # Requisição utilizando o verbo Get
+              path: /inserir_noticias.php # Caminho da aplicação/Estará pronto caso consiga enviar requisições para esta página (Código 200 inclusive, 400 exclusive)
+              port: 80 # Porta do container
+            periodSeconds: 10 # A cada 10 segundos ele vai mandar verificação
+            failureThreshold: 5 # Se ele fizer o teste 5 vezes, na sexta vai enviar a requisição
+            initialDelaySeconds: 3 # Depois que o POD e o container reiniciar, após 3 segundos, as requisições poderão voltar a ser enviadas
+      volumes:
+        - name: imagens
+          persistentVolumeClaim:
+            claimName: imagens-pvc
+        - name: sessao
+          persistentVolumeClaim:
+            claimName: sessao-pvc
+  selector:
+    matchLabels:
+      app: sistema-noticias
+  serviceName: svc-sistema-noticias # Nome do serviço que este StatefulSet vai gerenciar, esta é uma das diferenças do Deployment

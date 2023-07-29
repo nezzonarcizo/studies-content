@@ -1,0 +1,10 @@
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::335902315655:role/eks-lab-external-dns
+
+installCRDs: true # Resources extras 'Custom Resource Definition'
+
+# the securityContext is required, so the pod can access files required to assume the IAM role
+securityContext:
+  enabled: true
+  fsGroup: 1001

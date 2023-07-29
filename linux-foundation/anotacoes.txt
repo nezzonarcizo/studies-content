@@ -1,0 +1,34 @@
+-*- Backup do cluster
+
+- primeiro faço o backup
+
+ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=<trusted-ca-file> --cert=<cert-file> --key=<key-file> \
+  snapshot save /tmp/etcd-backup.db
+
+obs: pego informacoes do /etc/kubernetes/manifests/etcd.yaml se precisar
+
+posso pegar tambem do kube-apiserver se precisar -> cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep etcd
+
+- depois crio um pod
+
+kubectl run test --image=nginx
+
+- Movo todos os componentes do control-plane
+
+mv /etc/kubernetes/manifests/* ..
+
+- Agora eu restauro para outra pasta o backup
+
+ETCDCTL_API=3 etcdctl snapshot restore /tmp/etcd-backup.db --data-dir /var/lib/etcd-backup --cacert ? --cert ? --key ?
+
+- Depois altero o /etc/kubernetes/manifests/etcd.yaml para que use o novo diretorio
+
+- hostPath:
+      path: /var/lib/etcd-backup                # change
+      type: DirectoryOrCreate
+    name: etcd-data
+
+- Movo os arquivos do control-plane de volta para a pasta manifests
+
+- Verifico se o pod criado anteriormente ainda existe

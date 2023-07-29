@@ -1,0 +1,96 @@
+1.22.3 to 1.23.6-00
+
+# apt-update
+
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
+
+apt update
+apt-cache madison kubeadm
+# find the latest 1.23 version in the list
+# it should look like 1.23.x-00, where x is the latest patch
+
+
+# replace x in 1.23.x-00 with the latest patch version
+apt-mark unhold kubeadm && \
+apt-get update && apt-get install -y kubeadm=1.23.6-00 && \
+apt-mark hold kubeadm
+
+kubeadm version
+
+kubeadm upgrade plan
+
+kubeadm upgrade apply v1.23.6
+
+sudo kubeadm upgrade node
+
+sudo kubeadm upgrade apply
+
+# replace <node-to-drain> with the name of your node you are draining
+kubectl drain <node-to-drain> --ignore-daemonsets
+
+# replace x in 1.23.x-00 with the latest patch version
+apt-mark unhold kubelet kubectl && \
+apt-get update && apt-get install -y kubelet=1.23.6-00 kubectl=1.23.6-00 && \
+apt-mark hold kubelet kubectl
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+# replace <node-to-drain> with the name of your node
+kubectl uncordon <node-to-drain>
+
+-*- Worker Nodes
+
+# replace x in 1.23.x-00 with the latest patch version
+apt-mark unhold kubeadm && \
+apt-get update && apt-get install -y kubeadm=1.23.6-00 && \
+apt-mark hold kubeadm
+
+sudo kubeadm upgrade node
+
+
+# replace <node-to-drain> with the name of your node you are draining
+kubectl drain <node-to-drain> --ignore-daemonsets
+
+# replace x in 1.23.x-00 with the latest patch version
+apt-mark unhold kubelet kubectl && \
+apt-get update && apt-get install -y kubelet=1.23.6-00 kubectl=1.23.6-00 && \
+apt-mark hold kubelet kubectl
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+# replace <node-to-drain> with the name of your node
+kubectl uncordon <node-to-drain>
+
+kubectl get nodes
+
+
+root@elliot-01:~# kubectl version
+Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6", GitCommit:"ad3338546da947756e8a88aa6822e9c11e7eac22", GitTreeState:"clean", BuildDate:"2022-04-14T08:49:13Z", GoVersion:"go1.17.9", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6", GitCommit:"ad3338546da947756e8a88aa6822e9c11e7eac22", GitTreeState:"clean", BuildDate:"2022-04-14T08:43:11Z", GoVersion:"go1.17.9", Compiler:"gc", Platform:"linux/amd64"}
+root@elliot-01:~# kubeadm version
+kubeadm version: &version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.6", GitCommit:"ad3338546da947756e8a88aa6822e9c11e7eac22", GitTreeState:"clean", BuildDate:"2022-04-14T08:48:05Z", GoVersion:"go1.17.9", Compiler:"gc", Platform:"linux/amd64"}
+
+
+-*- Obs: To downgrade kubeadm version...
+
+apt-get update && apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+
+# 1.5.6 does exist in the repo but it has a hard depenedency on a newer kubernetes-cni.  Use 1.5.3 instead.
+sudo apt-get -y install kubectl=1.5.3-00 kubelet=1.5.3-00 kubernetes-cni=0.3.0.1-07a8a2-00
+
+# Versioning strangeness for how we packaged kubeadm pre-1.6 means that the version number
+# says 1.6.0-alpha even though it is the 1.5 version of kubeadm.  Because of how this sorts,
+# we cannot keep this deb in the repo.  Download it manually and install it.
+curl -Lo /tmp/old-kubeadm.deb https://apt.k8s.io/pool/kubeadm_1.6.0-alpha.0.2074-a092d8e0f95f52-00_amd64_0206dba536f698b5777c7d210444a8ace18f48e045ab78687327631c6c694f42.deb
+sudo dpkg -i /tmp/old-kubeadm.deb
+sudo apt-get install -f
+
+# Hold these packages back so that we don't accidentally upgrade them.
+sudo apt-mark hold kubeadm kubectl kubelet kubernetes-cni

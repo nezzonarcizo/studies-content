@@ -1,0 +1,115 @@
+Termos:
+
+Role-based access control (RBAC)
+
+-*- IAM
+
+São necessárias as duas "policys" abaixo para mexer com o cluster
+
+Role name: AmazonEKSClusterPolicy
+           AmazonEKSServiceRolePolicy
+
+-*- Install EKSCTL
+
+Download:
+
+# curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+
+Movendo o binário:
+
+# sudo mv /tmp/eksctl /usr/local/bin
+
+Verificando se está ok:
+
+# eksctl version
+
+
+-*- Install kubectl
+
+Obs > Já estava instalado na minha máquina
+
+Verificando...
+
+# kubectl version --short --client
+
+    Client Version: v1.21.3
+
+
+-*- Utilizando o EKSCTL 
+
+Ajuda com a criação do cluster
+
+# eksctl create cluster --help
+
+Também podemos prover toda a configuração do cluster atráves de um yaml file.
+
+# eksctl create cluster -f eks-course.yaml
+
+Verificando Nodes: # kubectl get nodes
+
+Verificando Cluster: # eksctl get cluster
+
+Informações do nodeGroup: # eksctl get nodegroup --cluster EKS-course-cluster
+
+Escalando nodeGroup: # eksctl scale nodegroup --cluster=EKS-course-cluster --nodes=5 --name=ng-1
+
+Especificando um novo nodeGroup no eks-course.yaml (Vide eks-course.yaml)
+
+- name: ng-mixed
+
+- name: ng-mixed
+mainSize: 3
+maxSize: 5
+instanceDistribution:
+  maxPrice: 0.2
+  instaceTypes: ["t2.small", "t3.small"]
+  onDemandBaseCapacity: 0
+  onDemandPercentageAboveBaseCapacity: 50
+ssh:
+  publicKeyName: eks-course
+
+
+Deletando um nodeGroup utilizando o mesmo arquivo de criação: # eksctl delete nodegroup --config-file=eks-course.yaml --include=ng-mixed --approve
+    'Obs: A parte --include=ng-mixed será necessária apenas se este nodeGroup tiver sido adicionado depois.'
+    'Obs: Atenção ao deletar um nodeGroup pois os Pods que estiverem rodando nele, serão recriados em outros nodeGroups'
+            'Se assegure de ter recursos disponíveis nos outros nodeGroups'
+
+
+-*- Adding an Admin User in EKS
+
+Veryfing if aws-auth already exists...
+
+# kubectl -n kube-system get cm
+
+Putty configmap in yaml format
+
+# kubectl -n kube-system get configmap aws-auth -o yaml > aws-auth-configmap.yaml
+
+Caso não tenha, utilize um arquivo já montado por você mesmo e aplique...
+
+Obs: Em alguns tutoriais antigos encontraremos a flag "-n kube-system" ao final de "kubectl apply -f aws-auth-configmap.yaml"
+
+# kubectl apply -f aws-auth-configmap.yaml
+
+Verificando se o usuário foi configurado...
+
+# kubectl -n kube-system get cm aws-auth
+
+# kubectl -n kube-system describe cm aws-auth
+
+
+Como passo final, vamos adicionar este usuário a AWS Credentials File para que utilizemos este usuário para autenticar ao API server
+
+Obs: No meu caso já está configurado.
+
+Agora verificar que usuário está ativo...
+
+# aws sts get-caller-identity
+
+Caso estivesse com outro usuário configurado no AWS credential file, teriamos que exporta-lo com:
+
+# export AWS_PROFILE="nome-do-usuario"
+
+Verificar se foi trocado:
+
+# aws sts get-caller-identity

@@ -1,0 +1,1801 @@
+Aula 01: O que é HTTP?
+
+    Introdução:
+
+        Tópicos do curso:
+
+            - HTTPS: Web segura.
+            - Entendendo que o HTTP trafega texto puro enquanto o HTTPS trafega texto criptografado.
+            - Como tudo isso funciona por baixo dos panos.
+            - Endereços, Domínios, Recursos e Portas.
+            - Cookies, modelo de requisição e resposta HTTP.
+            - Parâmetros que são enviados na requisição, no corpo do HTTP ou na URL.
+            - Serviços REST.
+            - O tipo de verbo que o HTTP utiliza.
+            - HTTP2.
+
+    
+    O que é HTTP?
+
+        Neste treinamento focaremos nos fundamentos da Web pois a maior parte das aplicações hoje em dia rodam nela. Não focaremos em nenhuma plataforma específica
+        como Java ou PHP por exemplo, mas sim, nas regras de comunicação Web.
+
+        Estamos muito familiarizados a acessar sites através do protocolo http:// ou https://, por isso precisamos entender o que realmente está acontecendo ao fazer isso.
+
+        Toda arquitetura que vemos na Web é baseada em Client-Server ou em português Cliente-Servidor, onde um cliente solicita e o servidor responde, e entre eles está a 
+        internet.
+
+        Se pensarmos em qualquer tipo de comunicação, percebemos que existem regras para que haja compreensão entre as duas partes.
+
+        Os protocolos são definidos, especificados e disponibilizados para implementação em ambas as partes.
+
+        Podemos verificar quais são as especificações do HTTP na seguinte página:
+
+            https://tools.ietf.org/html/rfc2616
+
+        Do lado do cliente temos o navegador (Chrome, Firefox etc), na parte do servidor PHP, Java, .Net ou outros, entre eles temos a internet, utilizando o protocolo HTTP 
+        com suas regras de comunicação.
+
+            O que aprendemos neste capítulo?
+                - Na internet sempre tem um cliente e um servidor
+                - Entre o cliente e o servidor precisam haver regras de comunicação
+                - As regras são definidas dentro de um protocolo
+                - HTTP é o protocolo mais importante na internet
+
+        Neste treinamento, vamos falar sobre a "sigla" mais importante da internet: o HTTP. O objetivo é entender o protocolo HTTP detalhadamente. 
+        Quanto mais o desenvolvedor souber sobre este protocolo, melhor, pois ele é utilizado em todas aplicações web.
+        No entanto, não focaremos em como essas aplicações são criadas e funcionam internamente. Para isso, existem várias plataformas, como PHP, .NET ou Java 
+        (entre muitas outras) que não abordaremos. Temos treinamentos dedicados para conhecer estas plataformas.
+
+        Resumindo, nosso foco será o protocolo HTTP!
+        
+        Questões Aula 1:
+        
+            1 - Falamos tanto sobre essa sigla, mas você sabe qual é o significado do HTTP?
+
+            Selecione uma alternativa
+
+            R: Hypertext Transfer Protocol
+
+            
+            2 - O protocolo HTTP segue o modelo Client-Server. O que o navegador (como Chrome ou Firefox) representa nesse modelo? O cliente ou o servidor?
+
+            Selecione uma alternativa
+
+            R: Cliente
+
+            Exato, nós que estamos utilizando o navegador somos o cliente da Alura, que nos fornece o conteúdo, logo ela é o servidor.
+
+
+            3 - O cliente inicia a comunicação e o servidor responde. No entanto, qual é o papel do HTTP entre o cliente e o servidor?
+
+            Selecione uma alternativa
+
+            R: Estabelecer regras de comunicação
+
+            Exatamente, o HTTP foi feito para estabelecer regras de comunicação entre o modelo Cliente-Servidor que funciona na Web.
+
+
+                Temos um outro protocolo, o P2P (Peer to Peer) que nada mais é do que a comunicação entre dois "Clientes" ou, para uma melhor visualização, entre um cliente e 
+                um outro cliente fazendo papel de servidor. Utilizamos muito este protocolo quando estamos usando nosso torrent. Esta é uma forma de balancear a carga 
+                desonerando o servidor. Isto porque hoje em dia não há mais uma clara divisão entre Client-Server pois qualquer um pode ser Server.
+
+                P2P é muito util quando precisamos baixar algo de vários lugares diferentes.
+
+            
+            4 - O HTTP não é o único protocolo de comunicação que existe. Aliás, existem milhares de protocolos no mundo de TI, no entanto o HTTP é de longe o mais popular.
+
+            Na lista abaixo, há um item que não representa um protocolo para internet.
+
+            Qual é exatamente? Pesquise se for necessário.
+
+            Selecione uma alternativa
+
+            R: SQL
+
+            SQL (Structured Query Language) não é um protocolo para internet, e sim uma linguagem de consulta para banco de dados.
+
+
+                Sabendo que:
+
+                    - Estamos acessando o site da Alura para fazer este curso.
+                    - Que Alura é nosso servidor para este curso.
+                    - Que no seu lado servidor a plataforma é Java e que o servidor concreto se chama Tomcat.
+                    - Que a linguagem do banco de dados é SQL e o banco utilizado pela Alura é o MySQL.
+
+                    A estrutura que temos (Da Alura) é a seguinte:
+
+                        Cliente Chrome/Firefox  <--- HTTP <<Internet>> ---> Servidor Java/Tomcat  <--- SQL ---> Banco de dados MySQL
+
+                    Existem estruturas muito mais complexas, mas a grande maioria utiliza o protocolo HTTP no topo.
+                    Podemos nos conectar com qualquer servidor no mundo sem nos preocupar com Firewall ou outras regras de segurança.
+
+            O que você aprendeu nesse capítulo?
+                - A arquitetura Cliente-Servidor.
+                - Um protocolo é um conjunto de regras.
+                - HTTP é um protocolo que define as regras de comunicação entre cliente e servidor na internet.
+                - HTTP é o protocolo mais importante da Internet.
+
+
+Aula 02: A web segura - HTTPS -------
+
+    Teoria:
+
+        HTTPS - A versão segura do HTTP:
+
+            Como vimos anteriormente, HTTP é um protocolo que define as regras de comunicação e suas informações trafegam em texto puro, o que faria com que dados sensíveis 
+            como senhas também navegassem a texto puro o que é uma pratica sem segurança nenhuma.
+
+            Outras informações que não queremos que qualquer um acesse também: e-mail, códigos de segurança de bancos, códigos 2FA, CPF etc.
+
+            Temos que ter em mente outra informação importante...Quando acessamos um site, como o da Alura por exemplo, nossa requisição passa por diversos intermediários como:
+            Roteador Wi-Fi (no caso de conexão Wi-Fi), depois modem do provedor, do modem para algum servidor do provedor de Internet, como Oi ou NET.
+
+            Há a possibilidade da existencia de outros servidores no próprio provedor antes que cheguem no servidor da Alura.
+
+            A mesma coisa acontece com a resposta do servidor da Alura.
+
+            Utilizando o protocolo HTTP qualquer um destes servidores intermediários terá acesso à nossa informação, imagine se estas informações forem um dos nossos dados 
+            sensíveis citados logo acima.
+
+            Para este tipo de cenário que existe o HTTPS, que é basicamente o HTTP comum porém com uma camada adicional de segurança/criptografia que antes era o SSL, mas 
+            posteriormente passou a ser também TLS. Hoje em dia é muito comum que estas siglas sejam encontradas juntas "SSL/TLS" por se tratarem da mesma questão de segurança.
+
+            Agora temos dois termos da nossa comunicação entre Client-Server:
+
+                1 - HTTP: HyperText Transfer Protocol.
+                2 - SSL/TLS: Secure Sockets Layer / Transport Layer Security
+
+        Funcionamento do HTTPS:
+
+            Ao acessarmos o site da Alura podemos perceber que ela utiliza o protocolo HTTPS (Na barra de endereços, do lado esquerdo).
+
+            Se quisermos mais informações sobre a nossa conexão HTTPS com o site da Alura basta clicarmos no cadeado.
+
+            O que o HTTPS faz para garantir segurança na comunicação utiliza chaves públicas e privadas, e os únicos que podem gerar estas chaves são as entidades que tem 
+            a identidade garantidas por um certificado digital. Um certificado digital é utilizado para identificar uma determinada entidade e ainda para gerar chaves de 
+            criptografia.
+
+            Precisamos de um órgão, uma autoridade certificadora que nada mais é que um órgão confiável que garante a identidade dos sites que acessamos como também a validade 
+            de seus certificados. Podemos acessar e ver as iformações do certificado digital do site que estamos acessando.
+
+            No navegador (Chrome, neste caso) Opções > Mais ferramentas > Ferramentas do Desenvolvedor > Security > View Certificate
+
+            No caso da Alura o certificado atualmente é emitido pela CloudFlare Inc ECC CA-2.
+
+            Os navegadores em posse da chave pública cirptografam as informações e as enviam para o servidor que as descriptografa com a chave privada.
+
+            Importante lembrar que apenas a chafe privada descriptografa as informações criptografadas com a chave pública. Por isso devemos sempre manter a chave privada 
+            segura.
+
+            O que aprendemos nesse capítulo?
+
+            - Só com HTTPS a web é segura.
+            - HTTPS significa usar um certificado digital no servidor.
+            - O certificado prova a identidade e tem validade
+            - O certificado possui uma chave publica.
+            - A chave é utilizada pelo navegador para criptografar os dados.
+
+        Certificado Digital:
+
+            Quando temos que informar nossos dados para um servidor, queremos confiar em quem estamos fornecendo nossos dados.
+            O certificado digital prova uma identidade para um site, onde temos informaçõs sobre o seu domínio e a data de expiração desse certificado.
+            O certificado guarda a chave pública que é utilizada para criptografrar (cifrar) os dados que são trafegados entre cliente e servidor.
+
+        Para saber mais: As chaves do HTTPS:
+
+            - HTTPS usa uma chave pública e uma privada.
+            - As chaves estão ligadas matematicamente.
+            - Como temos duas chaves diferentes envolvidas, chamamos este método de criptografia assimétrica.
+                Obs: O problema da criptografia assimétrica é que ela é lenta.
+
+                Navegador com a chave pública <--> HTTPS <--> Servidor com a chave privada
+
+            Temos a criptografia simétrica, que ao contrário da primeira utiliza a mesma chave tanto no navegador quanto no servidor.
+                Obs: O problema da criptografia simétrica é que ela não é tão segura.
+
+                Navegador com uma chave <--> HTTPS <--> Servidor com a mesma chave
+
+            O interessante nisto tudo é que o HTTPS pode usar os dois métodos, tanto a criptografia assimétrica quanto a simétrica ao mesmo tempo.
+
+            Isto se dá pelo fato de que no começo da comunicação o cliente utiliza a chave pública do certificado e o servidor está com a chave privada.
+            Porém, como já vimos antes, este método torna a comunicação lenta.
+            Por isso no começo da comunicação o cliente gera uma chave simétrica só para ele e a transfere para o servidor via a primeira comuniação assimétrica criada.
+            E então o resto da comunicação se da com criptografia simétrica que será utilizada nas requisições seguintes.
+
+            Entendemos então que o HTTPS começa com criptografia assimétrica para depois mudar para criptografia simétrica.
+
+            O que você aprendeu nesse capítulo?
+            - Por padrão, os dados são trafegados como texto puro na web.
+            - Apenas com HTTPS a Web é segura
+            - O protocolo HTTPS nada mais é do que o protocolo HTTP mais uma camada adicional de segurança, a TLS/SSL
+            - O tipo de criptografia de chave pública/chave privada
+            - O que são os certificados digitais
+            - Certificados possuem identidade e validade
+            - As chaves públicas estão no certificado, a chave privada fica apenas no servidor
+            - O que é uma autoridade certificadora
+            - O navegador utiliza a chave pública para criptografar os dados
+    
+    Questões Aula 02:
+
+        1 - O que acontece com nossos dados quando usamos HTTP, ou seja sem a letra S ao final?
+
+        Selecione uma alternativa
+
+        R: Os dados são transportados em texto puro para o servidor, visível para qualquer um.
+        Exato, nossos dados são enviados em texto puro, ficando visível para qualquer um que consiga interceptar nossa conexão!
+
+        
+        2 - Sobre as características do HTTPS, selecione todas as opções abaixo que estejam corretas:
+
+        Selecione 3 alternativas
+
+        R1: A chave privada fica apenas no lado do servidor.
+        Exato, a chave privada é utilizada para descriptografar os dados que foram criptografados com a chave pública, por isso ela é importante e deve ficar apenas em posse 
+        do servidor.
+ 
+        R2: O certificado prova a identidade e tem validade.
+        Correto, todo certificado tem uma data validade e serve para provar a identidade entre o cliente e o servidor.
+
+        R3: O certificado guarda a chave pública.
+        Perfeito, é no certificado digital que encontramos a chave pública utilizada para criptografar os nossos dados.
+
+
+        3 - Qual é a finalidade das autoridades certificadoras?
+
+        Selecione uma alternativa
+
+        R: Garantir que podemos confiar naquele certificado (identidade).
+        Exato, a principal função de uma entidade certificadora é garantir que os certificados que estão sendo utilizados podem ser confiados.
+
+
+Aula 03: Endereços sob seu domínio -------
+
+    Teoria:
+
+        Para acessarmos como por exemplo o site da Alura. Vemos os seguintes parâmetros na barra de endereço:
+
+            http ou https dependendo de qual dos dois protocolos iremos utilizar.
+
+            Depois temos :// e então www.alura.com.br que chamamos de domínio.
+
+            O www signifíca world wide web (Rede Mundial de Computadores).
+
+            Agora, da direita para esquerda temos:
+
+            br: Indicando que é um site do Brasil. Está no que chamamos top level domain, está na raiz do domínio.
+
+            com: Indicando que é um site comercial.
+
+            E depois o alura. O alura e o com são sub-domínios.
+
+            Raiz: com, br, org, net, edu...
+
+            Sub-domínios do br: com, gov, mil, edu...
+
+            Sub-domínios do com: alura, caelum, g1....
+
+            O www também representa um sub-domínio, no entando seu uso é opcional. Tanto que www.alura.com.br e alura.com.br funcionam do mesmo jeito e mostram a mesma página.
+
+            A maior parte dos sites utilizam o www, por não ser necessário o consideramos apenas legado.
+
+        Subdomínios -------
+
+            Temos também a ideia de subdominios. Temos este exemplo dentro do google com drive e o gmail (drive.google.com e gmail.google.com), ambos são páginas diferentes e 
+            estão dentro do mesmo domínio.
+            
+        Endereços IP's -------
+
+            Os nomes de domínio e sub-domínios foi algo criado para organizar a internet e para que fosse fácil nos lembrarmos.
+
+            A internet em si, não precisa destes nomes, para ela basta o endereço IP do domínio que você quer acessar.
+
+            Sendo assim, se tivermos o endereço IP do domínio que queremos acessar, não precisamos do seu nome.
+
+            Podemos utilizar o comando: > nslookup NomeDoDomínio
+
+            Que nos será exibido seu endereço IP, podemos utilizar como exemplo o domínio google.com.br e teremos a seguinte saída:
+
+                        nslookup google.com.br
+                            Servidor:  csp3.zte.com.cn
+                            Address:  fe80::7ac1:a7ff:fe1a:3102
+
+                            Não é resposta autoritativa:
+                            Nome:    google.com.br
+                            Addresses:  2800:3f0:4001:800::2003
+                                        172.217.28.67
+
+            Por ultimo vemos qual é o endereço IP do domínio do google. Se colocarmos este endereço na barra de endereços do navegador e dermos enter, veremos a página do 
+            google.
+
+            Este comando (nslookup) procura qual o endereço IP do Google na internet.
+
+            Para quem trabalha com Rede, o endereço IP é mais importante. Normalmente o desenvolvedor não precisa mexer com isso.
+
+                Obs: O endereço IP pode mudar dependendo do servidor concreto onde o Google foi instalado.
+
+        DNS -------
+
+            Porém não acessamos o Google ou a Alura por endereço IP, mas sim por URL.
+
+            A URL é transformada em endereço IP por causa de um serviço chamado DNS (Domain Name System).
+
+            Ele é como um banco de dados e tem a referência da URL do domínio por IP.
+
+            O DNS realiza a tradução do nome de um domínio para o endereço de IP.
+
+            Podemos até mesmo configurar nossos endereços DNS na nossa máquina. Um dos mais utilizados é o do próprio Google:
+
+                8.8.8.8 e 8.8.4.4
+
+                Podemos ler um pouco mais sobre em: https://developers.google.com/speed/public-dns/
+
+        Portas -------
+
+            Para facilitar a compreensão desta parte da teoria, vamos imaginar que o endereço do domínio, como alura.com.br, seja o endereço de uma casa.
+
+            Porém uma casa tem vários comôdos, várias portas.
+
+            Temos a porta padrão, a porta que já é aberta por padrão para que acessemos o nosso domínio.
+
+            A porta reservada por padrão para o protocolo HTTP que é o mais comum de acessarmos é a porta 80, ou seja, se não definirmos outra porta está é a que será usada.
+
+            Novamente temos um número, porém o navegador já conhece esta porta padrão. Por isso quando digitamos um endereço de um site que utiliza o protocolo HTTP não 
+            precisamos indicar qual porta estamos tentando acessar, exemplo:
+
+                http://www.alura.com.br
+
+                O que, do contrário seria: http://www.alura.com.br:80
+
+            Se tentarmos outra porta que não seja a padrão de acesso do protocolo HTTP, por exemplo:
+
+                http://www.alura.com.br:81
+
+                Não irá funcionar, pois esta porta não está aberta no servidor, como não consguiremos uma conexão o tempo para realizar conexão vai se esgotar.
+
+            O mesmo temos para o protocolo HTTPS, porém sua porta padrão é 443, que também pode ser omitida como no caso do protocolo HTTP.
+
+            Podemos realizar o teste como anteriormente, digitando o endereço:
+
+                https://www.alura.com.br:443
+
+        Recursos -------
+
+            Depois do endereço do domínio que queremos acessar temos outras informações, como por exemplo, no caso da Alura:
+
+            .../dashboard, .../careers, .../forum etc
+
+            Estes citados acima são caminhos intermediários para os recursos em si.
+
+            Se acessarmo um curso, de HTML 5 e CSS3 I por exemplo, que é o recurso própriamente dito, teremos o seguinte caminho:
+
+                https://www.alura.com.br/course/html5-css3-primeiros-passos
+
+                ou
+
+                https://cursos.alura.com.br/course/html5-css3-primeiros-passos
+
+            Finalmente, a URL (Uniform Resource Locator ou Localizador Uniforme de Recursos).
+
+                Podemos verificar que estamos utilizando regras bem definidas para descrever a localização de um recurso na WEB.
+
+                Todos os endereços que utilizamos até o momento seguem esse mesmo padrão:
+
+                protocolo://dominio:porta/caminho/recurso, este é o padrão que chamamos de URL.
+
+                Então no endereço https://www.alura.com.br:443/course/html5-css3-primeiros-passos, temos:
+
+                Protocolo: https://
+                    Obs: Que junto com o www indica que estamos na web.
+
+                Domínio: www.alura.com.br ... com indicando que é um site comercial e br indicando que é um site do Brasil.
+
+                Porta: 443 Opcional, é a porta padrão do HTTPS está sendo utilizada de qualquer forma, mas é omitida.
+
+                Recurso: /course/html5-css3-primeiros-passos onde course é basicamente o caminho.
+
+        Para saber mais: URI ou URL? -------
+
+            Muitas vezes desenvolvedores usam a sigla URI (Uniform Resource Identifier) quando falam de endereços web.
+
+            Alguns preferem URL (Uniform Resource Locator), e alguns misturam as duas siglas a vontade.
+            
+            Qual a diferença?
+
+            R1 (Resposta fácil): Uma URL é uma URI. As duas são válidas para falar de endereços web. As siglas são praticamente sinônimos e são utilizadas desta forma.
+
+            R2 (Mais elaborada): Toda URL é uma URI, mas nem todas URI's são URL's. Existem URI's que identificam recurso sem definir endereço nem protocolo.
+                Ou seja, uma URL sempre vai ser o identificador de um recurso através do endereço, mas nem todas as identificações são URL's.
+
+                Para dar um exemplo melhor, falaremos de outro padrão chamado URN (Uniform Resource Name).
+
+                Um URN também é um URI. Um URN segue uma sintaxe bem definida, tipo: urn:cursos:alura:course:html5-css3-primeiros-passos
+                    Obs: Repare que criamos uma outra identificação do curso Introdução ao HTML e CSS da Alura, mas essa identificação não é um endereço.
+
+                Então: Conceitualmente uma URL e uma URN estão dentro de uma URI.
+
+                Isto tudo da segunda resposta vai muito além do que precisamos saber no dia a dia. Normalmente URI e URL são usados como sinonimos.
+
+        O que aprendemos nesse capítulo?
+            - URL são os endereços da Web
+            - Uma URL começa com o protocolo (por exemplo https://) seguido pelo domínio (www.alura.com.br)
+            - Depois do domínio pode vir a porta, se não for definida é utilizada a porta padrão desse protocolo
+            - Após o domínio:porta, é especificado o caminho para um recurso (/course/introducao-html-css)
+            - Um recurso é algo concreto na aplicação que queremos acessar
+
+            
+    Questões Aula 03:
+
+        1 - Falamos bastante sobre o domínio nessa aula, mas o que é um domínio (ou domain name) e qual a sua importância?
+
+        Selecione uma alternativa
+
+        R: O domínio é o nome do site na Web. Ele facilita a navegação do usuário, que não precisa lembrar o IP de cada site.
+
+        Alternativa correta, o domínio é o nome do site na web e serve para facilitar a navegação do usuário, que acaba não precisando lembrar o IP de cada site.
+
+
+        2 - Qual é o objetivo ou a função do DNS (Domain Name System ou servidor de domínios)?
+
+        Selecione uma alternativa
+
+        R: O DNS tem como função realizar a tradução do nome de um domínio para o endereço de IP correspondente.
+
+        O DNS realiza a tradução do nome de um domínio para o endereço de IP. Existem vários servidores DNS no mundo e é fundamental para a nossa web o funcionamento deles.
+
+
+        3 - Veja o endereço abaixo:
+
+        http://www.alura.com.br
+        Qual é a porta utilizada?
+
+        Selecione uma alternativa
+
+        R: 80
+
+        Correto e como ela é o padrão você pode omiti-la no endereço.
+
+        Como as portas padrões são conhecidas pelo navegador, elas podem ser omitidas ao escrevermos uma URL.
+
+        Vários protocolos definem a sua porta padrão como por exemplo o FTP que usa 21 ou SSH que usa 22.
+
+
+        4 - Veja a URL abaixo:
+
+        smb://server/download/videos/http.mp4
+        Nesse exemplo, como se chama o protocolo?
+
+        Selecione uma alternativa
+
+        R: smb
+
+        Correto, o protocolo especificado na URL se chama smb (aquilo que vem antes do ://)
+
+        O protocolo smb realmente existe e é a abreviação de Server Message Block. Ele é utilizado para compartilhar arquivos dentro de uma rede local.
+
+
+        5 - Veja a URL a seguir:
+
+        http://g1.globo.com/index.html
+        Qual é o nome do recurso?
+
+        Selecione uma alternativa
+
+        R: /index.html
+
+        Alternativa correta, o recurso é aquilo que vem depois do domínio/.
+
+
+Aula 04: O cliente pede e o servidor responde -------
+
+    Teoria:
+
+        Modelo Requisição e Resposta:
+
+            A requisição enviada pelo navegador para o servidor é chamada de HTTP REQUEST.
+
+            A resposta é chamada de HTTP RESPONSE.
+
+            Como a comunicação segue sempre este modelo "Cliente requisita (Através do navegador), Servidor responde" a chamamos de REQUEST-RESPONSE.
+
+                Obs: Sempre começa pela requisição, ou seja, sempre a comunicação começa pelo cliente.
+
+            Comunicação sem estado -------
+
+                Ao navegarmos por um site qualquer como http://g1.globo.com, percebemos que a todo momento que navegamos dentro do site, todo o conteúdo da página é trocado.
+                    Obs: Apesar do menu parecer o mesmo ele também foi trocado.
+
+                Esta e a ideia do HTTP, cada recurso é idenpendente do outro e não depende do anterior.
+
+                Isto também vale para as requisições. Cada requisição é independente e precisa enviar todos os dados para que o servidor responda.
+
+                Como exemplificado no curso, cada requisição é como uma carta enviada pelo correio com determinado conteudo.
+
+                Se a enviamos 3 cartas com conteudos diferentes de um mesmo remetente para um mesmo destinatário, todas as vezes a agencia vai nos cobrar que preenchamos os 
+                dados na carta.
+
+                Esta característica de cada requisição ser independente é chamada de stateless.
+
+                O HTTP não mantém estado das requisições.
+
+                Isto significa que não temos como guardar dados das requisições anteriores utilizando apenas o HTTP.
+
+                Por isso que se não tivessemos outros recursos teriamos que, a cada requisição HTTP, enviar todos os dados a cada requisição.
+
+                Isto é muito importante para o desenvolvedor, pois é esta característica stateless do HTTP que o "atrapalha" no dia a dia.
+
+                Ele tem sempre que preparar a aplicação web para que funcione bem sando o protocolo HTTP.
+
+            Lidando com sessões -------
+
+                Podemos reparar nos sites que precisamos efetuar login com nossas credenciais, que independente de quantas requisições enviemos dentro do site sempre, em algum, 
+                lugar da página, estará indicando que estamos logamos como "fulano de tal".
+
+                Isto acontece porque na hora que efetuamos o login em determinado site ele valida nossos dados, garante que é o dono da conta logando, e cria uma identificação 
+                individual praticamente aleatória para o usuário. Essa identificação é um número criado naquele mesmo momento e muito difícil de se adivinhar.
+                Essa identificação é temporária e ela vem junto com a resposta do servidor (RESPONSE).
+
+            Conhecendo cookies -------   
+
+                Estes dados (identificação) que falamos anteriormente são guardados nos famosos cookies que são armazenados no navegador. Cada navegador tem sua forma de 
+                armazenar os cookies.
+
+                Para encontrar as configurações dos cookies, no caso do Google, podemos ir nas configurações do navegador.
+
+                No caso de cookies definidos para determinados sites, basta clicar no icone na esquerda da barra de endereços.
+
+                No caso da Alura, clicar no cadeado do lado do nome, em cookies e depois na treeview expandir clicando na seta.
+
+                Se caso apagarmos os cookies da Alura, por exemplo, nossa sessão é terminada e teremos que realizar login novamente, porque nossa identificação gravada pelo 
+                site após nossa autenticação anterior foi apagada.
+
+                Normalmente o nome do cookie da identificação é algo do tipo: session-id, e dependendo da plataforma de desenvolvimento utilizada ele pode se chamar de 
+                PHPSESSID ou ASP.NET_Session_Id ou JSESSIONID ou outro nome que foi inventado.
+
+                O cookie é criado de forma transparente pela plataforma de desenvolvimento que estivermos utilizando.
+
+                É desta forma que as plataformas gerenciam sessões com o usuário.
+
+                A ideia disto é manter os dados entre as requisições, já que o HTTP de forma pura não consegue nos fornecer este recurso.
+
+                Uma sessão é útil para gaurdar informações sobre o usuário e as ações dele.
+
+                O carrinho de compras é um exemplo clássico.
+
+                    Resumindo teremos:
+
+                        - O HTTP usa sessões para salvar informações do usuário
+                        - Sessões só são possíveis por uso de Cookies
+                        - Cookies são pequenos arquivos que guardam informações no navegador
+                        - O HTTP é stateless, não mantem estado.
+
+            Cookies -------
+
+                Quando dizemos cookies queremos dizer Cookies HTTP ou Cookie web.
+
+                É um pequeno arquivo de texto normalmente criado pela aplicação Web, para guardar algumas informações sobre usuário no navegador.
+
+                Ele pode guardar várias informações, exemplo: Preferências do usuário, identificação, informações sobre compras na loja virtual. Isto tudo depende da aplicação 
+                web.
+
+                Os cookies podem ser manipulados e apagados pelo navegador. Sempre que são salvos ficam associados com um domínio. Ou seja, podemos ter diversos cookies de 
+                dominios diferentes.
+
+            Login e senha -------
+
+                É a ideia que vimos antes da relação de login e cookie. Quando realizamos login em uma determinada página, nossas credenciais são enviadas ao servidor deste 
+                dominio e são validadas. Para que não precisemos, ao navegar pelo site, enviar nossas credenciais todas as vezes uma identificação gerada pela aplicação é 
+                armazenada em forma de cookie no navegador, o que nos permite estar em uma sessão, sem ficar enviando os dados a todo momento.
+
+            
+        O que você aprendeu nesse capítulo?
+            - O protocolo HTTP segue o modelo Requisição-Resposta
+            - Sempre o cliente inicia a comunicação
+            - Uma requisição precisa ter todas as informações para o servidor gerar a resposta
+            - HTTP é stateless, não mantém informações entre requisições
+            - As plataformas de desenvolvimento usam sessões para guardar informações entre requisições
+
+
+
+    Questões Aula 04:
+
+        1 - Qual das informações abaixo é verdadeira?
+
+        Selecione uma alternativa
+
+        R: Uma requisição sempre deve ser enviada com todas as informações necessárias, o que faz uma requisição ser sempre independente das demais.
+
+        Alternativa correta!
+
+
+        2 - O que é uma sessão HTTP?
+
+        Selecione uma alternativa
+
+        R: É o tempo que o cliente utiliza um web app.
+
+        Alternativa correta!
+
+        Uma sessão HTTP nada mais é que um tempo que o cliente permanece ativo no sistema! Isso é parecido com uma sessão no cinema. Uma sessão, nesse contexto, é o tempo que 
+        o cliente usa a sala no cinema para assistir a um filme. Quando você sai da sala, termina a sessão. Ou seja, quando você se desloga, a Alura termina a sua sessão.
+
+
+        3 - Qual dessas alternativas é verdadeira?
+
+        Selecione uma alternativa
+
+        R: Uma comunicação com HTTP sempre é iniciada pelo cliente que manda uma requisição ao servidor esperando por uma resposta.
+
+        Alternativa correta!
+
+        No HTTP: Request -> espera -> Resposta
+
+
+Aula 05: Depurando a requisição HTTP -------
+
+    Teoria:
+
+        Depurando o método HTTP -------
+
+            F12 = Abrir o console do desenvolvedor.
+
+            Método GET do HTTP:
+
+                Usaremos o console do desenvolvedor e acessaremos o http://www.alura.com.br.
+
+                No console temos acesso a vários dados como: Código de páginas, cada uma das requisições, tempo de resposta, método HTTP etc.
+
+                Ao clicarmos na requisição para o site www.alura.com.br vemos que o método HTTP foi o GET (Request Method: GET).
+
+                Isto significa que queremos receber informações sem mudar nada no servidor, que é justamente a ideia do método GET.
+
+                No console do desenvolvedor podemos ver os cabeçalhos de requisição e resposta.
+
+                No cabeçalho de resposta (Response Headers), podemos ver que no atributo localização (location) o link foi modificado, agora já utilizando o protocolo HTTPS 
+                (Location: https://www.alura.com.br/).
+
+                Isto porque no GET ele recebeu o código 301 (Moved permantly), ou seja, isto já diz que o link realmente utilizado é outro, então ele procura no atributo 
+                citado acima (Location) um novo link para acessar o domínio.
+
+            Redirecionamento entre sites:
+
+                O redirecionamento de link, trocando os protocolos HTTP por HTTPS é algo comum hoje em dia para garantir que estamos usando o HTTPS sempre.
+
+                Ao receber o código 301 o navegador chama automaticamente a nova URL, em outras palavras, o código retornado indica que devemos fazer um redirecionamento para
+                o endereço específicado no cabeçalho Location.
+
+                Isto, no mundo dev, é chamado de Redirecionamento pelo Navegador ou Redirecionamento no lado Cliente.
+
+                A tarefa do desenvolvedor é definir o código de resposta e, caso algum recurso tenha mudado a URL o código 301 será usado com o cabeçalho Location.
+
+            O Código 200:
+
+                Código 200 significa que tudo deu certo na requisição. Não temos o cabeçalho Location trazido pelo outro código para mudança de URL.
+
+                Não deu nenhum outro problema, a requisição foi aceita e processada corretamente.
+
+            Tipos de dados diferentes:
+
+                No console podemos ver que temos muitas outras requisições além das duas primeiras, http://ww.alura.... e https://www.alura..., uma sendo a requisição original 
+                e a segunda um redirecionamento garantindo que estejamos usando o protocolo seguro.
+
+                Isto acontece porque quando recebemos a resposta do servidor Alura, ele nos devolve o conteúdo em um formato especial chamado de HTML.
+
+                O HTML é aquele que define a estrutura da nossa página. Ele define menus, botões, links, rodapé, etc. Porém dentro do HTML não vêm imagens e outros arquivos 
+                necessários para deixar o site da forma que o vemos. Dentro dele vem apenas o endereço dos outros recursos.
+
+                Então ao recebermos o HTML o navegador dispara várias outras requisições para carregar todo o resto do conteúdo que falta.
+
+                Podemos ver todas estas outras requisições porque elas também são requisições HTTP. Podemos ver que na resposta vem o tipo de conteúdo.
+
+                O importante é saber que o HTTP não está engessado em algum formato específico. Podemos trafegar qualquer informação com ele, seja texto ou binário.
+
+        Depurando os códigos de resposta HTTP -------  
+
+            Nos nosso testes de requisições acima, vimos dois códigos de resposta, 200 indicando que está tudo certo e o 301 indicando que o link para acesso é outro,
+            um código de redirecionamento.
+
+            Podemos fazer outro teste e ver um código bem conhecido. Ao tentarmos acessar uma página que não existe, exemplo https://www.alura.com.br/nao-existe
+            nos é exibido o famoso código 404.
+
+            Se caso alguma vez tivermos recebido o código 500, indica que "deu pau no servidor"
+
+            Mas, por quê tanta distância entre estes código?
+
+            Categorias de códigos:
+
+                Existem muitos códigos definidos no protocolo HTTP, existem tabelas na Web disponíveis com estes códigos.
+
+                Podemos consulta-los aqui quando precisarmos: https://www.w3schools.com/tags/ref_httpmessages.asp
+
+                Os mais conhecidos são os iniciados por 2XX, 3XX, 4XX e 5XX.
+
+                    2XX: Indica que a requisição foi executada com sucesso.
+
+                    3XX: Indica que o navegador precisa fazer algo mais, o cliente precisa agir, como um redirecionamento por exemplo.
+
+                    4XX: Indica que temos erro na requisição, como URL errada.
+
+                    5XX: Indica que o problema é no lado do servidor.
+
+    
+    Questões Aula 05:
+
+        1 - Abaixo há um exemplo de uma requisição e resposta, usando a ferramenta telnet. Através dele, acessamos www.caelum.com.br na porta padrão 80.
+
+            (imagem)
+
+            O telnet estabelece apenas uma conexão TCP (protocolo de rede que roda abaixo do HTTP) e permite que enviemos dados em cima dessa conexão, através do terminal. Uma vez a conexão estabelecida, basta escrever no terminal e os dados serão enviados automaticamente para o servidor. Para o servidor realmente entender os dados, devemos respeitar a sintaxe do protocolo HTTP!
+
+            Nesse exemplo digitamos no terminal:
+
+                GET / HTTP/1.1
+                HOST: www.caelum.com.br
+
+            E a resposta do servidor segue logo abaixo:
+
+                HTTP/1.1 200 OK
+                Content-Type: text/html; charset=utf-8
+                Vary: Accept-Encoding,User-Agent
+                Content-Language: pt-br
+                Date: Mon, 01 Jun 2015 21:00:20 GMT
+                Server: Google Frontend
+                Cache-Control: private
+
+            Agora, baseado nesses dados, qual foi o método HTTP e código da resposta?
+
+            Selecione uma alternativa
+
+            R: GET e 200
+
+            Alternativa correta!
+
+
+        2 - Qualquer resposta HTTP possui um número que informa sobre o status da requisição.
+
+            Qual dos códigos abaixo indica que a requisição foi bem sucedida?
+
+            Selecione uma alternativa
+
+            R: 200
+
+            Alternativa correta!
+
+            O código 200 significa OK, ou Sucesso, que não houve nenhum problema no processamento da requisição e ela foi bem sucedida.
+
+            Existem mais códigos que começam com 2xx. No entanto 200 é de longe o mais utilizado, principalmente no desenvolvimento de uma aplicação web.
+
+            Na documentação oficial, se diz a respeito da classe de códigos que começam com 2xx:
+
+            2xx - Resposta bem sucedida!
+            Essa classe de códigos de status indica que a ação solicitada pelo cliente foi recebida, compreendida, aceita e processada com êxito.
+
+            A tabela completa de mensagens HTTP pode ser vista em: https://www.w3schools.com/tags/ref_httpmessages.asp.
+
+
+        3 - Vimos que há diversos códigos HTTP. Vendo os códigos abaixo, qual deles representa algum problema gerado no servidor?
+
+            Selecione uma alternativa
+
+            R: 500
+        
+            Alternativa correta!
+
+            A classe 5xx significa que houve algum problema no servidor.
+
+            Por exemplo: 500 - Internal Server Error, ou outro famoso: 503 - Service Unavailable.
+
+            O código 500 acontece com frequência quando estamos desenvolvendo uma aplicação web e, ao testar, percebemos que erramos algo na lógica que gerou um problema 
+            no servidor.
+
+
+        4 - Abra uma nova aba no navegador e tente acessar: http://g1.globo.com/algo-que-nao-existe
+
+            Qual foi o código da resposta?
+
+            Obs: Você precisa depurar a requisição HTTP para descobrir o código da resposta.
+
+            Selecione uma alternativa
+        
+            R: 404
+
+            Alternativa correta!
+
+            404 é o código clássico que indica que o recurso não foi encontrado. Em geral, a classe 4xx indica que o cliente errou algo na requisição.
+
+            Segue um outro exemplo da classe 4xx, tente acessar: https://s3.amazonaws.com/caelum-online-public/http/qq.png
+
+            Nesse caso o código de resposta é 403(não permitido): o cliente não tem a permissão.
+
+
+        5 - Repare os cabeçalhos da requisição e resposta:
+
+            ------->
+
+            GET /treinamento HTTP/1.1
+            HOST: www.caelum.com.br
+
+            <-------
+
+            HTTP/1.1 302 Found
+            Location: http://www.caelum.com.br/cursos/
+            Date: Tue, 02 June 2015 16:23:26 GMT
+            Content-Type: text/html
+            Server: Google Frontend
+            Content-Length: 0
+
+            Seguem 4 afirmações:
+
+            A) O código da resposta é 302.
+
+            B) O recurso solicitado é /cursos/.
+
+            C) O cliente não recebeu a resposta.
+
+            D) O servidor está pedindo um redirecionamento.
+
+            Avalie as afirmações e escolha a resposta correta:
+
+            Selecione uma alternativa
+
+            R: Apenas as afirmativas A e D são verdadeiras.
+
+            Alternativa correta!
+
+            A) O código da resposta é 302.
+            Correto, o código aparece na resposta. O código 302 significa Movido Temporariamente.
+            
+            B) O recurso solicitado é /cursos/.
+            Errado, pois na requisição aparece: GET /treinamento HTTP/1.1.
+            
+            C) O cliente não recebeu a resposta.
+            Errado, pois foi enviada sim uma resposta para o cliente.
+            
+            D) O servidor está pedindo um redirecionamento.
+            Correto, na resposta aparece o cabeçalho Location, que define o redirecionamento para http://www.caelum.com.br/cursos/.
+
+            Portanto, as afirmativas 1 e 4 são verdadeiras.
+
+
+        6 - Já vimos 3 classes do protocolo HTTP: 2xx, 4xx e 5xx.
+
+                2XX - Sucesso
+                3XX - ??
+                4XX - Erro do cliente
+                5XX - Erro do servidor
+
+            Para que existem os códigos 3xx?
+
+            Selecione uma alternativa
+
+            R: Redirecionamento.
+
+            Alternativa correta!
+
+            A classe do código 3xx é relacionada com o redirecionamento.
+
+            Nesse caso, o cliente (navegador) deve tomar medidas extras para concluir o pedido. Normalmente são utilizados os códigos 301 ou 302, junto com o cabeçalho de resposta 
+            Location.
+
+            Por exemplo, veja a requisição, tentando acessar a Alura através do protocolo HTTP (sem S):
+
+                GET / HTTP/1.1
+                HOST: www.alura.com.br
+
+            Na resposta, recebemos o código 301 e o cabeçalho Location para enviar uma nova requisição, usando o protocolo HTTPS:
+
+                HTTP/1.1 301 Moved Permanently
+                Server: nginx/1.6.2
+                Date: Tue, 02 Jun 2015 19:37:44 GMT
+                Content-Type: text/html
+                Content-Length: 184
+                Location: https://www.alura.com.br/
+
+
+    HTTP é o protocolo mais utilizado na internet e há muita documentação disponível. Segue um link que explica os códigos HTTP de forma divertida: https://httpstatusdogs.com/
+    ou se você preferir gatos https://http.cat/
+
+    Além de se aprender de forma divertida com os cachorrinhos, você pode conferir uma documentação mais completa e detalhada neste link: https://httpstatuses.com/
+
+
+Aula 06: Parâmetros da requisição -------
+
+    Teoria:
+
+        Parâmetros na requisição com métodos GET e POST:
+
+            No primeiro exemplo desta aula, fizemos um acesso ao http://www.youtube.com e buscamos por Ayrton Senna.
+
+            Podemos verificar que a URL mudou por estarmos enviando parâmetros de busca, pois estes parâmetros são adicionados a ela mesmo.
+
+            Ao final desta busca nossa URL ficou assim: https://www.youtube.com/results?search_query=Ayrton+Senna.
+
+            O recurso para buscar se chama result que estava após a barra, e nossos parâmetros de busca se chama search_query e, como todo parâmetro ficou após o ?
+            o valor do nosso parâmetro foi Ayrton+Senna.
+
+            Estes parâmetros da URL são normalmente chamados de Query Params.
+
+            se quisessemos adicionar mais um parâmetro de busca, bastava colocar após Ayrton+Senna o & ('E' comercial) e em seguida o novo parâmetro.
+
+            Um exemplo de busca composta é a busca avançada do google, que nos permite refinar a pesquisa por idioma, país, data etc.
+
+            Assim fica a busca avançada do google com vários parâmetros: https://www.google.com.br/?gws_rd=ssl#lr=lang_pt&tbs=lr:lang_1pt&q=neymar
+
+        Parâmetros com GET:
+
+            O método GET envia nos parâmetros de requisição todos na URL. Isto é muito útil caso queiramos em outros momentos realizar a busca ou requisição novamente.
+
+            Mas e no caso de estarmos realizando um login? O usuário e senha na URL não seria tão interessante, não é mesmo?
+
+            Imagina o login do banco: https://www.bb.com.br/login?login=nico&password=supersecreto
+
+            Lembrando que nossa navegação em geral fica gravada no histório do browser.
+
+        O método HTTP POST:
+
+            Se fizermos o login no site da Alura, veremos que a URL para enviar login e senha é https://www.alura.com.br/signin.
+
+            Podemos reparar também que o método HTTP utilizado mudou, agora o método é HTTP POST.
+
+            Usando o POST o navegador envia os dados do formulário no corpo da requisição e não na URL!
+
+            Se fosse o método HTTP GET nosso dados estariam sendo enviados na URL.
+
+        GET para receber, POST para criar?
+
+            Uma outra utilidade para o método POST é criar conteúdo. Uma utilização do método POST na Alura é quando alguém cria uma pergunta no fórum.
+
+            No momento que o usuário submete um formulário com dados para criar um novo recurso na Alura (A pergunta do aluno se torna um recurso).
+
+            A intenção inicial do método POST, era esta, criar algo novo no servidor.
+
+            No entando não é sempre pra isso que o utilizamos, como vimos nos exemplos anteriores, utilizamos o método POST apenas para ocultar parâmetros apenas.
+
+            É claro que tudo que falamos é convenção, a forma que o servidor irá agir na hora que o navegador enviar o método GET ou POST dependerá da lógica implantada por
+            trás no servidor em si.
+
+            Poderemos ver no dia a dia o método GET sendo utilizado para criar, alterar ou remover algo no servidor. A mesma coisa com o método POST.
+
+            Utilizaremos o método POST para criar, alterar ou até mesmo pesquisar algo.
+
+            As aplicações podem adaptar o significado dos métodos HTTP quando for necessário.
+
+        Para saber mais: Parâmetros na URL:
+
+            Podemos enviar uma requisição utilizando o método GET para que nos mostre um perfil específico, como exemplo, perfil do "usuário 2"
+
+            http://meusite.com.br/usuario?id=2
+
+            Se caso os usuários do site que iremos acessar tiver um ID cada, chamamos o recurso usuário e passamos o parâmetro id=2.
+
+            Poderíamos passar tudo na URL, exemplo:
+
+            http://meusite.com.br/usuario/2
+
+            Porém neste caso deveria ser acertado com o desenvolvedor da aplicação que o número na URL se referia ao ID, pois não teria como o lógica por trás saber
+            automaticamente que o número ali se refere a algum usuário.
+
+            Vamos ver um exemplo que passamos uma informação na URL e a aplicação do outro lado já sabe a que se refere.
+
+            Colocamos o seguinte link na barra de endereços do navegador: http://viacep.com.br/ws/20040030/json
+
+            A nossa reposta é:
+
+                {
+                "cep": "20040-030",
+                "logradouro": "Rua do Ouvidor",
+                "complemento": "de 50 ao fim - lado par",
+                "bairro": "Centro",
+                "localidade": "Rio de Janeiro",
+                "uf": "RJ",
+                "unidade": "",
+                "ibge": "3304557",
+                "gia": ""
+                }
+
+            Isto nada mais é que a rua da CAELUM no Rio, a informação "20040030" nada mais é que o CEP daquele local formatado em JSON.
+
+            O Servidor já sabia a que se referia o número que iriamos passar logo após o /ws/.
+
+            Podemos fazer o teste com outros CEP's. :)
+
+        Para saber mais: Outros métodos HTTP e Web Services:
+
+            Apesar de GET e POST serem os dois mais famosos métodos HTTP, temos outros métodos que podem ser utilizados.
+
+            GET foi criado para receber dados, POST para adicionar algo no servidor.
+
+            Temos também o método DELETE para apagar algo no servidor e o método PUT para atualizar.
+
+            Estes dois ultimos não são tão utilizados em aplicações web, mas sim, em Web Services.
+
+                Obs: Existem outros métodos ainda, além de: GET, POST, DELETE e PUT.
+
+            Mas, o que seria Web Services?
+
+            Quando falamos de Web Services sempre usamos o protocolo da web HTTP.
+
+            Sendo assim, Web service nada mais é que uma funcionalidade na web através do protocolo HTTP.
+
+            O que o Web Service vai fazer depende de cada empresa e do negócio dela.
+
+            Como exemplo, a Alura tem um Web Service que traz todas as informações de um curso (nome, capítulos, exercícios, etc).
+
+            O Google ou Facebook possuem muitos Web Services para acessar um usuário, ver os posts dele, interesses, etc.
+
+            Estes serviços muitas vezes são pagos.
+
+            A grande diferença de um aplicativo web e um web service é que os dados não vem em formato HTML, e sim num formato independente de visualização, como XML ou JSON.
+
+            Um exemplo de um web service da Alura que é utilizado em treinamento presenciais: https://argentumws-spring.herokuapp.com/negociacoes
+
+            É tarefa do Cliente ler os dados e apresentar para o usuário final. O cliente não precia ser o navegador (e normalmente não é), pode ser um celular ou uma aplicação
+            Desktop.
+
+
+    Questões Aula 06:
+
+        1 - Com base na família de erros que você aprendeu no curso, marque a alternativa correta:
+
+            Selecione uma alternativa
+
+            R: 200, 203, 207 -> Respostas de Sucesso
+
+            300, 301, 302 -> Mensagem de redirecionamento
+
+            401, 404, 405 -> Respostas de erro do cliente
+
+            500, 502, 503 -> Respostas de erro do servidor
+
+
+            Correto!
+
+        
+        2 - Vamos testar o envio de parâmetros através da requisição, fazendo uma busca no Google pela palavra Alura.
+
+            Para isso, na URI do Google, vamos enviar na requisição o parâmetro q com o valor Alura. Ou seja: google.com.br/search?q=Alura
+
+            Ao entrar nessa URI, qual método HTTP foi usado?
+
+            Selecione uma alternativa
+
+            R: GET.
+
+            Alternativa correta!
+
+            Resposta correta: GET
+
+            Quando passamos os parâmetros da requisição na URL, estamos fazendo uso do método GET. O que é super útil quando precisamos repetir a requisição com os mesmos 
+            parâmetros :)
+
+        
+        3 - Vimos que podemos enviar parâmetros em uma URL. Então, qual é a forma correta de enviá-los?
+
+            Selecione uma alternativa
+
+            R: http://calculadordeimc.com.br/?peso=44&altura=1.50
+
+            Alternativa correta!
+
+            Quando enviamos parâmetros na URL, devemos iniciar pelo ?, o nome do parâmetro e um =, para separar o nome do parâmetro do seu valor:
+
+            ?nome_do_parametro=seu_valor
+            Quando usamos mais do que um parâmetro devemos usar & para separá-los:
+
+            ?nome_do_parametro=seu_valor&nome_do_outro_param=valor
+
+        
+        4 - Veja os dados da requisição:
+
+            ----------------------------------------------------------------------------
+            AQUI /vendas?ano=2014 HTTP/1.1
+            HOST: www.vendasfuturas.com.br
+            ----------------------------------------------------------------------------
+
+            Qual método HTTP devemos colocar no lugar de AQUI para a requisição funcionar corretamente?
+
+            Selecione uma alternativa
+
+            R: GET
+
+            Alternativa correta!
+
+            GET é normalmente usado para pesquisas, mas isso depende um pouco de como a plataforma e o desenvolvedor usam esse método. Na vida real, vocês vão encontrar 
+            muitos exemplos que usam requisições do tipo GET, não só para pesquisas.
+
+            O protocolo HTTP define que o GET deve ser utilizado apenas para acessar os dados, mas HTTP, como protocolo, não pode impedir o desenvolvedor de fazer algo 
+            diferente. Por exemplo, veja a requisição a seguir:
+
+            -----------------------------------------------------------------------------
+            GET /vendas/remove?id=53 HTTP/1.1
+            HOST: www.vendasfuturas.com.br
+            Usamos GET, mas repare que o nome do recurso muda a intenção do método HTTP. O recurso se chama /vendas/remove, ou seja, queremos apagar a venda com a 
+            identificação 53, usando o método GET!
+            ------------------------------------------------------------------------------
+
+            O protocolo HTTP define apenas algumas regras entre cliente e servidor. O que o servidor realmente faz depende da implementação, ok?
+
+            OBS: Se tiver com código 500 na cabeça, abra uma pergunta no fórum :)
+
+        
+        5 - Seguem os dados da requisição para efetuar o login na plataforma Alura:
+
+            -------------------------------------------------------------------------------
+            POST /signin/ HTTP/1.1        
+            HOST: https://www.alura.com.br
+            Content-Type: application/x-www-form-urlencoded
+
+            email=nico.steppat%40caelum.com.br&senha=totalmentesecreta
+            -------------------------------------------------------------------------------
+
+            Por que foi utilizado o método POST?
+
+            Selecione uma alternativa
+
+            R: Usamos POST para incluir os parâmetros no corpo da requisição.
+
+            Alternativa correta!
+
+            Utilizando o método GET, tanto o login quanto a senha seriam passados como parâmetro na URL, coisa que não queremos que aconteça. O método POST deixa os 
+            parâmetros no corpo da requisição, assim evita que informações importantes, como a senha, fiquem explícitas na URL.
+
+            Usando o método GET, a URL ficaria:
+
+            -------------------------------------------------------------------------------
+            GET /signin/?email=nico.steppat@caelum.com.br&senha=totalmentesecreta HTTP/1.1        
+            HOST: https://www.alura.com.br
+            -------------------------------------------------------------------------------
+
+            Logo, o POST foi utilizado para que se enviasse os valores do formulário no corpo da requisição.
+
+
+Aula 07: Serviços na web com REST -------
+
+    Teoria:
+
+        Serviços web-REST:
+
+            Serviços WEB:
+
+                Hoje podemos ver como existem milhões de softwares rodando em linguagens e frameworks diferentes. A maioria delas não tem o seu ciclo de vida de forma isolada. A maioria acaba querendo se
+                comunicar com outras aplicações.
+
+                Um coisa bem comum para exemplificar o que foi dito acima é o login através de rede social que realizamos em outros aplicativos.
+
+                Temos outros momentos que as aplicações conversam entre si sem que nada seja exibido para o usuário final.
+
+                Toda aplicação que disponibiliza serviços para outras são chamadas webservices. E uma API de utilização é documentada para uma integração eficiente entre sistemas.
+
+                Temos diversos serviços web, entre eles: Paypal, muito famoso e muito utilizado, upload de imagens, transformação de CEP em endereços textuais. Tudo isso é feito através do poderoso protocolo
+                HTTP.
+
+            Cenário de trabalho:
+
+                Muitos aplicativos não funcionam sem acesso a rede porque as principais funcionalidades são feitas via requisição HTTP.
+
+                As requisições podem ser implementadas em várias linguagens de programação como: Java, PHP, Javascript etc.
+
+                Vamos supor que temos um aplicativo de pedido de refeições chamado AluraFood
+
+                A AluraFood tem duas equipes, uma que mexe com o aplicativo web (Ou simplesmente API web) e a dos apps mobile (Android e iOS).
+
+                Aqueles que são responsáveis pela tela de listagem de restaurantes vão precisar receber do serviço os detalhes de cada restaurante.
+
+                No caso o pessoal responsável pelo webservice já documentou exatamente o que seria necessário:
+
+                    Listagem de todos os restaurantes --> GET - http://alurafood.com/api/restaurante (exemplo)
+
+                    Como retorno da requisição poderiamos receber o seguinte conteúdo HTML:
+
+                        <!DOCTYPE html>
+                            <html lang="en">
+                            <head> 
+                                <meta charset="UTF-8">
+                                <title>AluraFood</title>
+                                <link rel="stylesheet" type="text/css" href="principal.css">
+                                <script type="text/javascript" src="build.js"></script>
+                            </head>
+                            <body>
+                                <table>
+                                    <tr>
+                                        <td>Bob's</td>
+                                        <td>8</td>
+                                        <td>R. do México 100</td>
+                                        <td><img src="http://alurafoods.com/uploads/logos/bobs.png"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Subway</td>
+                                        <td>8.5</td>
+                                        <td>Av. Rio Branco 202</td>
+                                        <td><img src="http://alurafoods.com/uploads/logos/subway.png"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Experimenta Lanches</td>
+                                        <td>9</td>
+                                        <td>R. do Brasil 545</td>
+                                        <td><img src="http://alurafoods.com/uploads/logos/e-lanches.png"/></td>
+                                    </tr>
+                                </table>
+                            </body>
+                            </html>
+
+                    Podemos perceber que recebemos uma listagem de restaurantes dentro de uma tabela (Elemento table do HTML), e cada linha (elemento tr) possui 4 colunas (elemento td), dentro de cada
+                    coluna temos as informações dos restaurantes: nome, nota de avaliação, endereço e logo.
+
+                Percemos então que os responsáveis precisarão analisar e extrair somente as informações necessárias de todo este conteúdo HTML.
+
+                O ato de analisar o documento é chamado de realizar um parsing do arquivo.
+
+                Além do HTML ser um formato verboso, temos diversas tags e cabeçalhos que para outro formato seria desnecessário. Um outro ponto é estarmos trafegando muito mais informações onerando a banda
+                do usuário.
+
+                Pensando nesta deficiência do HTML que outros formatos de resposta foram criados, como JSON e o XML (eXtensible Markup Language).
+
+                No caso do XML o conteúdo seria assim:
+
+                    <?xml version="1.0"?>
+                    <restaurantes>
+                        <restaurante>
+                            <nome>Bob's</nome>
+                            <avaliacao>8</avaliacao>
+                            <endereco>R. do México 100</endereco>
+                            <logo>http://alurafoods.com/uploads/logos/bobs.png</logo>
+                        </restaurante>
+                        <restaurante>
+                            <nome>Subway</nome>
+                            <avaliacao>8.5</avaliacao>
+                            <endereco>Av. Rio Branco 202</endereco>
+                            <logo>http://alurafoods.com/uploads/logos/subway.png</logo>
+                        </restaurante>
+                        <restaurante>
+                            <nome>Experimenta Lanches</nome>
+                            <avaliacao>9</avaliacao>
+                            <endereco>R. do Brasil 545</endereco>
+                            <logo>http://alurafoods.com/uploads/logos/e-lanches.png</logo>
+                        </restaurante>
+                    </restaurantes>
+
+                O outro famoso formato que onera ainda menos a rede é o JSON (JavaScript Object Notation):
+
+                    [
+                        {
+                            "nome": "Bob's",
+                            "avaliacao": "8",
+                            "endereco": "R. do México 100",
+                            "logo": "http://alurafoods.com/uploads/logos/bobs.png"
+                        },
+                        {
+                            "nome": "Subway",
+                            "avaliacao": "8.5",
+                            "endereco": "Av. Rio Branco 202",
+                            "logo": "http://alurafoods.com/uploads/logos/subway.png"
+                        },
+                        {
+                            "nome": "Experimenta Lanches",
+                            "avaliacao": "9",
+                            "endereco": "R. do Brasil 545",
+                            "logo": "http://alurafoods.com/uploads/logos/e-lanches.png"
+                        }
+                    ]
+                
+                A dúvida que fica agora é como especificar no cabeçalho da requisição HTTP que queremos receber uma resposta JSON?
+
+                Usamos um Accept: application/json como cabeçalho HTTP.
+
+                Já na resposta uma indicação desse conteúdo é especificado pelo cabeçalho Content-Type: application/json
+
+        O que é REST?:
+
+            O app do AluraFood ou outros aplicativos que utilizam webservices não se resumem a listagens.
+
+            Funcionalidades específicas aos responsáveis de um restaurante poderiam ser necessárias no caso do AluraFood.
+
+            Por isso o webservice deve estar preparado também para lidar com esta necessidade.
+
+                Listagem de todos os restaurantes --> GET - /restaurante
+
+                Adicionar um  restaurante --> POST - /restaurante
+
+            As URI são identicas o que muda é o método HTTP (GET - Listagem / POST - Criação).
+
+            A atualização poderia ter um outro endpoint, como por exemplo:
+
+                PUT/PATCH - /restaurante/1
+
+                O número 1 ao final da URI indica o ID de um restaurante específico.
+
+            No caso da remoção de um restaurante o modelo seria o mesmo:
+
+                DELETE - /restaurante/1
+
+            Para a busca do cardápio de um restaurante específico:
+
+                GET - /restaurante/1/cardapio
+
+        O padrão REST:
+
+            Percebemos então que o padrão usado pela equipe do webservice define que uma requisição tem três tipos de componentes importantes (URI), operações (GET, POST, PUT, DELETE, etc) e representação
+            de dados (XML, JSON, ...)
+
+            Estes três componentes em conjunto com algumas práticas são a base para o modelo arquitetural REST (Representational State Transfer) ou Transferência de Estado Representacional.
+
+        Recurso:
+
+            Ao criar URI's devemos levar em conta que elas representam recursos e não ações. 
+            
+            O padrão REST diz que nossas URI's devem conter apenas substantivos que são os recursos.
+
+            No caso /restaurante/adiciona não é uma boa URI, pois contém um verbo que está identificando uma operação e não um recurso.
+
+            Poderiamos representar a adição de um restaurante poderiamos usar a URI /restaurante com o método HTTP POST, que já representa que estamos adicionando alguma informação no sistema.
+
+        Operações:
+
+            Cada método HTTP tem uma semântica diferente e juntando o método à URI deveríamos conseguir representar todas as ações do nosso sistema.
+
+            As semânticas principais são:
+
+                GET - recupera informações sobre o recurso identificado pela URI. Ex: listar restaurante, visualizar o restaurante 1. Uma requisição GET não deve modificar nenhum recurso do seu sistema, 
+                ou seja, não deve ter nenhum efeito colateral, você apenas recupera informações do sistema.
+
+                POST - adiciona informações usando o recurso da URI passada. Ex: adicionar um restaurante. Pode adicionar informações a um recurso ou criar um novo recurso.
+
+                PUT - adiciona (ou modifica) um recurso na URI passada. Ex: atualizar um restaurante.
+
+                DELETE - remove o recurso representado pela URI passada. Ex: remover um restaurante.
+
+        Representação:
+
+            Quando fazemos uma aplicação não trafegamos um recurso pela rede, apenas uma representação dele. E essa representação pode ser feita de diferentes formas como JSON, XML ou HTML.
+
+        Conclusão:
+
+            As URI's devem representar os recursos, o que define as operações são os métodos HTTP e podemos dizer em qual formato que iremos conversar com o servidor com o Content-Type e Accept que são
+            cabeçalhos HTTP.
+
+        O que aprendemos neste capítulo?
+
+            REST é um padrão arquitetural para comunicações entre aplicações
+            Ele aproveita a estrutura do HTTP
+            Recursos são definidos via URI
+            Operações com métodos HTTP(GET/POST/PUT/DELETE)
+            Cabeçalhos(Accept/Content-Type) são usados para especificar as representações(JSON,XML,...)
+
+        Para saber mais: tipos de dados:
+
+            Em alguns cabeçalhos HTTP devemos especificar algum formato. Os formatos são chamados na documentação de MIME types. E na definição do cabelalho usamos a seguinte estrutura tipo/subtipo.
+
+            Tipos conhecidos:
+
+                text, image, application, audio e video.
+
+            Alguns subtipos:
+
+                texte/plain, text/html, text/css, text/javascript.
+
+                image -> image/gif, image/png, image/jpeg
+
+                audio -> audio/midi, audio/mpeg, audio/webm, audio/ogg, audio/wav
+
+                video -> video/mp4
+
+                application -> application/xml, application/pdf
+
+            Para conhecermos outros formatos aceitos: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+
+        
+    Questões Aula 07:
+
+        1 - No desenvolvimento Web, para o envio de dados através de formulários, quais são os métodos HTTP que são mais utilizados pelos desenvolvedores no dia a dia?
+
+            Selecione uma alternativa
+
+            R: GET e POST
+
+            Correto, GET e POST são de longe os métodos mais utilizados.
+
+            Os métodos GET e POST são de longe os métodos mais utilizados no desenvolvimento web, mas porque isso?
+
+            A resposta está no próprio HTML. Por padrão, as páginas HTML fazem apenas requisições do tipo GET ou POST. Para o tipo POST especificamente, precisamos fazer uso da tag form, configurando o atributo
+            method como POST, ao invés do seu valor padrão que é GET. O outro caso é quando usamos a tag a que cria um link de uma página para outra, fazendo com o que o navegador execute uma requisição do tipo 
+            GET.
+
+            Para fazer requisições usando métodos como PUT ou DELETE, precisamos fazer com código JavaScript.
+
+        2 - Leia abaixo as afirmações sobre o protocolo.
+
+            Marque todas as afirmações verdadeiras:
+
+            Selecione 3 alternativas
+
+            R1: Requisições HTTP podem ser enviadas através de qualquer aplicativo/software que entenda o protocolo.
+
+                Afirmação correta , o HTTP não depende do navegador. Aliás, o tempo todo o nosso celular usa o HTTP para enviar requisições através de aplicativos!
+
+            R2: HTTP é totalmente independente do formato dos dados.
+
+                Afirmação correta pois HTTP não depende de um formato especifico!
+
+            R3: HTTP pode trafegar tanto dados binários quanto dados textuais.
+
+                Afirmação correta pois HTTP pode trafegar dados binários como imagens e dados textuais como HTML ou CSS!
+
+        3 - O protocolo HTTP envia dados em texto puro e já estudamos sobre as implicações disso em questões de segurança. Vimos inclusive como o HTTPS lida com isso.
+
+            Em alguns momentos se faz necessário avisar na própria requisição um formato específico esperado para a resposta.
+
+            De que forma podemos especificar o formato que esperamos que seja devolvido?
+
+            Selecione uma alternativa
+
+            R: Pelo cabeçalho Accept.
+
+            Através dele podemos usar algum formato específico como:
+
+            Accept: text/html, Accept: text/css, Accept: application/xml, Accept: application/json, Accept:image/jpeg e Accept: image/*
+            Ou até mesmo não definir nenhum formato específico colocando:
+
+            Accept: */*
+
+        4 - Veja a seguinte URL:
+
+            http://alura.com.br/cursos/23/exercicios
+            Supondo que você esteja acessando esse recurso através de uma requisição HTTP GET com o cabeçalho Accept: application/xml, o que se espera que aconteça?
+
+            Selecione uma alternativa
+
+            R: Na resposta recebemos os exercícios do curso 23 no formato XML.
+
+            Correto, pois GET tem a semântica de receber dados e o formato foi definido por meio do cabeçalho Accept.
+
+            Resumindo, ao enviar um HTTP GET:
+
+            http://alura.com.br/cursos/23/exercicios
+            Devemos receber os exercícios do curso 23 no formato XML.
+
+            É importante mencionar que isso é o esperado, mas o que realmente acontece depende da implementação do servidor. O protocolo HTTP define uma semântica, mas o servidor pode ou não obedecê-la! 
+            Também pode ser que o servidor atenda um formato como JSON, mas não trabalhe com XML.
+
+        5 - Sabemos que o domínio da Alura é:
+
+            cursos.alura.com.br
+            Você entrou na equipe de desenvolvedores da Alura e precisa definir o recurso para atualizar uma parte do exercício com a id 3 do curso http. Qual método HTTP e qual URL você escolheria?
+
+            Selecione uma alternativa
+
+            R: PATCH e http://cursos.alura.com.br/cursos/http/exercicios/3
+
+            Correto, PATCH é utilizado para atualização parcial do recurso que foi definido expressivamente: /cursos/http/exercicios/3
+			
+			
+Aula 08: HTTP2 - Dados binários, GZIP ativo e TLS -------
+
+    Teoria:
+
+        Até o momento estavamos realizando requisições HTTP através do browser, mas podemos realizar requisições através do terminal utilizando o programa CURL. No Linux e no MacOS ele já vem instalado
+        por padrão.
+
+        No caso de estarmos utilizando o Windows, podemos realizar o download através do link: https://curl.haxx.se/download.html
+
+        Para realizarmos e depurarmos uma requisição via CURL, basta realizar o seguinte comando: curl -v www.caelum.com.br
+
+        A saída no meu teste foi a seguinte:
+
+             % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+                0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying 104.28.27.98:80...
+                * TCP_NODELAY set
+                * Connected to www.caelum.com.br (104.28.27.98) port 80 (#0)
+                > GET / HTTP/1.1
+                > Host: www.caelum.com.br
+                > User-Agent: curl/7.68.0
+                > Accept: */*
+                >
+                0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Mark bundle as not supporting multiuse
+                < HTTP/1.1 301 Moved Permanently
+                < Date: Fri, 06 Mar 2020 21:51:09 GMT
+                < Content-Type: text/html
+                < Transfer-Encoding: chunked
+                < Connection: keep-alive
+                < Set-Cookie: __cfduid=d452fa51314cec0ebea44ce5406e7ab9a1583531469; expires=Sun, 05-Apr-20 21:51:09 GMT; path=/; domain=.caelum.com.br; HttpOnly; SameSite=Lax
+                < Location: https://www.caelum.com.br/
+                < X-Cache: Redirect from cloudfront
+                < Via: 1.1 d2d900512286e3d26077b241153e569d.cloudfront.net (CloudFront)
+                < X-Amz-Cf-Pop: JFK51-C1
+                < X-Amz-Cf-Id: By3qjiL4gw2WswvWbz_kRWpWpmtR1NvyUGWX4CMIzfNKr8kIjoNgcw==
+                < CF-Cache-Status: DYNAMIC
+                < Server: cloudflare
+                < CF-RAY: 56ff4be3bbe8cfec-GRU
+                <
+                { [189 bytes data]
+                100   183    0   183    0     0    497      0 --:--:-- --:--:-- --:--:--   495<html>
+                <head><title>301 Moved Permanently</title></head>
+                <body bgcolor="white">
+                <center><h1>301 Moved Permanently</h1></center>
+                <hr><center>CloudFront</center>
+                </body>
+                </html>
+
+                * Connection #0 to host www.caelum.com.br left intact
+
+        As nossas informações de saída no request efetuado:
+
+            > GET / HTTP/1.1
+            > Host: www.caelum.com.br
+            > User-Agent: curl/7.68.0
+            > Accept: */*
+
+
+        E logo após estas informações temos o cabeçalho da resposta obtida pelo servidor:
+
+            (Request)
+            < HTTP/1.1 301 Moved Permanently
+            < Date: Fri, 06 Mar 2020 21:51:09 GMT
+            < Content-Type: text/html
+            < Transfer-Encoding: chunked
+            < Connection: keep-alive
+            < Set-Cookie: __cfduid=d452fa51314cec0ebea44ce5406e7ab9a1583531469; expires=Sun, 05-Apr-20 21:51:09 GMT; path=/; domain=.caelum.com.br; HttpOnly; SameSite=Lax
+            < Location: https://www.caelum.com.br/
+            < X-Cache: Redirect from cloudfront
+            < Via: 1.1 d2d900512286e3d26077b241153e569d.cloudfront.net (CloudFront)
+            < X-Amz-Cf-Pop: JFK51-C1
+            < X-Amz-Cf-Id: By3qjiL4gw2WswvWbz_kRWpWpmtR1NvyUGWX4CMIzfNKr8kIjoNgcw==
+            < CF-Cache-Status: DYNAMIC
+            < Server: cloudflare
+            < CF-RAY: 56ff4be3bbe8cfec-GRU
+
+            (Espera)
+            100   183    0   183    0     0    497      0 --:--:-- --:--:-- --:--:--   495
+            
+            Logo após vem o corpo da resposta (HTML da página requisitada):
+
+            (Response)
+            <html>
+            <head><title>301 Moved Permanently</title></head>
+            <body bgcolor="white">
+            <center><h1>301 Moved Permanently</h1></center>
+            <hr><center>CloudFront</center>
+            </body>
+            </html>
+
+        Em resumo o output apresentado pelo CURL possui esta divisão: Request <-> Espera <-> Response
+
+        HTTP/2:
+
+            O protocolo que usamos até agora, o HTTP, foi criado na década de 90 e muita coisa mudou na forma como utilizamos a internet.
+
+            O mundo mobile nos trouxe novas preocupações e as otimizações se tornaram cada vez mais necessárias.
+
+            Após anos de especificações e reunições em 2015 surgiu o HTTP/2.
+
+            Página principal de documentação e referência: https://http2.github.io/.
+
+            HTTP/2 nos trouxe mudanças fundamentais para Web, como, recursos fantásticos que vão melhorar muito a performance da Web além de simplificar a vida dos desenvolvedores.
+
+            No HTTP 1.1 podemos comprimir os dados das respostas habilitanto o GZIP no servidor para que ele possa comprimi-las.
+
+            É uma execelente prática, mas temos que habilita-la explicitamente.
+
+            Já no HTTP/2 o GZIP é padrão e obrigatório.
+
+            Porém, mesmo que nós adicionassemos o GZIP a resposta, ainda não seria o suficiente, pois ainda existem cabeçalhos na request e response que não são comprimidos no HTTP 1.1 e ainda trafegam em
+            texto puro.
+
+            Já no HTTP/2 os cabeçalhos passam a ser binários.
+
+            Eles também são comprimidos usando um algoritmo chamado HPACK, o que diminui bastante o volume de dados trafegados nos headers.
+
+            Além de todas estas otimizações para melhorar a performance ainda houve preocupação com a segurança tornando TLS por padrão uma exigência.
+
+        HTTP2 - Cabeçalhos Stateful:
+
+            No código abaixo estamos fazendo uma requição através do método GET igual a que fizemos no programa CURL. Esta requisição está sendo feita para a raiz:
+
+                GET      /
+
+                Host: www.caelum.com.br
+                User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:34.0)
+                Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+                Accept-Language: pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3
+                Accept-Encoding: gzip, deflate
+
+            Quando realizamos uma requisição para essa URL via Firefox, por exemplo, o navegador envia alguns cabeçalhos padrões.
+            No cabeçalho host temos o domínio para onde estamos realizando a requisição.
+            Como colocamos uma requisição para o diretório raiz (GET /), o caminha da requisição será www.caelum.com.br/
+
+            User-Agent é de onde vem a requisição, no caso acima, o navegador Mozilla. Se tivesse feito pelo CURL, iria aparecer CURL.
+
+            Accept são os formatos do conteúdo que aceitamos.
+
+            Accept-Language são as linguagens que aceitamos.
+
+            Accept-Encoding a codificação que estamos aceitando, no caso GZIP, já que no HTTP 1.1 podemos especificar o tipo de compressão que estamos aceitando.
+
+        
+            Precisamos repetir os cabeçalhos enviados em uma requisição anterior?
+
+                Supondo que na requisição anterior não veio um recurso importante do javascript que era necessário para a página ser exibida, o arquivo principal.js.
+                Faremos uma nova requisição para busca-lo então:
+
+                    GET       /principal.js
+
+                    Host: www.caelum.com.br
+                    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:34.0)
+                    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+                    Accept-Language: pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3
+                    Accept-Encoding: gzip, deflate
+
+                Nesta próxima requisição todos os dados de Host, User-Agent, Accept ainda são necessários, porém podemos perceber que a única coisa que mudou foi o recurso solicitado.
+                Este envio de informações redundantes onera o usuário, usando mais banda, e deixando a requisição mais lenta.
+
+                Uma das vantagens do HTTP/2 é esta, ele tem o recurso que é chamado de Headers Stateful, onde quando uma segunda requisição tem o mesmo cabeçalho da primeira, os dados deste cabeçalho são
+                ocutados.
+
+            Cabeçalhos diferentes:
+
+                Se tivéssemos que buscar uma imagem, os cabeçalhos mudam um pouco, no caso o Host: image.caelum.com.br, um subdominio dentro da aplicação e também o Accept: image/png,image/*;q=0.8,*/*;q=5
+                já que não quero mais texto, apenas imagem.
+
+                Com o recurso Headers Stateful enviaremos apenas o que estiver diferente.
+
+                Isto é especificação do HTTP/2, para que uma requisição fique mais leve e não onere tanto o usuário.
+
+                Lembrando que no começo do curso vimos que o HTTP 1.1 é stateless, não guarda estado, ou seja, não guarda informações de requisições passadas. Isto continua valendo, mas no caso de cabeçalhos,
+                existe um ambiente que guarda estados.
+
+
+        HTTP/2 - Server Push:
+
+            Temos o seguinte cenário, cliente e servidor, como de costuma com o protocolo HTTP, se comunicam. O cliente faz uma requisição para a páfina index.html, esta requisição vai até o servidor e traz
+            o conteúdo HTML.
+
+                Cliente -->> (Requisição) -->>
+
+                <<-- (Conteúdo HTML) <<-- Servidor
+
+                Imaginemos que esta página index.html requisitada tenha vários conteúdos de vários arquivos diferentes como: *.js, *.css, *.png, etc
+                Após a primeira requisição do cliente (Firefox) várias outras requisições vao sendo feitas para que a página seja renderizada.
+
+                O navegador interpreta o conteúdo HTML de cima pra baixo, verifica os recursos necessários, e vai realizando requisições. O servidor por sua vez, vai respondendo estas requisições na ordem que
+                foram feitas. Nisto temos a espera do cliente até que o servidor responda a todas as requisições.
+
+                A partir do HTTP/2 temos uma conversa mais paralela. Antes tinhamos um conceito de requisições seriais. Faziamos uma requisição e esperavamos, faziamos mais uma requisição e esperavamos.
+                Agora, no HTTP/2, temos a vantagem do servidor responder de uma vez tudo que precisamos para renderizar a página mesmo com apenas a primeira requisição a página index.html.
+
+                Isso é uma outra abordagem que surgiu com o HTTP/2. Mesmo que nosso browser leia de cima para baixo o HTML e uma hora tenha que passar pelo *.css, por exemplo, ele vai verificar que já recebeu
+                este conteúdo.
+
+                Este é o conceito Server Push (Servidor Empurra), ou seja, o server envia dados para o cliente sem que o cliente tenha solicitado, tornando o trafego de dados muito mais otimizado.
+
+
+        HTTP/2 - Multiplexação (Multiplexing):
+
+            Por baixo dos panos, antes de começar as request e response do HTTP através do browser para o server, temos uma conexão chamada TCP, que é um protocolo de transporte. Isto com certeza é mais a
+            nível de infraestrutura e quem tem seu dia a dia na programação deixamos de lado pois trabalhamos uma camada acima do TCP.
+
+            Como temos o conceito de requisição única no HTTP, a cada requisição deveriamos abrir uma conexão TCP, executar e fechar.
+
+            Isto não seria muito interessante pois o TCP é um recurso caro e que demora a ser alocado. A nível computacional é rápido mas é mais um passo antes da requisição HTTP.
+
+            No HTTP 1.1 temos um recurso chamado Keep-Alive (Matenha vivo), que determina quanto tempo nossa conexão TCP pode ficar ativa. Por isso conseguimos realizar várias requisições com a mesma conexão TCP.
+
+            Hoje em dia, na maioria dos browser temos em torno de 4 a 8 conexões simultaneas por domínio. Ou seja, se a página da Caelum tiver mil recursos, o browser tem 4 a 8 conexões TCP ativas para
+            conseguir realizar essas requisições em paralelo, e não serial.
+
+
+            Keep-Alive no HTTP2:
+
+                No HTTP/2 assim que temos uma conexão TCP aberta, realizamos uma requisição, e ao contrário do HTTP 1.1 não precisamos esperar a resposta desta primeira requisição para realizar uma segunda,
+                ou seja, requisições em paralelo ou de maneira assíncrona. Então vamos recebendo estas respostas assim que o servidor for conseguindo processar.
+
+                Requisições e respostas vão chegando a todo tempo, bem similar o que acontece com o servidor no recurso Server Push, só que desta vez do lado do cliente. Este conceito surgiu no HTTP/2 e é
+                chamada de Multiplexing e traz uma performance bastante relevante.
+
+        O que aprendemos?
+
+            - HTTP/2 atua sobre o que já conhecemos de HTTP 1.1.
+            - HPACK: Headers binários e comprimidos.
+            - GZIP: Padrão de resposta HTTP/2.
+            - Headers Stateful: Cabeçalhos que guardam status.
+            - Server Push: Servidor envia conteúdos que ainda não foram pedidos.
+            - HTTP/2 Multiplexing: Requisições paralelas a respostas do lado cliente.
+
+
+    Questões aula 08:
+
+        1 - Dado o que vimos neste capítulo, aponte quais dos motivos abaixo foram importantes quando decidiram criar uma nova versão do protocolo HTTP, que já estava tão concretizado e estabelecido na Web.
+
+            Selecione 2 alternativas
+
+            R1: Com o crescimento do número de dispositivos móveis conectados a Web, é cada vez mais importante que a quantidade de dados trafegada seja a menor possível, afinal este tipo de dispositivo não 
+            costuma ter uma conexão com muita banda larga. O protocolo HTTP/2 traz diversas tecnologias para diminuir o tamanho das requisições.
+
+            Correto, o HTTP/2 possui diversas tecnologias de compactação de sua requisição. Isto acaba sendo muito útil para clientes móveis, visto que a maioria das redes mobile ainda não são de grande 
+            qualidade.
+
+            R2: Por padrão, no protocolo HTTP versão 1.1 não é necessário o uso da camada de segurança TTL/SSL. Como hoje em dia trafegamos muitos dados críticos na Web, como senhas, logins e dados bancários, 
+            um protocolo atualizado que faz uso dessa segurança parece quase uma necessidade.
+
+            Correto, com o HTTP/2 o uso de HTTPS acaba sendo obrigatório, e esta é uma das grandes vantagens do uso desta nova atualização do protocolo.
+
+            Apesar do protocolo HTTP/1.1 ter sido de extrema importância para a Web ao longo de vários anos, como toda boa tecnologia, é necessário um update. A nova versão do HTTP veio para adequar este 
+            protocolo tão famoso a um mundo onde temos muito mais dados sendo trafegados na rede, e a velocidade de acesso e segurança do usuário se tornam bastante importantes.
+
+
+        2 - Para que serve a tecnologia HPACK implementada no protocolo HTTP/2 ?
+
+            Selecione uma alternativa
+
+            R: Para comprimir os Headers da comunicação HTTP, deixando-os mais leves.
+
+            Exato, a tecnologia HPACK é especialista em comprimir os Headers da requisições/respostas HTTP, deixando as mais leves.
+
+            O HPACK é uma tecnologia especializada em comprimir os Headers das comunicações HTTP/2. Como toda requisição HTTP acompanha algum header por padrão, uma tecnologia de compressão embutida no 
+            protocolo é demasiadamente útil para economizar dados trafegados.
+
+
+        3 - Selecione as afirmativas verdadeiras sobre as versões 1.1 e 2.0 do protocolo HTTP:
+
+            Selecione 3 alternativas
+
+            R1: No HTTP/1.1 o Gzip não é nativo do protocolo, no HTTP/2 ele já vem por padrão.
+
+            Correto, o Gzip vem nativamente no protocolo HTTP/2.
+
+            R2: No HTTP/2 o uso do HTTPS é obrigatório, no HTTP/1.1 não.
+
+            Correto, o HTTP/2 reforça bastante o uso do HTTPS, ao contrário do HTTP/1.1 em que isto era opcional. Apesar de não ser obrigatório em sua especificação, os browsers não suportam o HTTP/2 sem 
+            HTTPS, o que acaba fazendo com que o seu uso seja exclusivo em modo criptografado.
+
+            R3: No HTTP/2 os dados são trafegados em binário, no HTTP/1.1 eles são trafegados como texto.
+
+            Correto, uma das principais mudanças é que agora no HTTP/2 os dados são trafegados em binário e não mais em texto puro.
+
+
+        4 - Como a tecnologia de Headers Stateful pode nos ajudar a economizar dados?
+
+            Selecione uma alternativa
+
+            R1: Como trafegamos apenas os headers que mudam de uma requisição para outra, acabamos por economizar uma boa quantidade de dados, pois não precisamos enviar headers que mudam poucas vezes a todo
+            momento, como o Accept.
+
+            Correto, os Headers Stateful permitem que apenas os cabeçalhos que mudem sejam enviados a cada requisição, economizando muita banda que seriam cabeçalhos repetidos.
+
+            Quando estamos utilizando Headers Stateful, simplesmente colocamos nas requisições os cabeçalhos que se alteraram entre uma e outra, trazendo uma enorme economia de dados, visto que toda 
+            requisição HTTP possui um cabeçalho e que, muitas vezes, no HTTP/1.1, cabeçalhos repetidos eram trafegados em todas as requisições.
+
+
+        5 - O que é o Server Push no HTTP/2?
+
+            Selecione uma alternativa
+
+            O servidor pode empurrar para o clientes certos recursos antes mesmo de serem solicitados, pois ele consegue analisar o HTML e ver o que mais é preciso para carregar a página fazendo com que não 
+            seja necessário gastar tempo pedindo todos os outros recursos.
+
+            Correto, o servidor pode empurrar certas respostas para o cliente antes mesmo delas serem requisitadas.
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+            
+            
+
+
+
+
+
+
+    
+
+

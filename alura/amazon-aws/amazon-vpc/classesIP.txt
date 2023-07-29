@@ -1,0 +1,81 @@
+IPV4 -      IPV6 -          Dispositivos -
+Decimal     Hexadecimal     Binário
+
+
+Exemplos:
+
+192.168.1.10 (Cada uma destas partes são representadas em 8 bits, por isso são 4 octetos)
+Este endereço IP de forma binária ficaria: 11000000.10101000.00000001.00001010
+
+Obervar o terceiro grupo e se atentar que o número 1 tem 7 zeros a esquerda, 0's a esquerda não servem pra nada no nosso mundo real, mas no mundo binário serve. O computador e
+o roteador precisam daqueles números ali. É um octeto, 8 bits.
+
+
+Nos IPs temos classes também...
+
+Como descobrimos a classe do nosso IP? Do 192.168.1.10 por exemplo?
+
+Olhamos o primeiro octeto...
+
+A - 0 - 127
+B - 128 - 191
+C - 192 - 223
+D - 224 - 239
+E - 240 - 255
+
+Para em 255 porque é o maior número que eu posso obter utilizando os 8 bits de cada octeto. Então temos 256 possibilidades cada octeto, pois vai do 0 ao 255.
+
+Nada mais serve do que para definirmos quantos computadores queremos ou queremos possibilitar que tenha em nossa rede.
+
+Na classe A temos a possibilidade de ter a quantidade de 2^24, ou seja 16.777.216 computadores.
+Na classe B temos a possibilidade de ter a quantidade de 2^16, ou seja 65.536 computadores.
+Na classe C temos a possibilidade de ter a quantidade de 2^8, ou seja 256 computadores.
+
+
+Classes D e E são reservadas, são para multicast (Teste de novas tecnologias)
+
+Classe D - Multicast para um grupo de pessoas
+Classe E - Testar uma nova tecnologia
+
+
+Unicast - De um pra um
+Broadcast - Para todos de uma rede
+Multicast - Um grupo de pessoas específico em uma rede
+Anycast - Qualquer um mais próximo
+
+
+Redes internas
+
+10.0.0.0 / 8 (255.0.0.0)
+172.16.0.0 / 12 (255.240.0.0) 
+192.168.0.0 / 16 (255.255.0.0)
+
+
+"Proibidos"
+
+127.0.0.0 (Loopback) "Você mesmo", ou, melhor dizendo, o próprio dispositivo local
+169.254.0.0 (APIPA) "IP de erro", quando na rede o computador não consegue encontrar o dispositivo que está distribuindo IP.
+
+
+Como são distribuidos IP:
+
+Exemplo
+
+192.168.1.1 - Endereço de classe C
+
+Na classe C os 3 primeiros octetos estão "ocupados", os 3 primeiros são a rede 255.255.255.0, o 0 representa o "espaço" que temos para hosts.
+Ou seja, nesta rede acima os 3 primeiros números devem ser iguais no IP dos computadores.
+
+Divisões padrões para o endereço acima:
+
+192.168.1.0 - Endereço de "REDE", serivodr local
+192.168.1.1 à 192.168.1.254 - Endereços que podem ser utilizados pelos os computadores nesta rede.
+192.168.1.255 - Endereço de Broadcast.
+
+de 1 a 254 computadores é uma possibilidade teórica e não prática, pois alguns equipamentos não suportam tantos dispositivos conectados simultâneamente.
+
+Mascáras padrão:
+
+A - 255.0.0.0
+B - 255.255.0.0
+C - 255.255.255.0

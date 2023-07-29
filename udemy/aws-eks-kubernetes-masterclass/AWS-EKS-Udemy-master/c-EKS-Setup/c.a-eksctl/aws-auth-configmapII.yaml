@@ -1,0 +1,23 @@
+# Configurações coletadas com: kubectl -n kube-system get configmap aws-auth -o yaml > aws-auth-configmap.yaml
+apiVersion: v1
+data:
+  mapRoles: |
+    - rolearn: arn:aws:iam::089350267643:role/EKS-course-role
+      rolename: EKS-course-role
+      groups:
+        - system: masters
+  mapUsers: |
+    - userarn: arn:aws:iam::089350267643:user/eks-course
+      username: eks-course
+      groups:
+        - system:masters
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"mapRoles":"- rolearn: arn:aws:iam::089350267643:role/EKS-course-role\n  rolename: EKS-course-role\n  groups:\n    - system: masters\n","mapUsers":"- userarn: arn:aws:iam::089350267643:user/eks-course\n  username: eks-course\n  groups:\n    - system:masters\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"aws-auth","namespace":"kube-system"}}
+  creationTimestamp: "2021-08-29T22:22:46Z"
+  name: aws-auth
+  namespace: kube-system
+  resourceVersion: "17284"
+  uid: 78e28d76-69af-41ac-9a58-a5a15458c408

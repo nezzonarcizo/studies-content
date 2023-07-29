@@ -1,0 +1,30 @@
+-*- Exercises
+
+
+-*- 1 - Dictionary - Given a dictionary with the property 'property1' and value 'value1' Add an additional property 
+* 'property2' and value 'value2'
+
+-*- 2 - Dictionary - Given a dictionary with the property name and value apple. Add additional properties to the dictionary.
+
+-*- 3 - Dictionary in Dictionary - A dictionary employee is given. Add the remaining properties to it using information from the table below.
+
+-*- 4 - Dictionary in Dictionary in Dictionary - Now try adding the address information. Note the address is a dictionary
+
+-*- 5 - List/Array - Given an array of apples. Add a new apple to the list to make it a total of 4.
+
+-*- 6 - List/Array - Add two more to make it 6.
+
+-*- 7 - List/Array - Add two 'mango'es to the list.
+
+-*- 8 - List of Dictionaries - We would like to add additional details for each item, such as color, weight etc. We have updated the first one for you. Similarly modify the remaining items to match the below data.
+
+-*- 9 - List of Dictionary - We would like to record information about multiple employees. Convert the dictionary employee to an array employees.
+
+-*- 10 - List of Dictionary - Add an additional employee to the list using the below information.
+
+-*- 11 - List of Dictionary in Dictionary - Now try adding the pay information. Remember while address is a dictionary, payslips is an array of month and amount
+
+
+
+CONGRATULATIONS!!!
+You have successfully completed the quiz!
