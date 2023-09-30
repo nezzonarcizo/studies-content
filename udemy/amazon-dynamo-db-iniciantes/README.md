@@ -188,6 +188,7 @@ Tabelas super flexíveis...
 PK:
 DynamoDB: Mínimo 1 - Máximo 2 atributos 
 > Obs: DynamoDB utiliza o termo Partition Key
+
 > Obs2: O segundo componente da chave primária é o Sort Key
 
 SQL: Multi Colunas
