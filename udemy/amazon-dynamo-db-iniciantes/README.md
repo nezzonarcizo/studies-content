@@ -116,52 +116,52 @@ Tipo: Suporta estrutura de dados chave-valor e documentos
 Arquitetura: Serveless - Sem a necessidade de provisionar servidores
 
 Gerenciado:
-    * Presença Global
-    * Capacidade Adaptável
-    * Alta Escalabilidade
-    * Backup e Recuperação sob demanda e point-in-time
-    * TTL - Time to Live, permite definir a vida útil do dado
+    *Presença Global
+    *Capacidade Adaptável
+    *Alta Escalabilidade
+    *Backup e Recuperação sob demanda e point-in-time
+    *TTL - Time to Live, permite definir a vida útil do dado
 
 Seguro:
-    * Controle de Acesso
-    * Criptografia de Dados Ociosos
+    *Controle de Acesso
+    *Criptografia de Dados Ociosos
 
 Monitorado:
-    * Métricas de Utilização e operacionais no CloudWatch
+    *Métricas de Utilização e operacionais no CloudWatch
 
 Custos:
-    * Paga apenas pelo que usar
+    *Paga apenas pelo que usar
 
 DAX - DynamoDB Accelerator
-    * Uso de cache de memória gerenciado e altamente disponível
+    *Uso de cache de memória gerenciado e altamente disponível
 
 Índices:
-    * Índices Secundários - Flexibilização de Consultas
+    *Índices Secundários - Flexibilização de Consultas
 
 ### Para o Desenvolvedor
 
 Uso Local:
-    * Permite desenvolver e testar localmente
+    *Permite desenvolver e testar localmente
 
 Streams:
-    * Permite criar sequências quando alterações acontecerem nas tabelas do DynamoDB
+    *Permite criar sequências quando alterações acontecerem nas tabelas do DynamoDB
 
 Trigger:
-    * Executar código lambda automaticamente baseado em uma condição
+    *Executar código lambda automaticamente baseado em uma condição
 
 Acesso:
-    * AWS Console
-    * AWS CLI
-    * AWS SDK (NodeJS, Python, Go, Java, Ruby, etc)
+    *AWS Console
+    *AWS CLI
+    *AWS SDK (NodeJS, Python, Go, Java, Ruby, etc)
 
 Integração com Serviços AWS:
-    * Kinesis Stream
-    * DynamoDB Stream
-    * IoT
-    * S3
-    * CloudWatch Logs
-    * SNS
-    * AWS Lambda
+    *Kinesis Stream
+    *DynamoDB Stream
+    *IoT
+    *S3
+    *CloudWatch Logs
+    *SNS
+    *AWS Lambda
 
 
 # Terminologia
@@ -234,12 +234,12 @@ SQL: Multi Colunas
 
 Convenção de Nomes das Tabelas e Atributos
 
-* 3 a 255 caracteres
-* a-z
-* A-Z
-* _(underline)
-* -(traço)
-* .(ponto)
+*3 a 255 caracteres
+*a-z
+*A-Z
+*_(underline)
+*-(traço)
+*.(ponto)
 
 Atributos - Nomes de 1 a 255 caracteres
 
@@ -251,34 +251,34 @@ UTF-8
 ## Tipos de Dados
 
 ### Scalar Type
-    * Só pode ter um valor
-    * String, number, boolean, binary, null
-    * Index e Keys são do tipo scalar e suportam apenas String, number e binary
+    *Só pode ter um valor
+    *String, number, boolean, binary, null
+    *Index e Keys são do tipo scalar e suportam apenas String, number e binary
 
     **String**
-    * Texto (UTF-8)
-    * Não pode ser um valor vazio
-    * "Amazon", " Maria", "Game of Thrones"
+    *Texto (UTF-8)
+    *Não pode ser um valor vazio
+    *"Amazon", " Maria", "Game of Thrones"
 
     **Number**
-    * Números (Negativos e Positivos (100.12, 123.56, -1034, -345.13, 0, 1345))
+    *Números (Negativos e Positivos (100.12, 123.56, -1034, -345.13, 0, 1345))
 
     **Boolean**
-    * true ou false
+    *true ou false
 
     **Binary**
-    * Dados binários - BLOB (não pode ser um valor vazio (imagens, vídeos, documentos))
+    *Dados binários - BLOB (não pode ser um valor vazio (imagens, vídeos, documentos))
 
     **Null**
-    * Indefinido / Desconhecido 
+    *Indefinido / Desconhecido 
 
 ### Set Type
-    * Conjunto de valores tipo Scalar
-    * Não precisa ser ordenado
-    * Não pode ter valores vazios (em branco)
-    * Não permite valores duplicados
-    * Não permite coleção vazia
-    * Valores tem que ser do mesmo tipo Scalar
+    *Conjunto de valores tipo Scalar
+    *Não precisa ser ordenado
+    *Não pode ter valores vazios (em branco)
+    *Não permite valores duplicados
+    *Não permite coleção vazia
+    *Valores tem que ser do mesmo tipo Scalar
 
         Exemplos:
             ["Azul", "Verde", "Amarelo", "Branco"] - permitido
@@ -288,11 +288,11 @@ UTF-8
             ["Azul", 2010, true, "-vWhnidARRVvrerFFE"] - proíbido
 
 ### Document Type
-    * Estruturas aninhadas e complexas
-    * Maps e Lists
-    * Até 32 níveis
-    * Não permite valores vazios dentro de lists e maps
-    * Permite lists e maps vazios
+    *Estruturas aninhadas e complexas
+    *Maps e Lists
+    *Até 32 níveis
+    *Não permite valores vazios dentro de lists e maps
+    *Permite lists e maps vazios
 
         Exemplos:
             [] - permitido
