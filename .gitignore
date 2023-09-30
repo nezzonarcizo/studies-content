@@ -1,0 +1,4 @@
+*.pem
+*.cred
+.vscode
+node_modules

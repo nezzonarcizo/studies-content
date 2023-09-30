@@ -1,0 +1,467 @@
+# PS1="${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\W \[\033[32m\]\$\[\033[00m\] "
+
+-*- Section 1 - Overview
+
+What is NGINX?
+
+https://www.nginx.com/resources/glossary/nginx/
+
+
+C10k problem
+
+https://en.wikipedia.org/wiki/C10k_problem
+
+
+Google Trends
+
+https://trends.google.com/trends/explore?date=all&q=nginx
+
+Question 1:
+How does Apache and Nginx handle incoming requests differently?
+Answer: Nginx interprets incoming requests as URI locations whereas Apache prefers to interpret requests as filesystem locations.
+
+
+-*- Section 2: Installation
+
+4. Server Overview
+
+-  Where to launch and do the labs?
+
+AWS
+
+https://aws.amazon.com/
+
+Digital Ocean
+
+https://www.digitalocean.com/
+
+
+- SSH App's to work with files on local machine
+
+SSH App: Transmit
+
+https://panic.com/transmit/
+
+SSH App: Cyberduck
+
+https://cyberduck.io/
+
+SSH App: Filezilla
+
+https://filezilla-project.org/
+
+
+
+5. Installing with a Package Manager
+
+EPEL Repo
+
+https://docs.fedoraproject.org/en-US/epel/
+
+apt-get update
+
+apt-get install nginx
+
+# process command, all uses, x - process
+ps aux | grep nginx
+
+# to see our nginx in the browser
+ifconfig
+
+# if ifconfig are not installed
+apt install net-tools
+
+# to check the public ip of ec2 instance from inside
+curl http://checkip.amazonaws.com
+
+# nginx directory content
+ls -l /etc/nginx/
+
+
+6. Building Nginx from Source & Adding Modules
+
+# Nginx Downloads
+http://nginx.org/en/download.html
+
+# Configuration Options
+http://nginx.org/en/docs/configure.html
+
+
+# Download the nginx (In this course, we are using nginx-1.25.1 version)
+wget http://nginx.org/download/nginx-1.25.1.tar.gz
+
+# Extract the tar
+tar -zxvf nginx-1.25.1.tar.gz
+
+# Entry in directory
+cd nginx-1.25.1
+
+# Now we need to configure source code from 0
+./configure
+
+# We get a error
+checking for OS
+ + Linux 5.19.0-1025-aws x86_64
+checking for C compiler ... not found
+
+./configure: error: C compiler cc is not found
+
+# We need to install build-essential
+apt-get install build-essential
+
+# Now we test again
+./configure
+
+# We get a new error
+./configure: error: the HTTP rewrite module requires the 'PCRE library'.
+You can either disable the module by using --without-http_rewrite_module
+option, or install the PCRE library into the system, or build the PCRE library
+statically from the source with nginx by using --with-pcre=<path> option.
+
+# So, we still need a packages/libraries
+# Obs: Sometimes we need to find the libraries one by one
+apt-get install libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev
+
+# Run ./configure again
+./configure
+
+Configuration summary
+  + using system PCRE library
+  + OpenSSL library is not used
+  + using system zlib library
+
+  nginx path prefix: "/usr/local/nginx"
+  nginx binary file: "/usr/local/nginx/sbin/nginx"
+  nginx modules path: "/usr/local/nginx/modules"
+  nginx configuration prefix: "/usr/local/nginx/conf"
+  nginx configuration file: "/usr/local/nginx/conf/nginx.conf"
+  nginx pid file: "/usr/local/nginx/logs/nginx.pid"
+  nginx error log file: "/usr/local/nginx/logs/error.log"
+  nginx http access log file: "/usr/local/nginx/logs/access.log"
+  nginx http client request body temporary files: "client_body_temp"
+  nginx http proxy temporary files: "proxy_temp"
+  nginx http fastcgi temporary files: "fastcgi_temp"
+  nginx http uwsgi temporary files: "uwsgi_temp"
+  nginx http scgi temporary files: "scgi_temp"
+
+
+# Agora podemos continuar e compilar o código fonte
+# Para vermos todas as configurações disponíveis
+./configure --help
+
+# Obs: Só veremos as flags, para ter mais informações do que cada uma faz podemos pesquisar em nginx.org
+nginx.org > documentation > Building nginx from Sources
+https://nginx.org/en/docs/configure.html # Aqui podemos ter informações detalhadas de cada uma das configurações
+
+# Lets reconfigure the source and set some common flags
+./configure --sbin-path=/usr/bin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log \
+                                       --http-log-path=/var/log/nginx/access.log --with-pcre --pid-path=/var/run/nginx.pid
+
+
+# This is a simple configuration, but of course the absolute main benefit of building nginx from source is the ability
+# to add custom modules or essentially extend the standard nginx functionality, something you cannot do using package manager
+
+# Exists two types of nginx modules....Bundle Modules and 3rd Party Modules
+
+# To see more about modules on the documentation...
+https://nginx.org/en/docs/ # then scroll down till 'Modules reference'
+
+# Let see one module from this reference...
+https://nginx.org/en/docs/http/ngx_http_v2_module.html
+# We can see that here we have all isntruction and the flag to install this module
+
+# Lets install --with-http_ssl_module only
+./configure --sbin-path=/usr/bin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log \
+                                       --http-log-path=/var/log/nginx/access.log --with-pcre --pid-path=/var/run/nginx.pid \
+                                       --with-http_ssl_module
+
+# Now we can compile this configuration by runnning 'make'
+make
+
+# After compile, we can install this configuration compiled by runnning 'make install'
+make install
+
+# Check the configuration files exist in that location, we configured
+ls -l /etc/nginx/
+
+total 92
+drwxr-xr-x 2 root root 4096 May 30 17:31 conf.d
+-rw-r--r-- 1 root root 1125 May 30 17:31 fastcgi.conf
+-rw-r--r-- 1 root root 1077 Aug 12 16:45 fastcgi.conf.default
+-rw-r--r-- 1 root root 1055 May 30 17:31 fastcgi_params
+-rw-r--r-- 1 root root 1007 Aug 12 16:45 fastcgi_params.default
+-rw-r--r-- 1 root root 2837 Aug 12 16:45 koi-utf
+-rw-r--r-- 1 root root 2223 Aug 12 16:45 koi-win
+-rw-r--r-- 1 root root 3957 May 30 17:31 mime.types
+-rw-r--r-- 1 root root 5349 Aug 12 16:45 mime.types.default
+drwxr-xr-x 2 root root 4096 May 30 17:31 modules-available
+drwxr-xr-x 2 root root 4096 Aug 12 15:36 modules-enabled
+-rw-r--r-- 1 root root 1447 May 30 17:31 nginx.conf
+-rw-r--r-- 1 root root 2656 Aug 12 16:45 nginx.conf.default
+-rw-r--r-- 1 root root  180 May 30 17:31 proxy_params
+-rw-r--r-- 1 root root  636 May 30 17:31 scgi_params
+-rw-r--r-- 1 root root  636 Aug 12 16:45 scgi_params.default
+drwxr-xr-x 2 root root 4096 Aug 12 15:36 sites-available
+drwxr-xr-x 2 root root 4096 Aug 12 15:36 sites-enabled
+drwxr-xr-x 2 root root 4096 Aug 12 15:36 snippets
+-rw-r--r-- 1 root root  664 May 30 17:31 uwsgi_params
+-rw-r--r-- 1 root root  664 Aug 12 16:45 uwsgi_params.default
+-rw-r--r-- 1 root root 3610 Aug 12 16:45 win-utf
+
+# So we should now have the nginx executable available as well...
+# Tested by getting the installed nginx version
+nginx -V
+
+nginx version: nginx/1.18.0 (Ubuntu)
+built with OpenSSL 3.0.2 15 Mar 2022
+TLS SNI support enabled
+configure arguments: --with-cc-opt='-g -O2 -ffile-prefix-map=/build/nginx-zctdR4/nginx-1.18.0=. -flto=auto -ffat-lto-objects -flto=auto -ffat-lto-objects -fstack-protector-strong -Wformat -Werror=format-security -fPIC -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro -Wl,-z,now -fPIC' --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_dav_module --with-http_slice_module --with-threads --add-dynamic-module=/build/nginx-zctdR4/nginx-1.18.0/debian/modules/http-geoip2 --with-http_addition_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_sub_module
+
+# We can see nginx runnning
+root@ip-172-31-21-84:/home/ubuntu/nginx-1.25.1# ps aux | grep nginx
+root        6162  0.0  0.0  55208  1684 ?        Ss   16:21   0:00 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+www-data    6164  0.0  0.2  55840  5436 ?        S    16:21   0:00 nginx: worker process
+www-data    6165  0.0  0.2  55840  5436 ?        S    16:21   0:00 nginx: worker process
+root       11344  0.0  0.1   7004  2252 pts/1    R+   16:50   0:00 grep --color=auto nginx
+
+
+
+7. Adding an NGINX Service
+
+- sytemd
+
+https://www.freedesktop.org/wiki/Software/systemd/
+
+
+- NGINX systemd service file
+
+https://www.nginx.com/resources/wiki/start/topics/examples/systemd/
+
+
+# to verify if nginx is running
+ps aux | grep nginx
+
+# to see the commands available to manage nginx
+nginx -h
+
+Options:
+  -?,-h         : this help
+  -v            : show version and exit
+  -V            : show version and configure options then exit
+  -t            : test configuration and exit
+  -T            : test configuration, dump it and exit
+  -q            : suppress non-error messages during configuration testing
+  -s signal     : send signal to a master process: stop, quit, reopen, reload
+  -p prefix     : set prefix path (default: /usr/share/nginx/)
+  -c filename   : set configuration file (default: /etc/nginx/nginx.conf)
+  -g directives : set global directives out of configuration file
+
+# one example of command that we can run is "stop signal"
+nginx -s stop
+
+# let's add that systemd service
+# to enable the service, we're going to gave to add a small script which being the same across operating systems
+# We can simply copy from the Nginx website
+
+- NGINX Init Scripts
+
+https://www.nginx.com/resources/wiki/start/topics/examples/initscripts/
+
+Systemd¶
+https://www.nginx.com/resources/wiki/start/topics/examples/systemd/
+
+Save this file as /lib/systemd/system/nginx.service
+
+[Unit]
+Description=The NGINX HTTP and reverse proxy server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t
+ExecStart=/usr/sbin/nginx
+ExecReload=/usr/sbin/nginx -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+# let's start nginx using the systemd this time
+systemctl start nginx
+
+# to enable nginx start on boot 
+systemctl enable nginx
+
+"Synchronizing state of nginx.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable nginx"
+
+# reboot the machine to test
+reboot
+
+# access the machine and verify if the auto inicialization is working
+systemctl status nginx
+
+
+8. Nginx for Windows
+
+- NGINX Docs: Windows
+
+http://nginx.org/en/docs/windows.html
+
+Question 1:
+Which is the main advantage of installing Nginx via source?
+Answer: It allows complete configuration of the install, including the addition of extra modules.
+
+-*- Section 3: Configuration
+
+
+9. Understanging Configuration Terms
+
+The two main configuration terms is context and directive
+
+- Directive
+
+Directives is specific configuration options that get set in the configuration files and consist of a name and a
+value.
+
+
+- Context
+
+Context is sections within the configuration where directives can be set for that given context.
+
+Essentially, contexts is the same as scope and like scope, context are also nested and inherit from their parents
+with the topmost context simply being the configuration file itself.
+
+
+10. Creating a Virtual Host
+
+Class content:
+
+demo-site.zip (course folder)
+
+Bootstrap Demo Site (Alternative)
+https://getbootstrap.com/
+
+01 Creating a Virtual Host.conf (course folder)
+
+# after configure nginx, we need to reload it / reload better than restart to prevent downtime
+systemctl reload nginx
+
+# if you want to test the nginx configuration in case to use restart and then it dont come up again
+nginx -t
+
+# to copy a file from our PC to an EC2 instance
+scp -i <path_to_pem_file> <local_file_path> <username>@<EC2_instance_public_DNS>:<remote_file_path>
+# if you want to copy a directory
+scp -r -i ...
+
+
+# to get file types, css for example
+curl -I http://instance_ip/style.css
+
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Wed, 06 Sep 2023 00:44:16 GMT
+Content-Type: text/css
+Content-Length: 980
+Last-Modified: Fri, 01 Sep 2023 00:09:24 GMT
+Connection: keep-alive
+ETag: "64f12bb4-3d4"
+Accept-Ranges: bytes
+
+
+11. Location Blocks
+
+It's important to understand the order of priority in which Nginx matches requests...
+
+1 - Exact Match                     =       uri
+2 - Preferential Prefix Match       ^~      uri
+3 - REGEX Match                     ~*      uri
+4 - Prefix Match                            uri
+
+
+12. Variables
+
+NGINX Docs: Variables
+http://nginx.org/en/docs/varindex.html
+
+We have two types of variables
+
+Configuration Variables and NGINX Module Variables
+
+On this example we can see some ways to use variables
+if we use the ec2 dns and look the path /inspect in the browser, we can see the $host, #uri and $args value
+http://dns-or-ip/inspect... 
+
+In this example we get the response...
+
+ec2-IP.compute-1.amazonaws.com
+/inspect
+
+location /inspect {
+
+  return 200 "$host\n$uri\n$args";
+}
+
+We dont see any other value than $host and $uri because we didn't pass any args, so, to do that...
+
+http://dns-or-public-ip/inspect?name=marlon
+
+them, we can see the following result on the browser...
+
+ec2-IP.compute-1.amazonaws.com
+/inspect
+name=marlon
+
+Also, we can use any variable with prefix $arg_, so after the underscore, we can use the variable name, like...
+
+
+return 200 "Name: $arg_name";
+
+In the browser...
+
+http://ec2-IP.compute-1.amazonaws.com/inspect?name=marlon
+
+the result...
+
+Name: marlon
+
+We can use conditionals too...
+
+Obs: We gonna to study conditionals, but, the conditionals use in nginx inside location contexts is highly 
+discouraged, as this can lead to a unexpected berravior...
+
+Obs: The technicalities is outside of the scope that we can cover here...But if you like to read more on the subject
+the following link has a very detailed explanation in the list and resources...
+
+Article: IF is Evil
+https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
+
+But lets following with a example of "if"...
+
+# Check static API key
+# look the space between the if and () that is necessary for the syntax to be valid...
+if ( @arg_apikey != 1234 ) {
+  return 401 "Incorrect API Key";
+}
+
+Now, if we try to access the website without the apikey value...
+
+Incorrect API Key
+
+We need to pass http://ec2-IP.compute-1.amazonaws.com/?apikey=1234 to see the "nginx website"
+
+
+13. Rewrites & Redirects
+
+- HTTP Status Code Reference
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+
+# just a simple explanation about rewrite and redirect....the redirect simply tells the client performing the request where to go. A rewrite, on the other hand, mutates the URI internally.
+
+
+14. Try Files & Named Locations
+

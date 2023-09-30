@@ -163,3 +163,12 @@ https://aws.amazon.com/pt/about-aws/global-infrastructure/regional-product-servi
 
 -*- Seção 4: IAM & AWS CLI
 
+- AWS CloudShell: Region Availability
+
+AWS CloudShell: Region Availability
+In the next lecture, I demo AWS CloudShell.
+
+It is not yet available in all regions, and you can find the region list here:
+https://docs.aws.amazon.com/cloudshell/latest/userguide/supported-aws-regions.html
+
+Please switch to one of these regions if you want to do the next (optional) hands-on.
