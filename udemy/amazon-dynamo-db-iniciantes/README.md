@@ -448,7 +448,7 @@ Convém analisar ao longo do tempo, conforme você for utilizando o DynamoDB, o 
 ## Capacity Units
 
 ### RCU - Read Capacity Unit
-|                                          | 
+|         Read          |     Capacity     | 
 |-----------------------|------------------|
 |  Strongly Consistent  | 1 table read/sec |
 | Eventually Consistent | 2 table read/sec |
@@ -456,7 +456,7 @@ Convém analisar ao longo do tempo, conforme você for utilizando o DynamoDB, o 
 
 
 ### WCU -  Write Capacity Unit
-|                                 |
+|     Write   |     Capacity      |
 |-------------|-------------------|
 |    Write    | 1 table write/sec |                     
 |    Bloco    |        1KB        |
@@ -469,14 +469,14 @@ RCU: 03
 WCU: 03
 
 ### Leitura - RCU
-|                                                           |
+|         Type          |             Measure               |
 |-----------------------|-----------------------------------|
 | Strongly Consistent   |       4KB x 3 = 12KB/seg          |
 | Eventually Consistent | 4KB x 3 = 12KB/seg x 2 = 24KB/seg |
 
 
 ### Gravação - WCU
-|                                           |
+|        Type           |     Measure       |
 |-----------------------|-------------------|
 | Eventually Consistent | 1KB x 3 = 3KB/seg |
 
