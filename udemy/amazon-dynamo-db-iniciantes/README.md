@@ -488,6 +488,7 @@ WCU: 03
 ### Leitura
 
 **Strongly Consistent**:    0.5KB / 4KB = 0.125 => arredondando (método utilizado AWS/DynamoDB) = 1 RCU
+
 **Eventually Consistent**:  0.5KB / 4KB = (0.125 / 2) => 0.0625 => arredondando => 1 RCU
 
 ### Gravação
