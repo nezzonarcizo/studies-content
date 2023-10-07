@@ -327,3 +327,167 @@ UTF-8
 ```
 
 > Neste item do DynamoDB temos 3 tipos inseridos (Document(Map), Set e Scalar)
+
+
+# Tipos de Dados - JSON DynamoDB
+
+## Tipos de Dados e seus descritores para DynamoDB JSON
+
+É possível especificar descritores para os Tipos de Dados do DynamoDB em formato JSON, conforme o exemplo abaixo:
+
+```
+{     
+"Item": {         
+	"Age": {"N": "8"},         
+	"Colors": {
+		"L": [
+			{"S": "White"},
+			{"S": "Brown"},
+			{"S": "Black"}             
+		]         
+	},
+	"Name": {"S": "Fido"},         
+	"Vaccinations": {             
+		"M": {                 
+			"Rabies": {                     
+				"L": [                         
+					{"S": "2009-03-17"},                         
+					{"S": "2011-09-21"},                         
+					{"S": "2014-07-08"}                     
+				]                 },                 
+				"Distemper": {"S": "2015-10-13"}             
+			}         
+		},         
+		"Breed": {"S": "Beagle"},         
+		"AnimalType": {"S": "Dog"}     
+	} 
+}
+```
+
+Cada um dos tipos de dados é descrito abaixo:
+
+* S - String
+* N - Number
+* B - Binary
+* BOOL - Boolean
+* NULL - Null
+* M - Map
+* L - List
+* SS - String Set
+* NS - Number Set
+* BS - Binary Set
+
+
+# Modelo de Consistência
+
+
+AWS tem presença global, ela tem infraestrutura em diversos países do mundo, por exemplo, São Paulo, no Brasil, Virgínia, nos Estados Unidos, Londres, Frankfurt, etc.
+Cada uma dessas infraestruturas globais são o que nós chamamos de **_region_**, e cada uma das regiões têm zonas de disponibilidade ou **_availability zones_**, e cada zona de disponibilidade basicamente é um ou mais datacenters da Amazon AWS que estão interligados entre si. Esses datacenters de cada uma das regiões dentro das zonas de disponibilidade, são sincronizados de forma que você possa ter no serviço da AWS, que você usa, confiabilidade, performance, redundâncias, tolerância a falhas e etc.
+
+No caso do DynamoDB, a AWS, salva todos os dados do DynamoDB em discos SSDs de altíssima velocidade. Esses dados eles são salvos e são sincronizados entre as zonas de disponibilidade entre os datacenters da AWS dentro daquela região. A região que você escolheu para ter o seu DynamoDB para ter as suas tabelas, ali o DynamoDB salva seus dados em partições. Então, dessa forma, você acaba tendo três cópias dos dados em cada uma das regiões e regiões geográficas da AWS. Isso é importante porque você acaba tendo um sistema realmente flexível, robusto, seguro, tolerante a falhas e com uma performance incrível.
+
+Você tem uma replicação **_Near Realtime_** entre essas zonas de disponibilidade, então que acontece, esssa replicação é quase em tempo real. Você praticamente quase nem percebe a replicação dos seus dados. E, obviamente, isso acontece porque se você tiver também um problema numa zona de disponibilidade, os seus dados vão estar disponíveis em outra, a AWS vai fazer esse roteamento, você não vai nem perceber e você acaba tendo então domínios independentes tolerantes a falhas. A AWS cuida gerencia para que você tenha o seu Dynamo DB sempre disponível.
+
+Com isso em mente...
+
+veremos que isso tudo é para criar um modelo de consistência que ele chama de **_Read Consistency_** que é o modelo de leitura no DynamoDB.
+
+
+## Read Consistency
+
+O read consistency, ou consistência de leitura, é a forma como a gente lê os dados nas nossas tabelas no DynamoDB.
+Hoje existem dois tipos de read consistency no Dynamo DB, um que se chama **_Eventually Consistency_**  e um que se chama **_Strongly Consistency_**.
+
+### Eventually Consistency
+
+Este modelo de consistência pode refletir ou não a última cópia dos dados. Ele é padrão para todas as operações e ele custa mais barato, ou seja, ele custa 50% mais barato. Se você escolher esse tipo de leitura, ela custa 50% mais barato. O que acontece aqui, nesse caso, por ele dizer, *"pode refletir ou não a última cópia dos dados"*, porque esse modelo de leitura não vai diretamente na tabela, ele não vai na tabela para trazer o último dado salvo para sua pesquisa ou sua leitura, ele vai trazer um dado que está em cache. Você faz leitura nesse cache e por isso você pode trazer um dado que não foi o último dado gravado, não foi o último dado atualizado.
+
+Então onde isso é muito útil?
+
+Quando você precisa ler um volume muito grande, você tem um número muito grande de requisições de leitura, mas você tem um número muito pequeno de requisições de gravação. Seria uma aplicação que lê muito, mas grava pouco. Essa situação faz sentido muitas vezes, porque você às vezes não precisa estar lendo os últimos dados, um exemplo:
+
+Imagine que você têm um catálogo de produtos com 1 milhão de produtos, onde você, por exemplo, atualiza o preço uma vez por semana, enquanto que a leitura desses dados é diária e frequente, então, obviamente, faz sentido você ler os dados que estão num cache. Por quê? Porque você vai trazer um dado que não é o último dado, mas ainda ser um dado útil para sua aplicação.
+
+
+### Strongly Consistency
+
+É um tipo de leitura que lhe vai diretamente na tabela. Então, ele tem os dados atuais, a última versão, ou seja, se você salvou o dado, acabou de salvar e foi lá ler, vai ler a última versão do que foi salvo. Ele vai diretamente na tabela e não passa pelo cache, ele precisa ser requisitado explicitamente.
+
+Então o que acontece quando você está programando a sua leitura de dados no DynamoDB, se você não definir explicitamente, *"quero fazer uma leitura do tipo strongly"*, ou seja, *"quero ler diretamente na tabela"*, ele vai por padrão, ler do tipo *eventually*, ou seja, ele vai ler do cache.
+
+
+Como falamos, o eventually consistent, é mais barato e strongly consistent vai direto na tabela, é um pouco mais caro. Cada um tem o seu caso de uso. Cada um é eficiente em determinada situação.
+Convém analisar ao longo do tempo, conforme você for utilizando o DynamoDB, o que funciona melhor para a sua aplicação.
+
+
+### Read Consistency
+|  Eventually Consistency   |  Strongly Consistency  |
+|---------------------------|------------------------|
+| Pode ou não usar cache    | Dados atuais da tabela |
+| Modelo Padrão de consulta | Escolha Explícita      |
+|     50% mais barato       |                        |
+
+
+
+# Unidades de Capacidade - Capacity Units
+
+## Troughput Capacity - Reads and Writes
+
+* Definida por **TABELA (Table)**
+* Controla Capacidade de Leitura (Read) e Gravação (Write)
+* Suporta Auto Scaling
+
+* Definida por **RCUs** (Read Capacity Unit)
+* Definida por **WCUs** (Write Capacity Unit)
+
+* Capacity Unit = 1 requisição/segundo
+
+* **Capacity Unit's definem o preço a ser cobrado pelo uso do DynamoDB**
+
+
+## Capacity Units
+
+### RCU - Read Capacity Unit
+|------------------------------------------|
+|  Strongly Consistent  | 1 table read/sec |
+| Eventually Consistent | 2 table read/sec |
+|         Bloco         |       4KB        |
+
+
+### WCU -  Write Capacity Unit
+|---------------------------------|
+|    Write    | 1 table write/sec |                     
+|    Bloco    |        1KB        |
+
+
+
+### Capacidade Provisionada
+
+RCU: 03
+WCU: 03
+
+### Leitura - RCU
+|-----------------------------------------------------------|
+| Strongly Consistent   |       4KB x 3 = 12KB/seg          |
+| Eventually Consistent | 4KB x 3 = 12KB/seg x 2 = 24KB/seg |
+
+
+### Gravação - WCU
+|-------------------------------------------|
+| Eventually Consistent | 1KB x 3 = 3KB/seg |
+
+
+
+...
+**_Exemplo de cálculo de leitura e gravação de um arquivo de 0.5KB_**
+
+### Leitura
+
+**Strongly Consistent**:    0.5KB / 4KB = 0.125 => arredondando (método utilizado AWS/DynamoDB) = 1 RCU
+**Eventually Consistent**:  0.5KB / 4KB = (0.125 / 2) => 0.0625 => arredondando => 1 RCU
+
+### Gravação
+
+**Write**: 0.5KB / 1KB = 0.5 => arredondando => 1 WCU
+
+**Total capacidade provisionada:** 1 RCU e 1 WCU
