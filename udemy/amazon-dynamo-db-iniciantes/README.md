@@ -631,12 +631,12 @@ Partition(s) = 2
 
 > O que vai acontecer é que o DynamoDB vai dividir a nova capacidade provisionada
 
-|  Tabela   |       |  Tabela   |             
-|-----------|       |-----------|
-| Partition |       | Partition |
-|    10GB   |       |    10GB   |
-|   625RCU  |       |   625RCU  |
-|   625WCU  |       |   625WCU  |
+|  Tabela   |  Tabela   |             
+|-----------|-----------|
+| Partition | Partition |
+|    10GB   |    10GB   |
+|   625RCU  |   625RCU  |
+|   625WCU  |   625WCU  |
 
 
 > Agora temos duas novas partições com capacidade de leitura e gravação menores que a nossa partição original.Neste caso específico que foi exemplificado talvez não teríamos problema, mas num caso onde o provisionamento gere mais partições com os valores muito abaixo do qual estavamos trabalhando, poderemos enfrentar problemas de desempenho na nossa aplicação.
