@@ -1,14 +1,14 @@
-# terminal path shorter
-PS1="${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\W \[\033[32m\]\$\[\033[00m\] "
+### terminal path shorter
+> PS1="${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\W \[\033[32m\]\$\[\033[00m\] "
 
 
--*- Seção 1: Introduction - AWS Certified Solutions Architect Associate
+# Seção 1: Introduction - AWS Certified Solutions Architect Associate
 
 - PLEASE READ: Lectures you can skip if you took a course from me before
 
-== PLEASE READ THIS BRIEF NOTE ==
+## **== PLEASE READ THIS BRIEF NOTE ==**
 
-Welcome to the course!
+**Welcome to the course!**
 
 A] If you did not do any course on AWS before...
 
@@ -144,24 +144,24 @@ Happy learning!
 Stephane Maarek
 
 
--*- Seção 2: Code & Slides Download
+# Seção 2: Code & Slides Download
 
 ***Download***
 
 
--*- Seção 3: Getting started with AWS
+# Seção 3: Getting started with AWS
 
-# to see the AWS global infrastructure
+* to see the AWS global infrastructure
 https://infrastructure.aws
 
 
-# to find out which services are available in a particular region
+* to find out which services are available in a particular region
 https://aws.amazon.com/pt/about-aws/global-infrastructure/regional-product-services/?p=ngi&loc=4&refid=0c2b5279-1e50-459b-b9b5-6b0861ac160e
 
 
---- Page 19
+*--- Page 19*
 
--*- Seção 4: IAM & AWS CLI
+# Seção 4: IAM & AWS CLI
 
 - AWS CloudShell: Region Availability
 
@@ -169,6 +169,9 @@ AWS CloudShell: Region Availability
 In the next lecture, I demo AWS CloudShell.
 
 It is not yet available in all regions, and you can find the region list here:
-https://docs.aws.amazon.com/cloudshell/latest/userguide/supported-aws-regions.html
+[CloudShell](https://docs.aws.amazon.com/cloudshell/latest/userguide/supported-aws-regions.html)
 
-Please switch to one of these regions if you want to do the next (optional) hands-on.
+> Please switch to one of these regions if you want to do the next (optional) hands-on.
+
+
+# Seção 5: EC2 Fundamentals
