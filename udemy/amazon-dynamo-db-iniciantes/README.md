@@ -496,3 +496,152 @@ WCU: 03
 **Write**: 0.5KB / 1KB = 0.5 => arredondando => 1 WCU
 
 **Total capacidade provisionada:** 1 RCU e 1 WCU
+
+
+...
+**_Exemplo de cálculo de leitura e gravação de um arquivo de 25KB_**
+
+### Leitura
+
+**Strongly Consistent**:    25KB / 4KB = 6.25 => arredondando (método utilizado AWS/DynamoDB) = 7 RCU
+
+**Eventually Consistent**:  25KB / 4KB = (6.25 / 2) => 3.125 => arredondando => 4 RCU
+
+### Gravação
+
+**Write**: 25KB / 1KB = 25 => arredondando => 25 WCU
+
+**Total capacidade provisionada:** 7 RCU e 25 WCU
+
+> Outras funcionalidades dentro do "capacity units" que fazem parte dos recursos do DynamoDB
+### Burst Capacity
+    Característica: Utiliza até 300 segundos da capacidade não utilizada para:
+
+* Utilizada para estouros ou picos ocasionais
+* Pode ser consumida mais rápido do que a capacidade provisionada
+* Não podemos planejar demandas baseados nesta reserva, mas sabemos que existe este recurso
+* DynamoDB pode usa-la em background para tarefas administrativas
+
+
+### Escalabilidade
+    Característica: Controle sempre que necessário da capacidade de RCU e WCU
+
+* Podemos escalar para cima sempre que necessário
+* Podemos escalar para baixo 4 vezes por dia
+* Afeta o comportamento da partição
+
+
+# Hands-on - Criando Tabela no DynamoDB
+
+> Vide Aula 12...
+
+Criação de uma tabela e adição de um registro
+
+```
+{
+  "email": {
+    "S": "test@test.com"
+  },
+  "nome": {
+    "S": "John Doe"
+  }
+}
+```
+
+# Partitions
+
+As tabelas do DynamoDB são salvas, são agrupadas ou acondicionadas em partições.
+Essa é uma forma que a AWS encontra de criar um modelo de consistência para suas tabelas do DynamoDB e para também garantir performance.
+
+Exemplo
+
+|  Tabela   |
+|-----------|
+| Partition |
+|  10GB     |
+| 3000 RCU  |
+| 1000 WCU  |
+
+> Isto é 100% Gerenciado pelo DynamoDB
+
+Uma partição então no DynamoDB tem um limite de dez gigabytes de tamanho de espaço alocado, então os seus dados na tabela tem um limite de dez gigabyte por partição. Uma partição tem um limite de 3000 unidades de leitura e 1000 unidades de gravação, esse é o limite para uma partição.
+
+Agora, se a sua tabela é muito maior que isso e ela precisa de muito mais espaço, muito mais unidades de leitura e gravação, o DynamoDB automaticamente cria novas partições para sua tabela, isso é feito de forma automática e totalmente gerenciado pelo DynamoDB pela WS.
+
+Porém, é muito importante que você entenda como as partições funcionam, porque isso pode te ajudar num futuro a resolver problemas de performance nas suas tabelas ou para que você consiga alocar melhor a sua capacidade de leitura e gravação, de forma que você não impacte a performance das suas tabelas.
+
+Agora, como é que o Dynamo DB faz a alocação dessas partições?
+
+## Exemplos:
+
+### Cálculo 1
+
+Capacidade máxima de uma partição no DynamoDB = Round(RCU(Prov/3000) + WCU(Prov/1000))
+
+Capacidade Provisionada (Configurada na Criação) = 650RCU e 650WCU
+
+Quocientes (RCU(650/3000) e WCU(650/1000)) = 0.22 | 0.65
+
+Round = 0.22 + 0.65 = 0.87
+
+> Arredondamos pra cima
+
+Patições = 1
+
+
+### Cálculo 2
+
+Capacidade máxima de uma partição no DynamoDB = Round(RCU(Prov/3000) + WCU(Prov/1000))
+
+Capacidade Provisionada (Configurada na Criação) = 1050RCU e 1050WCU
+
+Quocientes (RCU(1050/3000) e WCU(1050/1000)) = 0.35 | 1.05
+
+Round = 0.35 + 1.05 = 1.40
+
+> Arredondamos pra cima
+
+Patições = 2
+
+> Uma vez alocada, a Partition não sofre alterações na sua configuração
+
+Então vamos fazer mais um exemplo de cálculo de partição pois ele é importante.
+Então imagina que, por exemplo, você tem uma tabela e ela está numa partição e essa partição tem dez gigabytes de tamanho, e ela tem 650 unidades de leitura e 650 de gravação. E vamos supor que, por uma razão específica,você precisa aumentar a quantidade de leitura e a quantidade de gravação na sua tabela, então a sua tabela está tendo mais acessos, enfim, cresceu o número de usuários, etc.
+
+|  Tabela   |
+|-----------|
+| Partition |
+|    10GB   |
+|   650RCU  |
+|   650WCU  |
+
+Então o que vai acontecer com a sua tabela?
+
+Ela já tem lá 650 para leitura e 650 para gravação.
+
+A conta é a mesma que já fizemos...
+
++1250RCU e +1250WCU
+
+Quocientes (RCU(1250/3000) e WCU(1250/1000)) = 0.42 | 1.25
+
+Round = 0.42 + 1.25 = 1.67
+
+Partition(s) = 2
+
+> O que vai acontecer é que o DynamoDB vai dividir a nova capacidade provisionada
+
+|  Tabela   |       |  Tabela   |             
+|-----------|       |-----------|
+| Partition |       | Partition |
+|    10GB   |       |    10GB   |
+|   625RCU  |       |   625RCU  |
+|   625WCU  |       |   625WCU  |
+
+
+> Agora temos duas novas partições com capacidade de leitura e gravação menores que a nossa partição original.Neste caso específico que foi exemplificado talvez não teríamos problema, mas num caso onde o provisionamento gere mais partições com os valores muito abaixo do qual estavamos trabalhando, poderemos enfrentar problemas de desempenho na nossa aplicação.
+
+
+# Indíces - Indexes
+
+
