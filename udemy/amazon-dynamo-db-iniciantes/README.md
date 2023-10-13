@@ -645,3 +645,147 @@ Partition(s) = 2
 # Indíces - Indexes
 
 
+* Primary Key é **_OBRIGATÓRIA_** no DynamoDB
+
+Primary Ki é obrigatória no DynamoDB. No DynamoDB você não pode criar uma tabela sem ter uma chave primária. Ela é obrigatória e ela pode ser simples, ou seja, ela pode ter um atributo só.
+Quando ela é simples e tem um atributo, esse atributo é o **Partition Key** ou **Hash Key**, como o Dynamo DB também chama.
+Ela pode ser uma chave composta, ou seja, você pode ter dois atributos para compor a sua chave primária, onde uma vai ser chamada de **Partition Key** e a outra vai ser chamada de **Sort Key**.
+
+* Simples -> Partition Key ou Hash Key
+* Composta -> Partition Key + Sort Key
+
+A Partition Key, é extremamente importante porque ela é utilizada por um algoritmo do DynamoDB que se chama **Hashing Algorithm** para determinar em que partição do DynamoDB vai salvar aquele item daquela tabela. Pois bem, isso é super importante porque, por exemplo, quando definimos a partition key o DynamoDB faz uma análise, faz um cálculo e define em qual das partições que a nossa tabela tem que ele vai gravar. Então, isso faz com que a primary key seja necessária em qualquer operação de busca. Qualquer operação de leitura que você for fazer no DynamoDB você é obrigado a passar a primary key.
+
+
+## Partition Key
+
+> Primary Key é necessária nas operações de busca
+
+Além do primary key, temos ainda os **Local Secondary Index** e o **Global Secondary Index**.
+
+O Local Secondary Index basicamente, é um segundo índice que criamos para a tabela. É um índice realmente onde usamos a primeiro key para criar um segundo índice.
+Enquanto que o Global Secundary Indice é muito mais parecido com a view dos bancos de dados relacionais. Nos bancos de dados relacionais temos a capacidade de criar visões para aquela tabela, que não necessariamente são índices, mas são visões ordenadas por um determinado conjunto de atributos.
+
+Então até o momento temos 3 tipos de Indices
+
+* Primary Key
+* Local Secondary Indexes
+* Global Secondary Indexes
+
+
+Vamos utilizar o mesmo item do banco que exemplificamos em uma aula anterior:
+
+```
+{
+    "carro_id":"A83848484",
+    "foto_frontal":"v9dj399JnnnINJJ(jss90Nns9jdnji)()9mknnknoNINio(iJniu99HjibI*89HjBVty87UGbIBIJiuHU(H989*((ujiiji",
+    "marca":"BMW",
+    "modelo","X1",
+    "opcoes_cores",["Branco", "Preto", "Azul", "Cinza"],
+    "itens_opcionais":{
+        "motor":["B74774",47575,true],
+        "":[12.6,34.5,false,"verified"]
+    },
+    "origem":{
+        "base":"Berlin",
+        "pod_location":{
+            "geospace":{
+                "latitude": 52.520918,
+                "longitude": 13.397987
+            }
+        }
+    }
+}
+```
+
+Aqui poderíamos utilizar a seguinte Primary Key:
+
+### Primary Key
+| Partition_Key | carro_id |
+| Sort_Key      | marca    |
+
+
+Exemplo de Local Secondary Index:
+
+> Obs: Quando utilizamos um Local Secondary Index, temos que utilizar a mesma Partition Key
+
+### Local Secondary Index
+| Partition_Key | carro_id |
+| Sort_Key      | modelo   |
+
+Exemplo de Global Secondary Index
+
+> Obs: Quando utilizamos o Global Secondary Index, não precisamos utilizar a mesma Partition Key da Primary Key, podemos utilizar qualquer outro atributo
+
+### Global Secondary Index
+| Partition_Key | marca  |
+| Sort_Key      | modelo |
+
+
+*Vejamos os atributos do Local e Global Secondary Indexes*
+
+## Local Secondary Indexes
+
+* Possui o mesmo partition key, mas sort key diferentes da Primary Key
+* Deve ser definido no momento da crição da tabela
+* Compartilha os RCU's e WCU's da Tabela
+* Pode ser usado para leituras **Eventually Consistent e Strongly Consistent**
+
+
+## Global Secondary Indexes
+
+* Pode ser criado até 5 GSI
+* Pode ser criado a qualquer momento
+* Possuem Partition Independente
+* Deve ser definida a quantidade de RCU's e WCU's para GSI
+* A quantidade de RCU's e WCU's é independente da tabela
+* Suporta apenas leitura do tipo **Eventually Consistent**
+
+
+
+# Hands-on - Cirando Indices para Tabelas
+
+> Vide Aula 15...
+
+
+# Preços
+
+[Preços do Amazon DynamoDB](https://aws.amazon.com/pt/dynamodb/pricing/)
+
+No serviço do DynamoDB somos cobrados por cada tabela de forma individual. O cálculo dos custos levam em consideração os seguintes parâmetros:
+
+* Espaço em Disco - GB (SSD)
+* Read Capacity Unit - RCU
+* Write Capacity Unit - WCU
+* Transferência de Dados
+
+> Obs: Na AWS somos cobrados apenas pelos dados que saem da Rede da AWS, normalmente em GBs
+
+
+## Custos Adicionais
+
+Outros atributos como:
+
+* Auto Scaling
+* Backup e Restore
+* Stream
+* Tabelas Globais
+
+São cobrados separadamente, a parte de RCU, WCU e Storage.
+
+
+## Nível Gratuito
+
+* 25 GB / mês
+* 25 RCU e 25 WCU / mês
+* 2.5M Solicitações Stream / mês
+* Tabelas Globais - Até 2 regiões
+
+# On Demand
+
+* Não precisa definir a Capacidade Provisionada (RCU/WCU)
+* Paga por requisições feitas na Tabela
+* Cresce conforme o uso
+* Cobrança similar nos custos adicionais (backup, global tables, etc)
+
+> Obs: Quando utilizamos On Demand não somos elegíveis ao Free Tier (Nível Gratuito)
