@@ -781,7 +781,7 @@ São cobrados separadamente, a parte de RCU, WCU e Storage.
 * 2.5M Solicitações Stream / mês
 * Tabelas Globais - Até 2 regiões
 
-# On Demand
+## On Demand
 
 * Não precisa definir a Capacidade Provisionada (RCU/WCU)
 * Paga por requisições feitas na Tabela
