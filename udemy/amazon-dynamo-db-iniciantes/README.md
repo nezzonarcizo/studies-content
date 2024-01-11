@@ -789,3 +789,161 @@ São cobrados separadamente, a parte de RCU, WCU e Storage.
 * Cobrança similar nos custos adicionais (backup, global tables, etc)
 
 > Obs: Quando utilizamos On Demand não somos elegíveis ao Free Tier (Nível Gratuito)
+
+
+# Introdução a APIs e Webhooks
+
+Nessa aula nós vamos falar de dois elementos super importantes que são os **Webhooks** e as **APIs**.
+
+Os Webhooks e as APIs são tecnologias que permitem a integração entre aplicações e a troca de informações entre elas em tempo real.
+
+Como é que isso funciona?
+
+Vamos imaginar que, por exemplo, você tem uma aplicação que precise fazer acesso a um banco de dados. Sua aplicação podia muito bem fazer o acesso ao banco de dados diretamente e então ele devolver as informações solicitadas. Porém, muitas vezes não é permitido que seja feito dessa forma, diretamente.
+
+Por quê?
+
+Por vários fatores, questão de segurança, por questão de conformidade, por questão de propriedade. Enfim, pode ser por questão de performance, pode ter uma série de questões que inviabilizem esse acesso direto da aplicação ao banco de dados.
+
+O que pode ser feito, então, entre a aplicação A e o banco de dados?
+
+Você pode ter um Webhook ou uma API!
+
+A aplicação então faz acesso a esse Webhook ou a esta API, que faz acesso ao banco de dados, que devolve para essa API ou para este Webhook e que então, devolve para a sua aplicação.
+
+## Webhooks
+
+Webhooks são integrações baseadas em eventos. O termo Webhook é muito utilizado quando você tem programação orientada a eventos, um exemplo:
+
+Imagina que você tem uma aplicação que é uma aplicação de rede social, como por exemplo, Instagram ou Facebook. Então, toda vez que você dá um like lá no Instagram, um gostei no Instagram ou um like no Facebook, isso dispara um evento que chamam um Webhook da plataforma do Facebook ou do Instagram. Esse Webhook automaticamente atualiza esses dados na plataforma do Facebook que devolve essa atualização para a aplicação, ele informa a aplicação que a requisição/ação foi persistida.
+
+A partir do momento que você clicou lá no like, ele dispara um evento e toda essa atualização ela é feita.
+
+
+## API
+
+API ela já é uma integração que é feita sob demanda, ou seja, não é exatamente quando o evento ocorre. Um exemplo:
+
+Imagina que você tem um sistema contábil, não um sistema de controle financeiro, onde uma vez por mês você faz a conciliação bancária. Então que acontece essa conciliação?
+A cada mês você precisa ir lá no seu banco e pegar os seus extratos bancários para que você faça essa atualização bancária. O seu banco pode disponibilizar uma API aonde a sua aplicação chama essa API, por exemplo, pede esses extratos e esses extratos são enviados via API para sua aplicação. Isso é um pedido sob demanda e não acontece baseado num evento como acontece ali no Like do Facebook.
+
+
+## Mais detalhes sobre a diferença entre um Webhook e uma API
+
+Um webhook e uma API são duas maneiras diferentes de permitir a comunicação entre sistemas ou aplicativos, mas têm finalidades e funcionamentos distintos:
+
+### Webhook:
+
+* Push de dados: Um webhook é um método de envio de dados em que um servidor envia informações automaticamente para outro servidor quando ocorre um evento específico. Em outras palavras, é uma notificação que o servidor emissor envia ao servidor receptor quando algo acontece. O servidor receptor precisa estar configurado para lidar com essas notificações.
+
+* Assíncrono: Os webhooks são tipicamente usados para comunicação assíncrona, o que significa que o servidor receptor não precisa ficar constantemente fazendo solicitações para obter dados, mas em vez disso, ele recebe atualizações quando eventos ocorrem.
+
+* Exemplo de uso: Um exemplo comum é quando um serviço de pagamento envia uma notificação para um servidor quando uma transação é concluída. O servidor receptor pode então realizar ações com base nessa notificação, como atualizar um banco de dados ou enviar um e-mail de confirmação.
+
+### API (Application Programming Interface):
+
+* Solicitação e Resposta: Uma API é uma interface que permite que dois aplicativos se comuniquem fazendo solicitações e recebendo respostas. Ela define um conjunto de regras e protocolos para a comunicação entre os aplicativos.
+
+* Síncrono ou Assíncrono: As APIs podem ser síncronas ou assíncronas, dependendo de como são projetadas. Muitas APIs são projetadas para funcionar por meio de solicitações HTTP (síncronas), mas também podem ser usadas para comunicação assíncrona.
+
+* Exemplo de uso: Quando você usa uma API de previsão do tempo, por exemplo, você faz uma solicitação para o servidor da API, que processa a solicitação e retorna os dados meteorológicos solicitados como resposta. A comunicação é iniciada pelo cliente (você) e é controlada pela solicitação e resposta.
+
+Em resumo, a principal diferença entre um webhook e uma API é que um webhook é uma forma de comunicação assíncrona na qual o servidor emissor envia automaticamente notificações quando ocorrem eventos, enquanto uma API é uma interface que permite que aplicativos solicitem e obtenham dados de forma síncrona ou assíncrona, com o controle iniciando a partir do aplicativo que faz a solicitação. Ambas as abordagens têm seus usos específicos, dependendo dos requisitos do sistema e do fluxo de dados desejado.
+
+
+# Introdução ao NodeJS e Glitch
+
+## NodeJS
+
+NodeJS é uma plataforma para a criação de Aplicações Web de Alta Escalabilidade.
+
+Motivos pelos quais NodeJS foi escolhido pelo instrutor:
+
+* Muito popular entre desenvolvedores
+* Projeto de código aberto
+* Baseado em Javascript
+* Programação pode ser orientada a eventos
+* Altamente escalável
+* Permite um número muito grande de conexões simultâneas
+* Tornou-se a principal plataforma para desenvolvimento de Webhooks e APIs
+
+### NPM
+
+NPM é um gerenciador de pacotes para o NodeJS.
+
+O NPM amplia as funcionalidades e capacidade de integração do NodeJS com outras tecnologias ou agrupa bibliotecas, facilitando a utilização de tecnologias e simplificando o desenvolvimento de aplicações. Exemplos de conexões que podemos realizar utilizando módulos NPM são SDK AWS, DynamoDB etc.
+
+Outros exemplos:
+
+* Manipulação de arquivos
+* Acesso a Banco de dados MySQL
+* Internet das coisas
+* Envio de e-mails
+
+## Glitch
+
+[Glitch](https://glitch.com/)
+
+Existem diversas implementações de NodeJS no mercado, sejam elas pagas, sejam elas grátis. Por exemplo, uma plataforma paga NodeJS muito conhecida, muito utilizada pelos profissionais é a Heroku, é uma das plataformas mais utilizadas de NodeJS, porém é uma plataforma paga.
+
+Aqui no curso, nós vamos usar uma plataforma que se chama Glitch. O Glitch é uma plataforma grátis de NodeJS para que você possa criar os seus projetos, aprender programação,fazer teste, criar suas APIs.
+
+
+# Hands-on - Visão geral da plataforma Glitch
+
+> Vide Aula 20...
+
+
+
+# **Atenção** - Usando Glitch com pacote Express
+
+> Vide Aula 21...
+
+server.txt (arquivos do curso)
+
+
+
+# Hands-on - Configurando AWS SDK para NodeJS
+
+> Vide Aula 22...
+
+[Ferramentas para criar com a AWS](https://aws.amazon.com/pt/developer/tools/)
+
+[AWS SDK para NodeJS](https://aws.amazon.com/pt/sdk-for-javascript/)
+
+Nessa aula nós vamos falar sobre o Software Development Kit da AWS.
+Toda vez que queremos acessar um serviço da AWS de forma programática, ou seja, através de programação, temos que usar um SDK, um software development kit da AWS.
+E para que vejamos os ultimos SDK disponíveis, plataformas, linguagem de programação etc, temos que ir na página da AWS, barra Tools.
+
+> Links disponíveis acima
+
+Temos SDK disponíveis para Java, .Net, NodeJS, PHP, Python, Ruby, Browser, Go, C++ e alguns para IoT e outras plataformas, como Android. Por exemplo, que o Android, iOS, React, mobile web etc. Então temos uma gama muito grande de plataformas e linguagens de programação que são suportadas pelos SDKs da AWS. Obviamente, eles permitem que acessemos os diversos serviços da AWS, assim como o Dynamo DB.
+
+No nosso caso utilizaremos o SDK para NodeJS.
+
+> Obs: Além dos pacotes "aws-sdk" e "express" vamos também utilizar o pacote "body-parser" e o seguinte trecho de código que será adicionado ao nosso server.js
+
+```
+var bodyParser = require('body-parser')
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
+```
+
+
+
+# Hands-on - Configurando acesso para o AWS SDK 
+
+> Vide Aula 23...
+
+
+
+# Hands-on - Criando API para Operações em Tabela
+
+> Vide Aula 24...
+
+server.txt (arquivos do curso)
+
+[Class AWS.DynamoDB](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html)
+

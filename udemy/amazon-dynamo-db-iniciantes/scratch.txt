@@ -1,0 +1,81 @@
+// server.ts
+// where your node app starts
+
+const express = require("express");
+
+const path = require("path");
+
+// Require the fastify framework and instantiate it
+const fastify = require("fastify")({
+  // set this to true for detailed logging:
+  logger: false,
+});
+
+const app = express();
+
+const AWS = require("aws-sdk");
+
+var bodyParser = require("body-parser");
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(
+  bodyParser.urlencoded({
+    // to support URL-encoded bodies
+    extended: true,
+  })
+);
+
+// how to load config from a file
+//app.get("/test", function(request, response) {
+//  AWS.config.loadFromPath('./config.json');
+//});
+
+// make all the files in 'public' available
+// https://expressjs.com/en/starter/static-files.html
+app.use(express.static("public"));
+
+// Our main GET home page route, pulls from src/pages/index.hbs
+fastify.get("/", function (request, reply) {
+  // params is an object we'll pass to our handlebars template
+  let params = {
+    greeting: "Hello Node!",
+  };
+  // request.query.paramName <-- a querystring example
+  return reply.view("/src/pages/index.hbs", params);
+});
+
+// A POST route to handle form submissions
+fastify.post("/", function (request, reply) {
+  let params = {
+    greeting: "Hello Form!",
+  };
+  // request.body.paramName <-- a form post example
+  return reply.view("/src/pages/index.hbs", params);
+});
+
+// Class 24
+app.get("/listTables", function(request, response) {
+  AWS.config.update({ region: "us-east-1" });
+
+  var dynamodb = new AWS.DynamoDB();
+
+  var params = {};
+  dynamodb.listTables(params, function (err, data) {
+    if (err) console.log(err, err.stack);
+    // an error occurred
+    else console.log(data); // successful response
+    /*
+   data = {
+    TableNames: [
+       "Forum", 
+       "ProductCatalog", 
+       "Reply", 
+       "Thread"
+    ]
+   }
+   */
+  });
+});
+
+// listen for requests :)
+const listener = app.listen(process.env.PORT, () => {
+  console.log("Your app is listeni
