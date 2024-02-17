@@ -889,13 +889,13 @@ Existem diversas implementações de NodeJS no mercado, sejam elas pagas, sejam 
 Aqui no curso, nós vamos usar uma plataforma que se chama Glitch. O Glitch é uma plataforma grátis de NodeJS para que você possa criar os seus projetos, aprender programação,fazer teste, criar suas APIs.
 
 
-# Hands-on - Visão geral da plataforma Glitch
+## Hands-on - Visão geral da plataforma Glitch
 
 > Vide Aula 20...
 
 
 
-# **Atenção** - Usando Glitch com pacote Express
+## **Atenção** - Usando Glitch com pacote Express
 
 > Vide Aula 21...
 
@@ -903,7 +903,7 @@ server.txt (arquivos do curso)
 
 
 
-# Hands-on - Configurando AWS SDK para NodeJS
+## Hands-on - Configurando AWS SDK para NodeJS
 
 > Vide Aula 22...
 
@@ -933,7 +933,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 
 
-# Hands-on - Configurando acesso para o AWS SDK 
+## Hands-on - Configurando acesso para o AWS SDK 
 
 > Vide Aula 23...
 
@@ -945,21 +945,21 @@ server.txt (arquivos do curso)
 [Class AWS.DynamoDB](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html)
 
 
-# Hands-on - Criando API para Operações em Tabela
+## Hands-on - Criando API para Operações em Tabela
 
 > Vide Aula 24...
 
-# Hands-on - Criando API para Inclusão de Itens
+## Hands-on - Criando API para Inclusão de Itens
 
 > Vide Aula 25
 
 
-# Hands-on - Criando API para Alteração de Itens
+## Hands-on - Criando API para Alteração de Itens
 
 > Vide Aula 26
 
 
-# Hands-on - Criando API para Deleção de Itens
+## Hands-on - Criando API para Deleção de Itens
 
 > Vide Aula 27
 
@@ -968,7 +968,7 @@ Chamada na API para teste
 https://dynamo-course.glitch.me/excluir?email=marlon.narcizo@gmail.com&name=Augusto%20Narcizus
 
 
-# Hands-on - Criando API para Consulta de Itens via GET
+## Hands-on - Criando API para Consulta de Itens via GET
 
 > Vide Aula 28
 
@@ -976,27 +976,27 @@ Chamada na API para teste
 
 https://dynamo-course.glitch.me/recuperar?email=nezzo.narcizo@hotmail.com&name=Nezzo%20Narcizo
 
-# Hands-on - Criando API para Consulta de Itens via SCAN
+## Hands-on - Criando API para Consulta de Itens via SCAN
 
 > Vide Aula 29
 
 
-# Hands-on - Criando API para Consulta de Itens via QUERY
+## Hands-on - Criando API para Consulta de Itens via QUERY
 
 > Vide Aula 30
 
 
-# Hands-on - Criando API para Consulta de Itens em Lote (Batch)
+## Hands-on - Criando API para Consulta de Itens em Lote (Batch)
 
 > Vide Aula 31
 
 
-# Hands-on - Criando API para Atualização de Itens em Lote (Batch)
+## Hands-on - Criando API para Atualização de Itens em Lote (Batch)
 
 > Vide Aula 32
 
 
-# Auto Scaling
+## Auto Scaling
 
 > Vide Aula 33
 
@@ -1030,12 +1030,12 @@ Bom, se a sua tabela ela foi escalada para dez RCUs, porque a sua aplicação es
 * Não tem custos adicionais (apenas RCU / WCU)
 
 
-# Hands-on - Configurando Auto Scaling
+## Hands-on - Configurando Auto Scaling
 
 > Vide Aula 34
 
 
-# DAX - DynamoDB Accelerator
+## DAX - DynamoDB Accelerator
 
 ### DynamoDB Accelerator
 
@@ -1076,12 +1076,12 @@ Ela está recuperando dados ali de uma forma extremamente rápida. Agora, quando
 Ele é baseado no cluster, então você tem um nó que é o Master e você pode criar até nove réplicas de armazenamento, nove réplicas de cash para o DAX.
 
 
-# Hands-on - Configurando o DAX
+## Hands-on - Configurando o DAX
 
 > Vide Aula 36
 
 
-# Streams
+## Streams
 
 > Vide Aula 37
 
@@ -1120,86 +1120,85 @@ Time to live, você define quando que aquele item, por exemplo, ele expira, quan
 Quando isso acontece, o mesmo DB marca aquele item como expirado, e toda vez que ele marca um item como expirado, esse item sofre uma modificação e você pode utilizar o stream, por exemplo, para salvar. Uma função Lambda para pegar esse dado modificado e salvar, por exemplo, numa tabela de arquivo.
 
 
-# Demo - Utilizando Stream com Lambda
+## Demo - Utilizando Stream com Lambda
 
 > Vide Aula 38
 
-# TTL - Time to Live
+## TTL - Time to Live
 
 > Vide Aula 39
 
-# Backup and Restore
+## Backup and Restore
 
 > Vide Aula 40
 
-# Hands-on - Configurando Backup
+## Hands-on - Configurando Backup
 
 > Vide Aula 41
 
-# Point in Time Recovery
+## Point in Time Recovery
 
 > Vide Aula 42
 
-# Hands-on - Solicitando Point in Time Recovery
+## Hands-on - Solicitando Point in Time Recovery
 
 > Vide Aula 43
 
-# Global Tables
+## Global Tables
 
 > Vide Aula 44
 
-# Hands-on - Configurando Global Tables
+## Hands-on - Configurando Global Tables
 
 > Vide Aula 45
 
 
 
-# Operações com PHP
+## Operações com PHP
 
 > Observação: As aulas são apenas apresentações dos arquivos PHP e podem ser vistos/acessados na pasta do curso
 
-# Listar Tabelas
+## Listar Tabelas
 
 > Vide Aula 47
 
-# Inserir Itens
+## Inserir Itens
 
 > Vide Aula 48
 
-# Atualizar Item
+## Atualizar Item
 
 > Vide Aula 49
 
-# Excluir Item
+## Excluir Item
 
 > Vide Aula 50
 
-# Recuperar Item
+## Recuperar Item
 
 > Vide Aula 51
 
-# Busca por SCAN
+## Busca por SCAN
 
 > Vide Aula 52
 
-# Busca por QUERY
+## Busca por QUERY
 
 > Vide Aula 53
 
-# Leitura em Lote
+## Leitura em Lote
 
 > Vide Aula 54
 
-# Gravação em Lote
+## Gravação em Lote
 
 > Vide Aula 55
 
 
-# Hands-on - Rodando Projeto no NodeJS Local
+## Hands-on - Rodando Projeto no NodeJS Local
 
 > Vide Aula 57
 
 Comandos para instalar os pacotes...
 
-# sudo npm install
-
+sudo npm install
