@@ -14,6 +14,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
+// Carregando as configurações AWS daqui quando o uso é local e não existem variáveis de ambiente
+AWS.config.loadFromPath('./config.json');
 
 // we've started you off with Express, 
 // but feel free to use whatever libs or frameworks you'd like through `package.json`.
@@ -23,7 +25,11 @@ app.use(express.static('public'));
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get('/', function(request, response) {
-  response.sendFile(__dirname + '/views/index.html');
+  // Response para glitch
+  // response.sendFile(__dirname + '/src/pages/index.html');
+
+  // Response para localhost
+  response.send("Aplicação node rodando com sucesso!")
 });
 
 app.get('/teste', function(request, response) {
@@ -31,6 +37,7 @@ app.get('/teste', function(request, response) {
   AWS.config.loadFromPath('./config.json');
   
 });
+
 
 //listar tabelas do DynamoDB
 app.get('/listarTabelas', function(request, response) {
@@ -44,8 +51,12 @@ app.get('/listarTabelas', function(request, response) {
       if (err) {
         console.log(err);
       } else {
-         //response.send(data) 
-        response.json(data);        
+          response.json(data);
+         // var tabela = "";
+         // for (let i=0; i < data.TableNames.length; i++) {
+         //   tabela += "Tabela => "+data.TableNames[i]+"<br>";
+         // }
+         // response.send(tabela);
       }   
   }); 
 });
@@ -55,16 +66,21 @@ app.get('/inserir', function(request, response) {
   
   AWS.config.update({region:'us-east-1'});
   
-  var email_cliente = request.query.email;
-  var nome_cliente  = request.query.nome;
+  var client_email = request.query.email;
+  var client_name  = request.query.name;
   
   var client = new AWS.DynamoDB.DocumentClient();
   
   var params ={
-    TableName:'clientes',
+    TableName:'twilio-talks',
     Item: {
-      email:email_cliente,
-      nome:nome_cliente
+      email:client_email,
+      name:client_name
+      
+      // Se quiser passar os valores hardcoded
+      // email:'nesso.narcizo@hotmail.com',
+      // name:'Marlon Augusto Nezzo Narcizo',
+      // birth_date:'1987-09-14'
     }
   }
   
@@ -83,26 +99,26 @@ app.get('/atualizar', function(request, response) {
 
   AWS.config.update({region:'us-east-1'});
   
-  var email_cliente = request.query.email;
-  var nome_cliente  = request.query.nome;
-  var valor = request.query.valor;
+  var client_email = request.query.email;
+  var client_name  = request.query.name;
+  var salary = request.query.salary;
   
   var client = new AWS.DynamoDB.DocumentClient();
   
   var params = {
-    TableName:'clientes',
+    TableName:'twilio-talks',
     Key: {
-       email:email_cliente,
-       nome: nome_cliente
+       email:client_email,
+       name:client_name
     },
     UpdateExpression: 'set #s = :y',
-    ConditionExpression: 'idade < :x',
+    ConditionExpression: 'idade > :x',
     ExpressionAttributeNames:{
      '#s':'salario' 
     },
     ExpressionAttributeValues:{
-      ':y':valor,
-      ':x':30
+      ':y':salary,
+      ':x':21
     }
   }
   
@@ -121,16 +137,16 @@ app.get('/excluir', function(request, response) {
   
   AWS.config.update({region:'us-east-1'});
   
-  var email_cliente = request.query.email;
-  var nome_cliente  = request.query.nome;
+  var client_email = request.query.email;
+  var client_name  = request.query.name;
   
   var client = new AWS.DynamoDB.DocumentClient();
   
   var params = {
-   TableName:'clientes',
+   TableName:'twilio-talks',
     Key: {
-     email: email_cliente,
-     nome: nome_cliente
+     email: client_email,
+     name: client_name
     }
   }
   
@@ -151,20 +167,25 @@ app.get('/recuperar', function(request, response) {
   
   AWS.config.update({region:'us-east-1'});
   
+  var client_email = request.query.email;
+  var client_name  = request.query.name;
+  
   var client = new AWS.DynamoDB.DocumentClient();
   
-  var email_cliente = request.query.email;
-  var nome_cliente  = request.query.nome;
-  
   var params = {
-      TableName : 'clientes',
+      TableName : 'twilio-talks',
       Key: {
-        email: email_cliente,
-        nome: nome_cliente
+        email: client_email,
+        name: client_name
       },
-    AttributesToGet: [ 'email','nome','idade'],
+    //Trazendo somente os atributos desejados
+    AttributesToGet: [ 'email','name','idade'],
+    //Neste atributos definimos o tipo de busca/leitura (Eventually Consistent (Busca no Cache) ou Strongly Consistent (Busca direto na Tabela))
+    // ConsistentRead se refere a Strongly Consistent
     ConsistentRead: false,
+    // Para que em cada consulta retorne a capacidade consumida
     ReturnConsumedCapacity: 'TOTAL'
+    // Resumindo os testes, quando é ConsistentRead = true, ele gasta 1 CapacityUnit, pois precisa ir até o banco, direto na tabela e ler o valor, quando está como ConsistentRead = false ele gasta apenas 0.5 CapacityUnit, pois leu do cache
   };
   
   client.get(params,function(err,data){
@@ -181,21 +202,32 @@ app.get('/recuperar', function(request, response) {
 
 
 //consulta dados no dynamodb atraves de SCAN
+//Ler todos os itens da tabela
 app.get('/buscar', function(request, response) {
   
   AWS.config.update({region:'us-east-1'});
   
   var client = new AWS.DynamoDB.DocumentClient();
   
-  var key_produto  = request.query.produto;
-  var key_vendedor = request.query.vendedor;
+  // var params = {
+  //   TableName:'twilio-talks',
+  //   FilterExpression: 'idade >= :p_idade',
+  //   ExpressionAttributeValues: {
+  //     ':p_idade':37
+  //   }
+  // }
+  
+  
+  var key_email = request.query.email;
+  var key_name  = request.query.name;
   
   var params = {
-    TableName:'produtos',
-    Limit: 5
+    TableName:'twilio-talks',
+    // IndexName:'empresa-index',
+    Limit: 3
   }
   
-  params.ExclusiveStartKey = { produto: key_produto, vendedor:key_vendedor }
+  params.ExclusiveStartKey = { email: key_email, name: key_name }
   
   client.scan(params,function(err,data){
      if (err) {
@@ -209,6 +241,7 @@ app.get('/buscar', function(request, response) {
 });
 
 //consulta dados no dynamodb atraves de Query
+//consulta baseada na chave primária (não lê toda a tabela)
 app.get('/consultar', function(request, response) {
   
   AWS.config.update({region:'us-east-1'});
@@ -241,6 +274,7 @@ app.get('/consultar', function(request, response) {
 
 
 //consulta dados no dynamodb em Lote
+//busca em várias tabelas os itens com os valores informados na requisição
 app.get('/lerLote', function(request, response) {
   
   AWS.config.update({region:'us-east-1'});
@@ -329,9 +363,14 @@ app.get('/gravarLote', function(request, response) {
   
 });
 
+// listen for requests :) Using Glitch
+// const listener = app.listen(process.env.PORT, function() {
+//   console.log('Your app is listening on port ' + listener.address().port);
+// });
 
+// listen for requests :) Local
+let port = process.env.PORT || 3000;
 
-// listen for requests :)
-const listener = app.listen(process.env.PORT, function() {
+const listener = app.listen(port, function() {
   console.log('Your app is listening on port ' + listener.address().port);
 });

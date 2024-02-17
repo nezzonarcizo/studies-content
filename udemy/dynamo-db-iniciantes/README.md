@@ -938,12 +938,268 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 > Vide Aula 23...
 
 
+Obs: Os seguintes materiais serão utilizados nas próximas aulas do curso (Da aula 24 à 32)...
+
+server.txt (arquivos do curso)
+
+[Class AWS.DynamoDB](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html)
+
 
 # Hands-on - Criando API para Operações em Tabela
 
 > Vide Aula 24...
 
-server.txt (arquivos do curso)
+# Hands-on - Criando API para Inclusão de Itens
 
-[Class AWS.DynamoDB](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html)
+> Vide Aula 25
+
+
+# Hands-on - Criando API para Alteração de Itens
+
+> Vide Aula 26
+
+
+# Hands-on - Criando API para Deleção de Itens
+
+> Vide Aula 27
+
+Chamada na API para teste
+
+https://dynamo-course.glitch.me/excluir?email=marlon.narcizo@gmail.com&name=Augusto%20Narcizus
+
+
+# Hands-on - Criando API para Consulta de Itens via GET
+
+> Vide Aula 28
+
+Chamada na API para teste
+
+https://dynamo-course.glitch.me/recuperar?email=nezzo.narcizo@hotmail.com&name=Nezzo%20Narcizo
+
+# Hands-on - Criando API para Consulta de Itens via SCAN
+
+> Vide Aula 29
+
+
+# Hands-on - Criando API para Consulta de Itens via QUERY
+
+> Vide Aula 30
+
+
+# Hands-on - Criando API para Consulta de Itens em Lote (Batch)
+
+> Vide Aula 31
+
+
+# Hands-on - Criando API para Atualização de Itens em Lote (Batch)
+
+> Vide Aula 32
+
+
+# Auto Scaling
+
+> Vide Aula 33
+
+
+Nessa aula nós vamos falar de um recurso do Dynamo DB, que é o Auto Scaling...
+
+Auto Scaling é a capacidade de você escalar a sua aplicação. A capacidade de você escalar a capacidade provisionada da sua tabela em momentos de pico, sem necessidade de mudar a capacidade provisionada ou de intervenção manual.
+
+### Auto Scaling
+| Aumentar Capacidade | Sem Limite                                                        |
+| Diminuir Capacidade | Até 4 vezes por dia (Calendário UTC)                              | 
+|         ||          | +1 redução extra se nenhuma redução aconteceu nas últimas 4 horas |
+
+
+
+Como é que o Auto Scaling funciona, então?
+
+Basicamente, imaginando que você tem provisionado por sua tabela cinco unidades de leitura, o DynamoDB, ele faz uma análise e, de repente, descobre que sua a sua tabela, ela fica ali numa utilização média de 80%.
+
+Bom, se a sua tabela ela foi escalada para dez RCUs, porque a sua aplicação está precisando, o DynamoDB também vai tentar manter a utilização da sua tabela em 80%, de forma que isso não comprometa a performance da tabela da sua aplicação e que você consiga obviamente pagar menos através da utilização do Auto Scaling.
+
+
+### Informações importantes sobre o Auto Scaling.
+
+* Auto Scaling é definido para Tabelas e Global Secondary Indexes individualmente
+
+* Recomendado definir Auto Scaling para os Global Secondary Indexes sempre que definir Auto Scaling para as Tabelas
+
+* Pode ser configurado via Console, CLI e SDK
+
+* Não tem custos adicionais (apenas RCU / WCU)
+
+
+# Hands-on - Configurando Auto Scaling
+
+> Vide Aula 34
+
+
+# DAX - DynamoDB Accelerator
+
+### DynamoDB Accelerator
+
+* Cache - In Memory
+* Latência em Micro segundos
+* Reduz Custos (RCU/WCU)
+* Apenas Leitura Eventually Consistent
+* Recomendado para aplicações com alto volume de leituras
+* **NÃO Recomendado** para aplicações com alto volume de gravações/seg
+
+Então, por exemplo, se você tem uma aplicação que faz muita leitura e pouca gravação o DAX pode ser um caminho, como por exemplo, tabelas onde você tem catálogos de produto, onde o produto é não atualizado com frequência, catálogos ou tabelas que armazenam dados de usuários onde as informações não são atualizadas com muita frequência.
+
+Então esses são cenários onde você poderia utilizar o DAX.
+
+Vamos ver como é que o DAX funciona: 
+
+Então vamos imaginar que você tem o DAX, ele foi configurado para sua tabela no DynamoDB.
+Quando uma aplicação vai fazer a leitura de um item, ela quer ler um item, ela faz a leitura. Essa leitura ela vai bater automaticamente na camada do DAX. Ok, e se acontecer o que a gente chama de cache hit? Quer dizer, ele encontrou esse item no DAX, encontrou esse item no cache.
+
+Ele devolve para a aplicação. Então percebam que ele não foi no Dynamo DB, ele simplesmente ficou ali na camada do DAX.
+
+Ok, legal, vamos imaginar uma outra situação de aplicação. Ela faz uma leitura e essa leitura bate no DAX, e aí pode acontecer o que a gente chama de cache miss. O que acontece? Esse item não existe mais lá no cache. Ou ele expirou, ou ele foi apagado. Enfim, nesse momento o DAX vai no Dynamo DB para recuperar esse item para atualizar esse item.
+O Dynamo DB faz uma leitura eventually consistent devolve para o DAX, então armazena essa informação dentro dele.
+Ele devolve para a aplicação. 
+
+Quando fazemos uma busca, vai fazer uma query, uma pesquisa, um search é muito parecido com o processo anterior.
+A aplicação vai e pede essa informação para o Dynamo DB, mas na verdade ela acaba batendo no DAX, ela não sabe disso,
+isso é totalmente oculto para aplicação. Se aconteceu um cache hit, quer dizer, se o DAX encontrou a informação que está sendo buscada, ele devolve para a aplicação.
+
+Agora, se ela pedir a informação, e na busca aconteceu um cache Miss ou um TTL, que é um tempo de vida da pesquisa dos itens, eles foram expirados.
+
+O DAX vai ao DynamoDB, o Dynamo faz a leitura, atualiza o DX e manda para a aplicação informação. Isso é extremamente rápido e obviamente a sua aplicação não percebe toda essa movimentação de tão rápido que isso acontece.
+
+Ela está recuperando dados ali de uma forma extremamente rápida. Agora, quando você faz a gravação, a gravação e a aplicação, por exemplo, vai gravar um item, ela não utiliza o DAX, então ele não grava no cache para gravar no drive, ela simplesmente vai e grava diretamente na tabela do ano DB.
+
+É por isso que o DAX é muito recomendado para quando você tem tabelas que são muito utilizadas para consulta e não para gravação.
+
+Ele é baseado no cluster, então você tem um nó que é o Master e você pode criar até nove réplicas de armazenamento, nove réplicas de cash para o DAX.
+
+
+# Hands-on - Configurando o DAX
+
+> Vide Aula 36
+
+
+# Streams
+
+> Vide Aula 37
+
+Os streams são um recurso do DynamoDB que quando estão habilitados, eles capturam cada modificação de cada item na tabela e salva essa modificação em um stream baseado em termos de tempo, como se fosse um arquivo de log.
+
+Cada modificação que cada item sofre ele grava o que foi modificado, o item que foi modificado e a data e hora da modificação.
+
+Então isso é extremamente interessante. Por quê?
+
+Porque os streams se integram com dois produtos da AWS, um que se chama Amazon Kinesis Inicial e outro que se chama AWS Lambda.
+
+O Kinesis é uma ferramenta que faz a análise de stream em realtime, e o lambda é uma solução de computação onde você pode criar funções para serem executadas baseadas em eventos.
+
+Isso é interessante porque o stream no DynamoDB permite que sejam disparados trigger ou pro Kinesis ou para Lambda.
+
+Como é que isso funciona?
+
+Vamos imaginar o seguinte, quando um item é modificado, por exemplo, você atualiza uma tabela em outra região.
+
+Então, por exemplo, ela está aqui em São Paulo, mas você quer salvar uma cópia do dado, ou até uma forma modificada, na
+
+mesma tabela, só que lá nos Estados Unidos. Então, toda vez que um item modificar aqui você pode chamar uma função do lambda para atualizar o item
+
+na tabela que nos Estados Unidos ou, por exemplo, para salvar dados em um banco de dados analítico.
+
+Então, toda vez que um item sofrer uma modificação, uma inclusão, uma deleção, etc. Você salva essa informação num outro banco de dados, uma outra tabela analítica ou até um banco de dados analítico, para que você possa fazer análise desses dados posteriormente.
+
+Ou, então, um exemplo simples notificar usuários em um aplicativo mobile.
+
+Então, o que acontece quando o usuário dá um like na aplicação e esse like é salvo? Na tabela do DynamoDB, você pode disparar um trigger, por exemplo, uma função do Lambda que vai lá e notifica o usuário que tem um novo "like" ali naquele post que ele fez.
+
+Ou, você pode usar num caso de uso com uma funcionalidade do DynamoDB que se chama TTL, que é o time to live.
+
+Time to live, você define quando que aquele item, por exemplo, ele expira, quando que aquele item na sua tabela ele pode ser apagado.
+
+Quando isso acontece, o mesmo DB marca aquele item como expirado, e toda vez que ele marca um item como expirado, esse item sofre uma modificação e você pode utilizar o stream, por exemplo, para salvar. Uma função Lambda para pegar esse dado modificado e salvar, por exemplo, numa tabela de arquivo.
+
+
+# Demo - Utilizando Stream com Lambda
+
+> Vide Aula 38
+
+# TTL - Time to Live
+
+> Vide Aula 39
+
+# Backup and Restore
+
+> Vide Aula 40
+
+# Hands-on - Configurando Backup
+
+> Vide Aula 41
+
+# Point in Time Recovery
+
+> Vide Aula 42
+
+# Hands-on - Solicitando Point in Time Recovery
+
+> Vide Aula 43
+
+# Global Tables
+
+> Vide Aula 44
+
+# Hands-on - Configurando Global Tables
+
+> Vide Aula 45
+
+
+
+# Operações com PHP
+
+> Observação: As aulas são apenas apresentações dos arquivos PHP e podem ser vistos/acessados na pasta do curso
+
+# Listar Tabelas
+
+> Vide Aula 47
+
+# Inserir Itens
+
+> Vide Aula 48
+
+# Atualizar Item
+
+> Vide Aula 49
+
+# Excluir Item
+
+> Vide Aula 50
+
+# Recuperar Item
+
+> Vide Aula 51
+
+# Busca por SCAN
+
+> Vide Aula 52
+
+# Busca por QUERY
+
+> Vide Aula 53
+
+# Leitura em Lote
+
+> Vide Aula 54
+
+# Gravação em Lote
+
+> Vide Aula 55
+
+
+# Hands-on - Rodando Projeto no NodeJS Local
+
+> Vide Aula 57
+
+Comandos para instalar os pacotes...
+
+# sudo npm install
 
