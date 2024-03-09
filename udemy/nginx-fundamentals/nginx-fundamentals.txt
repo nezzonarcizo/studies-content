@@ -465,3 +465,294 @@ https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 
 14. Try Files & Named Locations
 
+# Look at 05+Try+Files+&+Named+Locations in the files
+
+15. Logging 
+
+- NGINX Docs: error_log
+https://nginx.org/en/docs/ngx_core_module.html#error_log
+
+- NGINX Docs: access_log
+https://nginx.org/en/docs/http/ngx_http_log_module.html
+
+- Article: Configuring Logging
+https://docs.nginx.com/nginx/admin-guide/monitoring/logging/
+
+
+16. Inheritance & Directive types
+
+# Look at 07+Inheritince+&+Directive+Types in the files
+
+
+17. PHP Processing
+
+- Understanding and Implementing FastCGI Proxying in Nginx
+https://www.digitalocean.com/community/tutorials/understanding-and-implementing-fastcgi-proxying-in-nginx
+
+
+18. Worker Processes
+
+# Look at 09+Worker+Processes in the files
+
+
+nezzonarcizo@localhost:~$ ulimit -n # Maximo de conexões (worker_connections) possíveis que cada worker_processes pode ter
+1024
+nezzonarcizo@localhost:~$ nproc # Número de CPUs para se basear no máximos de worker_processes podemos ter
+12
+nezzonarcizo@localhost:~$ lscpu # Informações mais detalhadas sobre CPU
+Architecture:                       x86_64
+CPU op-mode(s):                     32-bit, 64-bit
+Byte Order:                         Little Endian
+Address sizes:                      48 bits physical, 48 bits virtual
+CPU(s):                             12 # Podemos encontrar o mesmo valor aqui
+On-line CPU(s) list:                0-11
+Thread(s) per core:                 2
+Core(s) per socket:                 6
+Socket(s):                          1
+Vendor ID:                          AuthenticAMD
+CPU family:                         23
+Model:                              96
+Model name:                         AMD Ryzen 5 4600H with Radeon Graphics
+Stepping:                           1
+CPU MHz:                            2994.281
+BogoMIPS:                           5988.56
+Virtualization:                     AMD-V
+Hypervisor vendor:                  Microsoft
+Virtualization type:                full
+L1d cache:                          192 KiB
+L1i cache:                          192 KiB
+L2 cache:                           3 MiB
+L3 cache:                           4 MiB
+Vulnerability Gather data sampling: Not affected
+Vulnerability Itlb multihit:        Not affected
+Vulnerability L1tf:                 Not affected
+Vulnerability Mds:                  Not affected
+Vulnerability Meltdown:             Not affected
+Vulnerability Mmio stale data:      Not affected
+Vulnerability Retbleed:             Mitigation; untrained return thunk; SMT enabled with STIBP protection
+Vulnerability Spec rstack overflow: Mitigation; safe RET
+Vulnerability Spec store bypass:    Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:           Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:           Mitigation; Retpolines, IBPB conditional, STIBP always-on, RSB filling, PBRS
+                                    B-eIBRS Not affected
+Vulnerability Srbds:                Not affected
+Vulnerability Tsx async abort:      Not affected
+Flags:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clfl
+                                    ush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm consta
+                                    nt_tsc rep_good nopl tsc_reliable nonstop_tsc cpuid extd_apicid pni pclmulqd
+                                    q ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hyperv
+                                    isor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch o
+                                    svw topoext perfctr_core ssbd ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 sme
+                                    p bmi2 rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 clzero
+                                     xsaveerptr arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassist
+                                    s pausefilter pfthreshold v_vmsave_vmload umip rdpid
+
+
+19. Buffers & Timeouts
+
+- NGINX Docs: Configuration file measurement units
+https://nginx.org/en/docs/syntax.html
+
+# Look at 10+Buffers+&+Timeouts in the files
+
+
+20. Adding Dynamic Modules
+
+- NGINX Docs: Module ngx_http_image_filter_module
+https://nginx.org/en/docs/http/ngx_http_image_filter_module.html
+
+# Look at 11+Adding+Dynamic+Modules in the files
+
+
+
+-*- Section 4: Performance
+
+
+21. Headers & Expires
+
+# Look at 12+Headers+&+Expires in the files
+
+
+22. Compressed Responses with gzip
+
+- NGINX Docs: Module ngx_http_gzip_module
+https://nginx.org/en/docs/http/ngx_http_gzip_module.html
+
+# Look at 13+Compressed+Responses+with+gzip in the files
+
+23. FastCGI Cache
+
+- NGINX Docs: Module ngx_http_fastcgi_module
+https://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
+
+- Apache Bench
+http://httpd.apache.org/docs/2.4/programs/ab.html
+
+# Look at 14+FastCGI+Cache in the files
+
+24. HTTP2
+
+- How To Create a Self-Signed SSL Certificate for Nginx in Ubuntu 16.04
+https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu-16-04
+
+# Look at 15+HTTP2 in the files
+
+25. Server Push
+
+- Article: Introducing HTTP/2 Server Push with NGINX 1.13.9
+https://www.nginx.com/blog/nginx-1-13-9-http2-server-push/
+
+- Nghttp2: HTTP/2 C Library
+https://nghttp2.org/
+
+# Look at 16+Server+Push in the files
+
+
+-*- Section 5: Security
+
+26. HTTPS (SSL)
+
+- Wikipedia: Diffie-Hellman key exchange
+https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange
+
+- Article: Algorithms Explained: Diffie-Hellman
+https://hackernoon.com/algorithms-explained-diffie-hellman-1034210d5100
+
+# Look at 17+HTTPS+(SSL) in the files
+
+
+27. Rate Limiting
+
+- Siege: Load Testing Tool
+https://www.joedog.org/siege-home/
+
+- Article: NGINX rate-limiting in a nutshell
+https://www.freecodecamp.org/news/nginx-rate-limiting-in-a-nutshell-128fe9e0126c
+
+- Article: Rate Limiting with NGINX and NGINX Plus
+https://www.nginx.com/blog/rate-limiting-nginx/
+
+# Look at 18+Rate+Limiting in the files
+
+
+28. Basic Auth
+
+# Look at 19+Basic+Auth in the files
+
+
+29. Hardening Nginx
+
+# Look at 20+Hardening+Nginx in the files
+
+
+30. Let's Encrypt - SSL Certificates
+
+- Let's Encrypt
+https://letsencrypt.org/
+
+
+- Certbot
+https://certbot.eff.org/
+
+
+- Let's Encrypt - 90 Day Lifetime
+https://letsencrypt.org/2015/11/09/why-90-days.html
+
+
+- Certbot Docs
+https://eff-certbot.readthedocs.io/en/latest/
+
+
+- An Introduction to Let's Encrypt - Digital Ocean
+https://www.digitalocean.com/community/tutorials/an-introduction-to-let-s-encrypt
+
+
+
+-*- Section 6: Reverse Proxy & Load Balancing
+
+
+31. Prerequisites
+
+- PHP Built-in web server
+https://www.php.net/manual/en/features.commandline.webserver.php
+
+- List of static command line servers. - One liners
+https://gist.github.com/willurd/5720255
+
+32. Reverse Proxy
+
+- NGINX Reverse Proxy Guide
+https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/
+
+- ngx_http_proxy_module Documentation
+https://nginx.org/en/docs/http/ngx_http_proxy_module.html
+
+
+33. Load Balancer
+
+- Using nginx as HTTP load balancer
+https://nginx.org/en/docs/http/load_balancing.html
+
+- NGINX Load Balancing Guide
+https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
+
+- ngx_http_upstream_module Documentation
+https://nginx.org/en/docs/http/ngx_http_upstream_module.html
+
+
+34. Load Balancer Options
+
+
+35. Documentation & Resources
+
+- NGINX Documentation
+https://nginx.org/en/docs/
+
+- Common Pitfalls
+https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls/
+
+- Digital Ocean Tutorials
+https://www.digitalocean.com/community/tutorials/nginx-essentials-installation-and-configuration-troubleshooting
+
+- Digital Ocean Nginx Tool
+https://www.digitalocean.com/community/tools/nginx?global.app.lang=ptBR
+
+- WordPress Nginx
+https://developer.wordpress.org/advanced-administration/server/web-server/nginx/
+
+- Nginx Resources
+https://github.com/fcambus/nginx-resources
+
+
+-*- Section 7: Outro
+
+36. Bonus Lecture: Feedback & Stackacademy.tv Courses
+
+***
+
+
+-*- Section 8: Archive
+
+
+37. Adding an NGINX Init Service
+
+- Nginx Ubuntu Init Script
+https://github.com/JasonGiedymin/nginx-init-ubuntu
+
+- NGINX Init Scripts
+https://www.nginx.com/resources/wiki/start/topics/examples/initscripts/
+
+
+38. GeoIP
+
+- GeoIP Downloads
+https://dev.maxmind.com/geoip/release-notes/2018#discontinuation-of-the-geolite-legacy-databases
+
+- Nginx GeoIP Module
+https://nginx.org/en/docs/http/ngx_http_geoip_module.html
+
+
+39. Video streaming
+
+- Nginx MP4 Module
+https://nginx.org/en/docs/http/ngx_http_mp4_module.html
