@@ -1,0 +1,157 @@
+-*- Prometheus - Introduction
+
+--First container Prometheus
+
+docker run
+    --name prometheus 'Container name'
+    --rm              'To not keep container data'
+    -d                'Detach from terminal'
+    -p 9090:9090      'Port mapping'
+    prom/prometheus   'Image'
+
+
+--Making a randon modification in prometheus default config
+
+docker run
+    --name prometheus 'Container name'
+    --rm              'To not keep container data'
+    -d                'Detach from terminal'
+    -p 9090:9090      'Port mapping'
+    -v ./prometheus.yml:/etc/prometheus/prometheus.yaml 'Mapping the configuration file to prometheus'
+    prom/prometheus   'Image'
+
+
+-*- Promtheus - Monitoring our application
+
+https://prometheus.io/
+
+https://prometheus.io/docs/introduction/overview/
+
+    -- Client Libraries
+
+        -- Node.js
+
+        https://github.com/siimon/prom-client
+
+
+
+-*- Prometheus - Monitorando nosso servidor
+
+https://prometheus.io/docs/instrumenting/exporters/
+
+
+-*- Prometheus - Fazendo consultas com o PromQL
+
+aula_request_total
+
+aula_request_total{statusCode="200"}[1m]
+
+increase(aula_request_total{statusCode="200"}[1m])
+
+sum(increase(aula_request_total{statusCode="200"}[1m]))
+
+- Filter by label
+
+aula_request_total{statusCode!="200"}
+
+aula_request_total{job="aula",statusCode="200"}
+
+aula_request_total{job="aula",statusCode~"2.."}
+
+aula_request_total{job="aula",statusCode=~"3.."}
+
+
+- Working with counters
+
+rate(aula_request_total[10m])
+
+
+- Working with histogramas(1)
+
+https://prometheus.io/docs/prometheus/latest/querying/functions/
+
+https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile
+
+Example: histogram_quantile(0.9, rate(http_request_duration_seconds_bucket[10m]))
+
+Our function: histogram_quantile(0.9, rate(aula_request_time_seconds_bucket[10m]))
+
+
+- Working with histogramas(2)
+
+increase(aula_request_time_seconds_bucket{le="0.3"}[1m])
+
+increase(aula_request_time_seconds_count[1m])
+
+
+- Calculating response time average
+
+aula_summary_request_time_seconds_sum / aula_summary_request_time_seconds_count (bad way)
+
+increase(aula_summary_request_time_seconds_sum[1m]) / increase(aula_summary_request_time_seconds_count[1m]) 
+                    (Total time response in 1 minute / Total request in 1 minute)
+
+
+- Aggregation operator
+
+https://prometheus.io/docs/prometheus/latest/querying/operators/
+
+sum(aula_request_total) by(statusCode)
+
+
+
+-*- Grafana - Indroduction
+
+https://grafana.com/
+
+https://grafana.com/get/?tab=self-managed
+
+https://grafana.com/grafana/download?pg=get&plcmt=selfmanaged-box1-cta1&platform=docker
+
+docker run -d --name=grafana -p 3000:3000 grafana/grafana-enterprise
+
+
+-*- Grafana - Creating graphics
+
+- Hands on
+
+sum(rate(aula_requests_total[1m]))
+
+histogram_quantile(0.95, sum(rate(aula_request_duration_seconds_bucket[5m])) by (le))
+
+
+-*- Grafana - Extras Resources
+
+- Duplicate panels
+
+- Working with variables
+
+You need to define new variables in dashboards > settings, then you will use this on queries
+
+rate(aula_requests_total{statusCode="$HTTP_STATUS_CODE"}[1m]) -> HTTP_STATUS_CODE (Constant -> 200 or 500)
+
+rate(aula_requests_total{statusCode="$HTTP_STATUS_CODES"}[1m]) -> HTTP_STATUS_CODES (Custom -> 200 and 500 to choose)
+
+If you dont know all the status codes that exists, you can create a variable "query" type...
+
+Regex example: rate(aula_requests_total{statusCode=~"200|500"}[1m]) (Need to activate "Multi-value")
+
+
+- List of ready-made dashboards
+
+https://grafana.com/grafana/dashboards/
+
+
+- Playlist creation
+
+http://localhost:3000/playlists
+
+
+
+-*- Creating alerts
+
+- Alert Manager
+
+https://prometheus.io/docs/alerting/latest/configuration/
+
+https://grafana.com/tutorials/alerting-get-started/
