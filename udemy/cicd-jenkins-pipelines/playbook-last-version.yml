@@ -1,0 +1,14 @@
+---
+- hosts: dev-servers
+  tasks:
+    - name: Establish a login to ECR
+      shell: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 089350267643.dkr.ecr.us-east-1.amazonaws.com
+
+    - name: Pull the image from ECR to CD Server
+      shell: docker pull 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:{{ tag }}
+
+    - name: Stop and remove the old container
+      shell: docker rm -f springbootcontainer || true
+
+    - name: Run the container using the new image
+      shell: docker run --name=springbootcontainer -p 8080:8080 --detach 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:{{ tag }}

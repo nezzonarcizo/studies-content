@@ -1,0 +1,2415 @@
+* Linux for DevOps
+
+# How to change for password authentication
+
+cd /etc/ssh/
+vim sshd_config
+
+# Explicitly disable PasswordAuthentication. By presetting it, we
+
+PasswordAuthentication yes
+
+# Authentication:
+
+PermitRootLogin yes
+systemctl restart sshd
+ssh root@ec2-public-ip.compute-1.amazonaws.com
+
+# To generate news private and public keys
+
+ssh-keygen -t rsa
+
+# To create a new user "devops"
+
+sudo su -
+useradd devops
+passwd devops
+
+# To login as devops
+
+su - devops
+
+# Obs: If you need to add the devops user to 'sudo' group...
+
+sudo visudo
+sudo usermod -aG sudo devops
+
+# sudo userdel devpos if you created wrong
+
+# We need to create a directory .ssh for the user devops
+
+mkdir .ssh
+
+# Set the correct permissions
+
+chmod 700 .ssh
+vi authorized_keys
+chmod 600 authorized_keys
+
+# Documentação para Configuração de Usuário devops no AWS EC2
+
+
+1. Conexão Inicial
+
+# Conecte-se à instância EC2 usando um usuário existente com permissões (e.g., ec2-user):
+
+ssh -i path/to/your-key.pem ec2-user@<your-ec2-instance-public-dns>
+
+
+2. Criação e Configuração do Usuário devops
+
+Troque para o usuário root:
+
+sudo su -
+
+# Crie o usuário devops:
+
+adduser devops
+
+# Configure a chave SSH para devops:
+
+# Crie o diretório .ssh e copie a chave:
+
+mkdir -p /home/devops/.ssh
+cp /root/.ssh/authorized_keys /home/devops/.ssh/
+chown -R devops:devops /home/devops/.ssh
+chmod 700 /home/devops/.ssh
+chmod 600 /home/devops/.ssh/authorized_keys
+
+Verifique as permissões do diretório home:
+
+chown devops:devops /home/devops
+chmod 755 /home/devops
+
+
+3. Permissões Sudo para devops
+
+# Adicione devops ao grupo sudo:
+
+usermod -aG sudo devops
+
+# Verifique os grupos do usuário devops:
+
+groups devops
+
+# Configure o sudo para não solicitar senha:
+
+# Abra o arquivo sudoers:
+
+visudo
+
+# Adicione a linha:
+
+devops ALL=(ALL) NOPASSWD:ALL
+
+
+4. Verificação e Testes
+
+Faça logout e login novamente como devops:
+
+bash
+ssh -i path/to/your-key.pem devops@<your-ec2-instance-public-dns>
+
+# Teste o comando sudo:
+
+bash
+sudo whoami
+
+# Isso deve retornar root sem solicitar senha.
+
+
+5. Ajuste do Prompt do Terminal
+
+# Copie o .bashrc do usuário ubuntu para devops:
+
+bash
+cp /home/ubuntu/.bashrc /home/devops/.bashrc
+chown devops:devops /home/devops/.bashrc
+
+# Recarregue o arquivo de configuração do bash:
+
+bash
+source ~/.bashrc
+
+# Seguindo esses passos, o usuário devops estará configurado corretamente com acesso sudo sem senha e com o prompt do terminal ajustado conforme necessário.
+
+
+* Maven Tool
+
+https://maven.apache.org/
+
+https://maven.apache.org/guides/
+
+https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+
+3 Build lifecycle
+
+# default - project deployment
+# clean - project cleaning
+# site - creation of project web site
+
+3 Types of repositories
+
+# Local -> $(HOME)/.m2/repository
+
+# Remote/Private -> Nexus/Jfrog
+
+# Central/Public -> Public from maven website
+
+
+- Install Open JDK Runtime Environment Corretto
+
+sudo yum install java-17-amazon-corretto-headless
+
+- Repository with sample app for this lesson
+
+https://github.com/Shikhar82/springboot-hello
+
+
+- Install Maven
+
+https://archive.apache.org/dist/maven/maven-3/
+
+- - The latest version at this time
+
+https://archive.apache.org/dist/maven/maven-3/3.9.8/
+
+https://archive.apache.org/dist/maven/maven-3/3.9.8/binaries/
+
+# Copy link address and...
+
+cd /opt
+wget https://archive.apache.org/dist/maven/maven-3/3.9.8/binaries/apache-maven-3.9.8-bin.tar.gz
+tar xvf apache-maven-3.9.8-bin.tar.gz
+export PATH=$PATH:/opt/apache-maven-3.9.8/bin
+mvn --version
+
+
+- Install Git
+
+yum install git
+
+
+- Clone the Code Repository
+
+cd /root
+git clone https://github.com/Shikhar82/springboot-hello
+cd springboot-hello
+
+- Trying Maven Commands
+
+mvn validate
+
+# Provavelmente este comando criou um diretório chamado .m2
+
+mvn package
+
+# Este comando preencheu a pasta .m2 com várias dependencias do projeto springboot-hello
+
+# Também agora existe um arquivo .jar dentro do diretório springboot-hello/target
+
+# Agora também foi criado um Project Object Model (pom.xml) dentro da raiz de springboot-hello
+
+
+# Obs: Target directory é o diretório de artifacts
+
+# Obs: Se não mudarmos o pom.xml file não o comando 'mvn package' não baixará mais nenhuma dependencia, porém se mudarmos versão, nome (artifact ID), o comando 'mvn package'
+    criará um novo item no nosso artifact
+
+
+mvn clean package
+
+# Limpa o artifact, mantem apenas o ultimo binario (.jar file)
+
+
+# Para executar o nosso .jar file 
+
+java -jar gs-spring-boot-0.3.0.jar
+public-ip:8080
+
+
+# Realizando algumas mudanças
+
+cd /root/springboot-hello/src/main/java/hello
+vim HelloController.java
+
+
+- Projeto 2 aula 28. Lab: Build a Web Application project using Maven
+
+git clone https://github.com/Shikhar82/springboot-webapplication
+
+
+
+* SonarQube tool in Continuous Integration
+
+"Code quality of the build can be checked by SonarQube tool"
+
+https://www.sonarsource.com/products/sonarqube/downloads/
+
+- Update the System
+
+sudo apt update
+sudo apt upgrade -y
+
+
+- Install Java
+
+sudo apt install openjdk-17-jdk -y
+java --version
+
+- Install PostgreSQL
+
+sudo apt install curl ca-certificates
+sudo install -d /usr/share/postgresql-common/pgdg
+sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+    -- Update and install PostgreSQL 16
+
+        sudo apt update
+        sudo apt install postgresql-16 -y
+
+    -- Switch to the PostgreSQL user
+
+        sudo -i -u postgres
+
+    -- Create a new user and database for SonarQube
+
+        createuser sonar
+        createdb sonar -O sonar
+        psql
+
+        -- Inside the PostgreSQL shell, set a password for the sonar user
+
+            ALTER USER sonar WITH ENCRYPTED PASSWORD 'sonar123';
+
+            \q
+
+    -- Exite the PostgreSQL user:
+
+        exit
+
+- Install Sonarqube
+
+sudo install unzip
+
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.6.0.92116.zip
+
+unzip sonarqube-10.6.0.92116.zip
+sudo mv sonarqube-10.6.0.92116 /opt/sonarqube
+sudo adduser --system --no-create-home --group --disabled-login sonarqube
+sudo chown -R sonarqube:sonarqube /opt/sonarqube
+
+cd /opt
+
+    -- Edit the SonarQube configuration file
+        
+        sudo vim sonarqube/conf/sonar.properties
+
+        -- Uncomment and set the following properties
+
+        sonar.jdbc.username=sonar
+        sonar.jdbc.password=sonar123
+        sonar.jdbc.url=jdbc:postgresql://localhost/sonar
+
+
+- Create a Systemd Service File
+
+sudo vim /etc/systemd/system/sonarqube.service
+
+    -- Add the following content
+
+        "
+        [Unit]
+        Description=SonarQube service
+        After=syslog.target network.target
+
+        [Service]
+        Type=forking
+
+        ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+        ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+
+        User=sonarqube
+        Group=sonarqube
+        Restart=always
+
+        LimitNOFILE=65536
+        LimitNPROC=4096
+
+        [Install]
+        WantedBy=multi-user.target
+        "
+
+    -- Reload the systemd daemon and start SonarQube
+
+        sudo systemctl daemon-reload
+        sudo systemctl start sonarqube
+        sudo systemctl enable sonarqube
+
+
+- File Descriptors
+
+    -- Check the current limit: 
+
+        ulimit -n  (It should be at least 65536. To increase it, add the following to /etc/security/limits.conf)
+
+        sudo vim /etc/security/limits.conf
+
+        -- Add the following lines:
+
+            sonarqube   -   nofile   65536
+            sonarqube   -   nproc    4096
+        
+        -- Check and set the virtual memory limit
+
+            sudo sysctl -w vm.max_map_count=262144
+
+            -- To make this change permanent, add it to /etc/sysctl.conf
+
+                -- Add the following line
+
+                    vm.max_map_count=262144
+
+                -- Apply the changes
+
+                    sudo sysctl -p
+
+
+- Install and Configure Nginx
+
+sudo apt install nginx -y
+
+    -- Create a new Nginx configuration file for SonarQube
+
+        sudo vim /etc/nginx/sites-available/sonarqube.example.com
+
+    -- Note: Replace sonarqube.example.com with your domain
+
+        -- Add the following content
+
+            "
+            server {
+                listen 80;
+                server_name sonarqube.example.com;
+
+                access_log /var/log/nginx/sonarqube.access.log;
+                error_log /var/log/nginx/sonarqube.error.log;
+
+                location / {
+                    proxy_pass http://localhost:9000;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+            }
+            "
+        
+        -- Enable the new configuration
+
+            sudo ln -s /etc/nginx/sites-available/sonarqube.example.com /etc/nginx/sites-enabled/
+
+        -- Test the Nginx Configuration and restart Nginx
+
+            sudo nginx -t
+            sudo systemctl restart nginx
+
+
+- Configure HTTPS
+
+sudo apt install certbot python3-certbot-nginx -y
+
+# Adding the certificate
+
+sudo certbot --nginx -d sonarqube.example.com
+
+# Note: Liberar a porta 9000 no security group
+
+http://PUBLIC-IP:9000
+
+# Access SonarQube
+
+    Username: Admin
+    Password: Admin
+
+    # Note changed admin123
+
+SonarQube Installation Credits: https://hostnextra.com/learn/tutorials/how-to-install-sonarqube-on-ubuntu
+This tutorials simplify all SonarQube dependencies Installations
+
+
+- Configure Maven (CI server)
+
+# Apenas instalar o Maven ...
+
+# Baixar a aplicação realtime-project-demo.git
+
+cd /root
+
+yum install git
+
+git clone https://github.com/Shikhar82/realtime-project-demo.git
+
+cd realtime-project-demo/
+
+mvn package
+
+
+- Integrate Maven with SonarQube
+
+https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner-for-maven/
+
+Other Settings
+
+Locking down the version of the Maven plugin
+It is recommended to lock down versions of Maven plugins:
+
+Note: Configure com a ultima versão do Maven Sonar Scanner
+
+https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin
+
+"4.0.0.4121"
+
+# Coloque este plugin dentro do arquivo pom.xml na sessão plugins
+<build>
+  <pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>4.0.0.4121</version>
+      </plugin>
+    </plugins>
+  </pluginManagement>
+</build>
+
+# Gere um token
+# Login no SonarQube > Canto superior direito > My Account > Security > Token name > Generate
+
+# Token: sqa_9f83c4bccbd311107a2645137fa34a9a23d825a7
+
+# A fim de realizar analises com o Sonar nós temos que usar o comando abaixo:
+
+mvn sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.login=the-generated-token
+
+# Então...
+
+mvn sonar:sonar -Dsonar.host.url=http://3.90.13.184:9000 -Dsonar.login=sqa_9f83c4bccbd311107a2645137fa34a9a23d825a7
+
+# Ou seja, apenas adicionamos o plugin no nosso pom.xml e então rodamos o comando com os dados do servidor SonarQube
+
+# Nota: Remover versões Open JDK Corretto antigas e instalar a mais nova
+    # rpm -qa | grep -E 'openjdk|corretto'
+    # sudo rpm -e java-11-amazon-corretto-headless-11.0.24+8-1.amzn2023.x86_64
+
+    # Installing the JDK Corretto last version
+    # sudo rpm --import https://yum.corretto.aws/corretto.key
+    # sudo curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
+    # sudo yum install -y java-17-amazon-corretto-devel
+
+
+- SonarQube checks for bad code
+
+# On maven server
+
+cd /root/realtime-project-demo/src/main/java/com/cloudtechmasters/realtimeprojectdemo
+
+vim CustomerController.java
+
+# Add the following line under public List<Customer> getAllCustomers(){
+
+System.out.println("getAllCustomers is called by /getAllCustomers");
+
+# We will receive this error on SonarQube > Projects
+
+import java.util.List;
+@RestController
+public class CustomerController {
+    @GetMapping("/getAllCustomers")
+    public List<Customer> getAllCustomers(){
+        System.out.println("getAllCustomers is called by /getAllCustomers");
+Replace this use of System.out by a logger.
+        Customer customer1=new Customer(100,"vamsikrm");
+        Customer customer2=new Customer(200,"harsha");
+        return Arrays.asList(customer1,customer2);
+    }
+}
+
+
+# So import the following libraries in CustomerController.java
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+# And ...
+
+public class MyClass {
+
+    // Create a logger for this class
+    private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
+
+    public static void main(String[] args) {
+
+
+# Change System.out.println() for logger.info()
+
+# Rebuild the project...
+
+mvn clean package
+
+# Check the code quality with SonarQube again
+
+mvn sonar:sonar -Dsonar.host.url=http://3.90.13.184:9000 -Dsonar.login=sqa_9f83c4bccbd311107a2645137fa34a9a23d825a7
+
+
+* PostgreSQL Database for SonarQube (Installing Sonarqube and PostgreSQL together)
+
+Create an instance and open the port 9000 (Sonarqube) on security group...
+
+Before install the Sonarqube we need to install Java
+
+Tip: This is a overview of pre-requisites: https://docs.sonarsource.com/sonarqube/9.9/requirements/prerequisites-and-overview/
+
+Install the Oracle JRE:
+
+This is the link to install Oracle JRE 17 (https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/amazon-linux-install.html)
+
+Install Sonarqube:
+
+Go to the website: https://www.sonarsource.com/products/sonarqube/downloads/
+
+# unzip sonarqube-developer.zip
+
+Change the owner of Sonarqube folder:
+
+# chown ec2-user:ec2-user sonarqube-"version"
+
+# mv sonarqube-"version" sonarqube
+
+# cd sonarqube
+
+# cd bin/linux-x86-64/
+
+Sonarqube basic configuration: https://docs.sonarsource.com/sonarqube/latest/try-out-sonarqube/
+
+# On Windows, execute:
+C:\sonarqube\bin\windows-x86-64\StartSonar.bat
+ 
+# On other operating systems, as a non-root user execute:
+# /opt/sonarqube/bin/<OS>/sonar.sh console
+OS = (linux-x86-64  macosx-universal-64  windows-x86-64  winsw-license)
+
+Obs: One of my mistakes...left the files conf and sharedmemory with wrong permissions
+
+# chown ec2-user:ec2-user /opt/sonarqube/temp *
+
+then
+
+# sh sonar.sh start (stop and status also works)
+
+or
+
+# /opt/sonarqube/bin/<OS>/sonar.sh console
+
+Obs: CTRL + B, D for detach the terminal
+
+If the Sonarqube is stopping verify if everything is ok with ElasticSearch
+Maybe there's not memory enough...
+
+# sysctl vm.max_map_count
+
+# sysctl -w vm.max_map_count=262144
+
+For make this change permanent...
+
+ll /etc/sysctl.conf
+
+- Now we gonna to configure PostgreSQL...
+
+Obs: All these installations was made on Amazon Linux 2
+
+Commands: 
+
+# amazon-linux-extras list | grep postgresql
+
+"
+ 58 †postgresql12             available    [ =stable ]
+ 59 †postgresql13             available    [ =stable ]
+ 63 †postgresql14             available    [ =stable ]
+"
+
+- Add the packages
+
+# amazon-linux-extras install postgresql14 vim epel -y
+
+- Install Postgres
+
+# yum install -y postgresql-server postgresql-devel
+
+# /usr/bin/postgresql-setup --initdb
+
+-- These two files are important
+
+"
+ * Initializing database in '/var/lib/pgsql/data'
+ * Initialized, logs are in /var/lib/pgsql/initdb_postgresql.log
+"
+
+- Enable de postgresql service and start
+
+# systemctl enable postgresql
+# systemctl start postgresql
+# systemctl status postgresql
+
+
+- Create Database, User and Grant Privileges
+
+Change the postgresql to accept local connections:
+
+# vim /var/lib/pgsql/data/pg_hba.conf
+
+"
+# "local" is for Unix domain socket connections only
+local   all             postgres                                peer
+local   all             all                                     md5
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            md5
+# IPv6 local connections:
+host    all             all             ::1/128                 md5
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+local   replication     all                                     peer
+host    replication     all             127.0.0.1/32            md5
+host    replication     all             ::1/128                 md5
+"
+
+Authenticate and change de password...
+
+# id postgres
+
+# su - postgres
+
+# \password postgres
+
+
+Create database, user and give the sonarqube database privileges for this user...
+
+# create database sonarqubedb
+
+# create user sonaruser with encrypted password 'sonarqube123';
+
+# grant all privileges on database sonarqubedb to sonaruser
+
+# \q
+
+# exit
+
+# systemctl restart postgresql
+
+
+- SonarQube Configuration file sonar.properties
+
+# /opt/sonarqube/conf
+
+# vim sonar.properties
+
+Configure...
+
+"
+sonar.jdbc.username=sonaruser
+sonar.jdbc.password=sonarqube123
+
+sonar.jdbc.url=jdbc:postgresql://localhost/sonarqubedb
+"
+
+* Integration of Maven with Nexus Repositories
+
+# Install java openjdk
+
+sudo yum update
+sudo yum install java-1.8.0-openjdk-devel
+java -version
+
+- Instalando o postegresql-server e postgresql-contrib
+
+sudo yum install -y postgresql-server postgresql-contrib
+sudo postgresql-setup initdb
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Configurar o PostgreSQL para aceitar conexões locais:
+
+# "local" is for Unix domain socket connections only
+local   all             postgres                                peer
+local   all             all                                     md5
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            md5
+# IPv6 local connections:
+host    all             all             ::1/128                 md5
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+local   replication     all                                     peer
+host    replication     all             127.0.0.1/32            md5
+host    replication     all             ::1/128                 md5
+
+
+# Criar um banco de dados e um usuário para o Nexus:
+
+sudo -i -u postgres
+psql
+CREATE ROLE nexus WITH PASSWORD 'nexus123'; (ALTER USER nexus WITH PASSWORD 'nova_senha';)
+CREATE DATABASE nexus OWNER nexus;
+\q
+
+# Teste a conexão 
+
+psql -U nexus -d nexus -h 127.0.0.1 -W
+
+
+# Install nexus3 (Java 17)
+# Nota: Para utilizar o Nexus com o Java 17 temos que além de instalar e configurar o PostgreSQL, remover todas as referências ao OrientDB
+# Procurar incidencias do OrientDB nas pastas do nexus...
+
+https://help.sonatype.com/en/download.html
+
+https://help.sonatype.com/en/configuring-nexus-repository-pro-for-h2-or-postgresql.html
+
+
+cd /opt
+
+wget https://download.sonatype.com/nexus/3/nexus-3.70.1-02-java17-unix.tar.gz
+
+tar -xvf nexus-3.70.1-02-java17-unix.tar.gz
+
+getfacl nexus-3.70.1-02
+
+sudo useradd nexus
+
+chown nexus:nexus nexus-3.70.1-02 sonatype-work/ -R
+
+mv nexus-3.70.1-02 nexus
+
+cd /opt/nexus/bin
+
+vim nexus.rc
+
+run_as_user="nexus"
+
+# Certifique-se de que o Nexus está configurado para usar o PostgreSQL
+
+sudo nano /opt/nexus/etc/nexus-default.properties
+
+# Example configuration for PostgreSQL
+nexus.datastore.db.kind=postgresql
+nexus.datastore.db.url=jdbc:postgresql://127.0.0.1:5432/nexus
+nexus.datastore.db.username=nexus
+nexus.datastore.db.password=sua_senha
+
+nano nexus.vmoptions (Apenas se precisar desabilitar algumas opções incompátiveis)
+
+Obs: We need to add "-Djava.endorsed.dirs=lib/endorsed" to nexus.vmoptions
+
+sh nexus start (Podemos usar "sudo -u nexus /opt/nexus/bin/nexus run" para testar também)
+
+Obs: Its convenient that you create the nexus.service
+
+"
+[Unit]
+Description=Nexus Repository Manager
+After=network.target
+
+[Service]
+Type=forking
+User=nexus
+Group=nexus
+ExecStart=/opt/nexus/bin/nexus start
+ExecStop=/opt/nexus/bin/nexus stop
+Restart=on-abort
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+"
+
+nano /etc/systemd/system/nexus.service
+
+# Veirificar se o Nexus está rodando na porta padrão
+
+netstat -plunt | grep -i :8081
+
+# Verificar o processo Java
+
+ps axu | grep -i java
+
+
+- Configure Sonatype Nexus Repository Manager
+
+Open the page of Sonatype on browser (port 8081)
+
+Click on "Sign in"
+
+"admin"
+
+Password (if you didnt change the password on database):
+
+# cat /opt/sonatype-work/nexus3/admin.password
+
+
+- Configure CI Server and Build Springboot Maven Project
+
+Clone this repo with a example app to the root directory:
+
+# git clone https://github.com/Shikhar82/springboot-maven-nexus-deploy.git
+
+# cd springboot-maven-nexus-deploy
+
+To create the artifacts (The artifacts will be saved in the local system...But, we need that it go to the Nexus repository...)
+
+# mvn clean package
+
+On the Sonatype Nexus Repository, copy the URL of "maven-release" and "maven-snapshots"
+
+http://98.83.210.96:8081/repository/maven-releases/ (Production Environment)
+
+http://98.83.210.96:8081/repository/maven-snapshots/ (Development Environment)
+
+Go to the directory "target" and this is your artifacts
+
+*SNAPSHOTS.jar
+
+
+- Nexus requirements in the pom.xml
+
+Now we need to see how "Maven deploy to Nexus"
+
+https://www.baeldung.com/maven-deploy-nexus
+
+In order for Maven to be able to deploy the artifacts. We need to creates in the package fase of the build...
+
+We need to configure the distribution management on the pom.xml
+
+<distributionManagement>
+   <snapshotRepository>
+      <id>nexus-snapshots</id>
+      <url>http://98.83.210.96:8081/repository/maven-snapshots/</url>
+   </snapshotRepository>
+   <repository>
+      <id>nexus-releases</id>
+      <url>http://98.83.210.96:8081/repository/maven-releases/</url>
+   </repository>
+</distributionManagement>
+
+
+Add this code in the pom.xml after the properties block
+
+# vim /root/springboot-maven-nexus-deploy/pom.xml
+
+# mvn clean package
+
+# mvn deploy
+
+We gonna to receive some error, because we didnt configure any credentials
+
+"
+[WARNING] Could not transfer metadata com.cloudtechmasters:springboot-maven-course-micro-svc:0.0.2-SNAPSHOT/maven-metadata.xml from/to nexus-snapshots (http://98.83.210.96:8081/repository/maven-snapshots/): status code: 401, reason phrase: Unauthorized (401)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.015 s
+[INFO] Finished at: 2024-10-19T14:25:05Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy (default-deploy) on project springboot-maven-course-micro-svc: Failed to retrieve remote metadata com.cloudtechmasters:springboot-maven-course-micro-svc:0.0.2-SNAPSHOT/maven-metadata.xml: Could not transfer metadata com.cloudtechmasters:springboot-maven-course-micro-svc:0.0.2-SNAPSHOT/maven-metadata.xml from/to nexus-snapshots (http://98.83.210.96:8081/repository/maven-snapshots/): status code: 401, reason phrase: Unauthorized (401) -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+"
+
+Set the credentials in...
+
+# cd /opt/apache-maven-3.9.8/conf
+
+# vim settings.xml
+
+We can get the format to configure the credentials in the same site...
+
+https://www.baeldung.com/maven-deploy-nexus
+
+"THE GLOBAL SETTINGS"
+
+"
+<servers>
+   <server>
+      <id>nexus-snapshots</id>
+      <username>admin</username>
+      <password>Sonarqube123#</password>
+   </server>
+   <server>
+      <id>nexus-releases</id>
+      <username>admin</username>
+      <password>Sonarqube123#</password>
+   </server>
+</servers>
+"
+
+# cd /root/springboot-maven-nexus-deploy
+
+Obs: Look the version of version in pom.xml, this is gonna to snapshot
+
+# mvn deploy (This will send the artifact to Nexus, if uma run mvn deploy will add just the timestamp)
+
+You can test change in the pom.xml file the version to see what change in the repository
+
+
+- Deploy the Artifacts to Nexus Repository
+
+Deploy to the releases repositories
+
+# vim pom.xml
+
+Just remove the word "SNAPSHOT" from "version" field...
+
+<version>0.0.3-SNAPSHOT</version>
+
+to
+
+<version>0.0.3</version>
+
+
+-*- Integration of Gradle with Nexus Repositories
+
+- Note: Instructions can be found on integrate-gradle-nexus.txt
+
+We need to create another instance t2.medium and install Gradle...
+
+- Install Open JDK Runtime Environment Corretto
+
+Note: Para remover outras versões do Java...
+
+# sudo alternatives --config java
+
+# sudo yum list installed | grep java
+
+# sudo sudo yum remove java-X.X.X-openjdk
+
+Obs: Para utilizarmos o Gradle 6.X.X teremos que utilizar o Java 1.8 Devel...
+
+yum install java-1.8.0-openjdk-devel
+
+- Install Gradle
+
+"index of gradle"
+
+https://distfiles.macports.org/gradle/
+
+Obs: Why choose the last version (and minor version) 6 of Gradle? It is because if you are working with gradle 6, then nexus will support http & https.
+     Starting from version 7, Nexus will support only https.
+
+# cd /opt
+
+# wget https://distfiles.macports.org/gradle/gradle-6.8.3-bin.zip
+
+
+- Download the example project 
+
+# cd /root
+
+# yum install git
+
+# git clone https://github.com/Shikhar82/springboot-tomcat-gradle-war.git
+
+# cd springboot-tomcat-gradle-war
+
+Note: build.gradle is equivalent to pom.xml for Maven. Is where we can configure integrations, like Nexus and Sonarqube
+
+# unzip gradle-6.8.3-bin.zip
+
+# export PATH=$PATH:/opt/gradle-6.8.3/bin
+
+# gradle --version
+
+
+- Build the springboot tomcat project using gradle tool
+
+# cd /root/springboot-tomcat-gradle-war
+
+Note: For maven the command to build is "mvn clean package", for gradle "gradle clean build"
+
+# gradle clean build (For now it is the same, this command will build the package just locally, because we didn't configure it to send to Nexus repository)
+
+
+- Add plugin in build.gradle
+
+Note: To see your artifacts on Gradle go to build/libs
+
+# cd /root/springboot-tomcat-gradle-war/build/libs
+
+On the google search for "gradle nexus publish"
+
+This is a good place for instructions -> https://medium.com/@simionrazvan/how-to-create-a-gradle-library-and-publish-it-on-nexus-34be19b520aa
+
+apply plugin: ‘maven-publish’
+
+# vim build.gradle
+
+Put the plugin name on plugins
+
+"
+plugins {
+    id 'org.springframework.boot' version '2.5.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'war'
+    id "org.sonarqube" version "3.3"
+    id "maven-publish"
+}
+"
+
+# gradle clean build
+
+- Add Nexus repositories in build.gradle
+
+Search on google "gradle publish to nexus"...
+
+Again -> https://medium.com/@simionrazvan/how-to-create-a-gradle-library-and-publish-it-on-nexus-34be19b520aa
+
+"MavenPublication"
+
+"
+publishing {
+    publications {
+    maven(MavenPublication) {
+        //bootJar is the default build task configured by spring boot
+        artifact bootJar
+    }
+}    
+repositories {
+maven {
+url “http://54.146.40.41:8081/repository/maven-snapshots/"
+
+credentials {
+username "admin"
+password "nexus123"    
+      }
+    }
+  }
+}
+""
+
+Paste in gradle.build
+
+# vim build.gradle
+
+# gradle clean build
+
+To see the artifacts...
+
+# cd /build/libs
+
+
+- Use if else condition in build.gradle
+
+As we have two differents repositories, one for snapshots and another for releases, we need to define when Gradle will push the resource in each one...
+
+So, we if/else conditions to configure on publishing/repositories in build.gradle...
+
+"
+repositories {
+maven {
+        if(project.version.endsWith('-SNAPSHOT')){
+                url "http://54.146.40.41:8081/repository/maven-snapshots/"
+        } else {
+                url "http://54.146.40.41:8081/repository/maven-releases/"
+        }
+""
+
+# gradle clean build
+
+# gradle publish
+
+Now we're gonna remove the sufix '-SNAPSHOT' to see what happens...
+
+# vim build.gradle
+
+"
+group = 'com.example'
+version = '0.0.1(-SNAPSHOT)'
+sourceCompatibility = '1.8'
+"
+
+# gradle clean build
+
+# gradle publish
+
+Now look at the "releases" repository...
+
+
+- Add Nexus login credentials in gradle.properties
+
+For now, we have the credentials in plain-text in the file build.gradle, lets put this into gradle.properties
+
+First of all, we need to change from plain text to get this values from references
+
+# vim build.gradle
+
+"
+repositories {
+maven {
+        if(project.version.endsWith('-SNAPSHOT')){
+                url "http://54.146.40.41:8081/repository/maven-snapshots/"
+        } else {
+                url "http://54.146.40.41:8081/repository/maven-releases/"
+        }
+credentials {
+username project.repoUser
+password project.repoPassword
+      }
+    }
+  }
+""
+
+# vim gradle.properties
+
+"
+repoUser=admin
+repoPassword=nexus123
+"
+
+Change the version of the artifacts...
+
+# vim build.gradle
+
+0.0.1 -> 0.0.7
+
+# gradle publish
+
+- Download the Gradle Library using Continuous Deployment
+
+How to download the artificats which has been moved towards Nexus repository...
+
+Click on the path of the file .jar in the Nexus repository, copy the value...
+
+Example: "com/example/springboot-tomcat-gradle-war/0.0.7/springboot-tomcat-gradle-war-0.0.7.jar"
+
+Add to the begning of this path, the repository URL...
+
+Example: "http://54.146.40.41:8081/repository/maven-releases/com/example/springboot-tomcat-gradle-war/0.0.7/springboot-tomcat-gradle-war-0.0.7.jar"
+
+With this full address we can download the artifact to any other server in the network...
+
+Lets download to the Nexus server...
+
+# sudo su
+
+# cd /root
+
+# wget --user admin --password nexus123 http://54.146.40.41:8081/repository/maven-releases/com/example/springboot-tomcat-gradle-war/0.0.7/springboot-tomcat-gradle-war-0.0.7.jar
+
+Lets see the size of the artifcat...
+
+# du -sk springboot-tomcat-gradle-war-0.0.7.jar
+
+Lets download a artifact from maven-snapshots...
+
+# wget --user admin --password nexus123 http://54.146.40.41:8081/repository/maven-snapshots/com/cloudtechmasters/springboot-maven-course-micro-svc/0.0.3-SNAPSHOT/springboot-maven-course-micro-svc-0.0.3-20241019.155416-1.jar
+
+
+
+-*- Git, Jenkins & Maven integration
+
+- How to get the code from GitHub to Jenkins?
+  -- Username & password
+  -- SSH Keys
+  -- PAT (Personal Access Token)
+
+- First Scenario - Jenkins will connect to Github using username & password and then clone the project's repository.
+
+- Then it will build the project.
+  -- Java (springboot) project -> maven tool is a build tool for building java projects.
+  -- Nodejs -> npm (Node Package Manager)
+  -- Python -> python
+  -- Golang -> go
+  -- Angular -> npm
+
+- For this integration -> we will use java project, so for clone & build the java projects we need below packages:
+  -- Git, Java & Apache Maven
+
+- Installations
+
+# sudo su
+
+# id
+
+# yum install git
+
+- Apache Maven Project
+
+https://maven.apache.org/download.cgi
+
+# cd /opt
+
+# wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+
+# tar xvf apache-maven-3.9.9-bin.tar.gz
+
+- Jenkins on Amazon Linux 2
+
+https://www.jenkins.io/doc/tutorials/tutorial-for-installing-jenkins-on-AWS/
+
+
+- Copy the security password for Jenkins first screen
+
+# cat /var/lib/jenkins/secrets/initialAdminPassword
+
+- Configure GitHub Credentials & Maven on Jenkins
+
+To see where are your projects:
+
+# cd /var/lib/jenkins/workspace
+
+
+-*- CICD Process - Manual Approach Using Maven, SonarQube, Docker, AWS ECR
+
+- Install Java
+
+# sudo yum install java-17-amazon-corretto-headless
+
+- Install git
+
+# yum install git
+
+- Clone Project
+
+# git clone https://github.com/Shikhar82/springboot-maven-micro.git
+
+- Install Maven
+
+--Index of Maven
+
+https://archive.apache.org/dist/maven/maven-3/
+
+# cd /opt
+
+# wget https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+
+# tar xvf apache-maven-3.9.9-bin.tar.gz
+
+# export PATH=$PATH:/opt/apache-maven-3.9.9/bin
+
+# cd /root/springboot-maven-micro
+
+# mvn clean package
+
+
+- Install SonarQube on Ubuntu Instance
+
+--Install the last version of SonarQube
+
+
+Obs: Community Edition
+
+# sudo su
+
+# apt update
+
+# apt install openjdk-17-jdk openjdk-17-jre -y
+
+# cd /opt
+
+# apt install unzip
+
+# wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.7.0.96327.zip
+
+# unzip sonarqube-10.7.0.96327.zip
+
+- Add Sonar-maven-plugin
+
+Search in the google: sonar maven integration
+
+https://docs.sonarsource.com/sonarqube/10.5/analyzing-source-code/scanners/sonarscanner-for-maven/
+
+
+<plugin>
+  <groupId>org.sonarsource.scanner.maven</groupId>
+  <artifactId>sonar-maven-plugin</artifactId>
+  <version>3.7.0.1746</version>
+</plugin>
+
+
+--Get the latest version plugin in: https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin
+  That in my case is: 4.0.0.4121
+
+--Change the "plugin" configuration...
+
+<plugin>
+  <groupId>org.sonarsource.scanner.maven</groupId>
+  <artifactId>sonar-maven-plugin</artifactId>
+  <version>4.0.0.4121</version>
+</plugin>
+
+--Go to "ci-server"
+
+# sudo su
+
+# cd /root
+
+# cd springboot-maven-micro
+
+# vim pom.xml
+
+--Insert the plugin code in the pom.xml configuration
+
+Command to connect sonar:sonar -Dsonar.host.url=http://sonarqubeserver:9000 -Dsonar.login=the-generated-token
+
+
+- Start SonarQube Service
+
+# cd /opt/sonarqube-10.7.0.96327/bin/linux-x86-64
+
+-Obs: You need to run Sonar with ubuntu, ec2-user wherever else that is not the root
+
+So...
+
+# sudo chown -R ubuntu:ubuntu ./sonarqube-10.7.0.96327/
+
+# sh sonar.sh start
+
+# sh sonar.sh status
+
+-The user and password is "admin"...
+
+-Change the password: Sonarqube123#
+
+--To get the generated token
+
+--Left upper side!!!
+
+sqa_b5bb4ca2257acba90221e9a26ae48a40a8e868f3
+
+
+- Check the Code Quality
+
+-In the CI-CD Server
+
+# export PATH=$PATH:/opt/apache-maven-3.9.9/bin
+
+# mvn --version
+
+--To check the code quality this is the command:
+
+# mvn sonar:sonar -Dsonar.host.url=http://54.81.235.4:9000 -Dsonar.login=sqa_b5bb4ca2257acba90221e9a26ae48a40a8e868f3
+
+
+- Overview of Dockerfile to Create Docker Image
+
+-We need to build a Dockerfile for our artifacts, and the command to run the .jar file is
+
+# java -jar springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar
+
+-We gonna build our Dockerfile on the root of the project
+
+# cd /root/springboot-maven-micro
+
+# vim Dockerfile
+
+"
+FROM amazoncorretto:17
+COPY target/springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
+"
+
+- Create a Repository in AWS ECR
+
+-We need to access Amazon ECR (Elastic Container Registry), create a private repository /hellodatarepo
+
+-089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo
+
+-1 Authenticate Docker with ECR
+
+  -- Install Docker
+  # yum install docker
+
+  # service docker start
+  
+  # aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 089350267643.dkr.ecr.us-east-1.amazonaws.com
+
+  !Access Denied!
+
+- Create a Role to Provide Access One AWS Service (CI Server) to another (AWS ECR)
+
+-First we need to create the role
+
+-Go to IAM choose "AWS Service", "EC2".
+
+-In "Add Permission", write "ec2container", then choose "AmazonEC2ContainerRegistryFullAccess"
+
+-The name of the role -> "ecr-ec2-role"
+
+-In the CICD Server "Security - > IAM Role", choose the IAM role that we just created
+
+-Now...
+
+# aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 089350267643.dkr.ecr.us-east-1.amazonaws.com
+
+# docker build -t hellodatarepo .
+
+# docker image ls
+
+
+- Build & Push the Docker Image to AWS ECR Repository
+
+# docker tag hellodatarepo:latest 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:latest
+
+# docker push 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:latest
+
+
+- Create a CD Server - Continuous Deployment
+
+--Create an EC2 instance, t2.micro this time, Ubuntu, and we need to install Docker and another one is AWS-CLI
+
+
+-Install Docker
+
+# sudo su
+
+# apt update
+
+# apt install docker.io
+
+# service docker start
+
+# service docker status
+
+-Install AWSCLI
+
+# snap install aws-cli --classic
+
+-Authenticate with ECR
+
+-Lets run a container
+
+# docker container run --name=hellodatarepo -p 8080:8080 --detach 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:latest
+  obs: Open de port 8080 in the security group of cd-server
+
+  -To check if its the 8080 is the correct port, go to ci-server then...
+
+  # cd /root/springboot-maven-micro/src/main/resources
+  # cat application.properties
+  "
+  server.port=8080
+  server.servlet.context-path=/course-svc
+  "
+
+
+- Pull & Execute the Docker Image from ECR to CD Server
+
+We need to release the port 8080 in the security group, get the public IP and provide the context path...
+
+-To get the context path
+
+# cd /root/springboot-maven-micro/src/main/resources
+# cat application.properties
+
+"
+server.port=8080
+server.servlet.context-path=/course-svc
+"
+
+-The methods to get information
+
+# cat src/main/java/com/cloudtechmasters/CourseController.java
+
+"
+public class CourseController {
+//create two endpoints getAllAwsServices and getAllDevopsTools
+    @GetMapping("/getAllAwsServices")
+    public List<String> getAllAwsServices(){
+        return Arrays.asList("ec2","iam","rds","ecr","eks");
+    }
+
+    @GetMapping("/getAllDevopsTools")
+    public List<String> getAllDevopsTools(){
+        return Arrays.asList("git","maven","sonar","nexus","jenkins");
+    }
+}
+"
+
+-So the URL to test would be like this
+
+http://IP:8080/course-svc/getAllAwsServices
+
+
+
+-*- CICD Process Using Jenkins
+
+- Install a Jenkins Server (CI Server)
+
+-Launch instance
+
+# sudo su
+
+# amazon-linux-extras install epel
+
+# yum install git -y
+
+-Download Java for Amazon Linux 2
+
+# sudo yum install java-17-amazon-corretto-headless
+
+-Install Maven (Index of Maven) (https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz)
+
+# cd /opt
+
+# wget https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
+
+# tar xvf apache-maven-3.9.9-bin.tar.gz
+
+# yum install docker -y
+
+# systemctl enable docker
+
+# systemctl start docker
+
+# systemctl status docker
+
+-Install Jenkins Linux RPM (https://pkg.jenkins.io/redhat-stable/)
+
+# cd /etc/yum.repos.d/
+
+# sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+
+# sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+# yum install jenkins
+
+# systemctl start jenkins
+
+# systemctl status jenkins
+
+-Enable port 8080 on Security Group
+
+-Get the Jenkins password in /var/lib/jenkins/secrets/initialAdminPassword
+
+
+- Create a Jenkins pipeline for Checkout & build the project
+
+-Add Maven on Jenkins (tools)
+
+-Configure Maven version and HOME $PATH (/opt/apache-maven-3.9.9)
+
+-Now we need to configure new item on Jenkins, pipeline
+
+-Add new item (jenkins-maven-pipeline-project)
+
+-Search on google: "jenkins declarative pipeline"
+
+https://www.jenkins.io/doc/book/pipeline/syntax/
+
+
+-After the create and run pipeline, Jenkins will create a new workspace:
+
+/var/lib/jenkins/workspace/jenkins-maven-pipeline-project
+
+-The artifacts are in "target" folder
+
+
+- Install SonarQube Server using Docker Container
+
+-Create an intance Ubuntu
+
+# sudo apt update
+
+-Install Sonarqube with Docker
+
+-Search on the Google: "sonarqube docker image"
+
+https://hub.docker.com/_/sonarqube
+
+-Install Docker
+
+# sudo apt install docker.io
+
+# sudo docker run --name sonarqube -p 9000:9000 -d sonarqube:latest
+
+-InstanceIP:9000 ("admin/admin")
+
+
+- Install Plugins & Add Sonar Login Credentials on Jenkins Server
+
+-Now we gonna test the build quality, we need to add a new more steps
+-For this we need to generate a Sonarqube token...
+
+sqa_e50b84c442b550e00eaeda435c9d7a41cb53e3da
+
+-Now manage Jenkins -> Plugins -> Sonarqube
+
+-After that go to credentials...System -> Global Credentials -> Add Credentials
+
+jenkins-sonar-token
+
+
+- Add Sonarqube on Jenkins Server
+
+Manage Jenkins > System
+
+-Add Sonar
+
+-Search for...
+
+"sonarqube scanner for jenkins"
+
+https://docs.sonarsource.com/sonarqube/8.9/analyzing-source-code/scanners/sonarscanner-for-jenkins/
+
+"
+      stage('build && SonarQube analysis') {
+          steps {
+              withSonarQubeEnv('My SonarQube Server') {
+                  // Optionally use a Maven environment you've configured already
+                  withMaven(maven:'Maven 3.5') {
+                      sh 'mvn clean package sonar:sonar'
+                  }
+              }
+          }
+      }
+"
+
+- Pipeline for SonarQube Scanner for Jenkins
+
+https://www.jenkins.io/doc/pipeline/steps/sonar/
+
+
+- Pipeline for success or aborted due to quality gate failure & Configure a Webhook in your SonarQube Server
+
+
+http://54.227.69.19:8080/sonarqube-webhook/
+
+
+- Add stage in pipeline to create a docker Image using Dockerfile
+
+/var/lib/jenkins/workspace/jenkins-maven-pipeline-project
+
+-> Dockerfile
+
+/var/lib/jenkins/workspace/jenkins-maven-pipeline-project/target
+
+-> artifacts
+
+springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar
+
+[root@ip-172-31-46-63 target]# docker image ls
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+
+-Lets see the steps to build the image
+
+Search for "build docker image using jenkins pipeline..."
+
+
+
+- Errors possibles:
+
+Plugins: docker.build and docker.pipeline
+
+Permissions: {
+  ls -l /var/run/docker.sock
+    srw-rw---- 1 root docker 0 Nov  7 20:15 /var/run/docker.sock
+    cat /etc/group
+    gpasswd -a jenkins docker
+
+    groups jenkins
+
+    After apply the permissions, you need to restart jenkins
+
+}
+
+/sonarqube-webhook
+
+Jenkins and others servers IP
+
+
+
+- Add Plugins - CloudBees AWS, ECR, Docker, etc.
+
+-We need to install some plugins:
+
+-AWS Credentials, AWS ECR, Docker Pipeline, Docker Plugin
+
+-Create a IAM user (jenkins-ecr-user)
+
+On Jenkins server, manage credentials...
+
+-Create credential ... "jenkins-ecr-login"
+
+- Add Stage in Pipeline to Push the Docker Image to AWS ECR
+
+- Configure SES to Send Email Notification
+
+-Create Identity > User your e-mail address
+
+Validate accessing the link on your e-mail box
+
+Create SMTP credentials
+
+IAM user name
+
+("AWS Access and Secret Keys")
+jenkins-ses-smtp-user
+
+SMTP user name
+
+SMTP password
+
+-You need to configure the 'Admnistrator system e-mail' too...
+
+- Integrate SES with Jenkins using Pipeline
+
+Jenkins Management (System) -> E-mail 
+
+
+
+-*- Continuous Deployment using Ansible Playbook
+
+
+- Configure a CD Server using Ubuntu Server
+
+-Launch a new ubuntu instance to be cd-server
+
+# sudo su
+
+# hostnamectl set-hostname cd-server
+
+-Now we need to install Ansible on the Jenkins Server
+
+# yum update
+
+# amazon-linux-extras install ansible2 -y
+
+# ansible --version
+
+# ll /etc/ansible/hosts
+
+# vim /etc/ansible/hosts
+
+-We need to create a hosts groups
+
+# [dev-servers]
+-We can put the public or private IP
+# 3.92.54.223
+
+
+- Ansible Setup on Jenkins Server
+
+-Make the authentication between Jenkins Server and CD Server
+
+-Lets create the public and private key on the Jenkins Server and put the public key into CD Server
+
+# ssh-keygen -t rsa (on the root directory)
+
+# cat id_rsa.pub
+
+-Try connection to CD Server
+
+# ssh 54.152.67.44
+
+-Put the public key into authorized_keys
+
+# vim /root/.ssh/authorized_keys
+
+-Now we gonna check if the access is requiring password yet and if Ansible are working
+
+-Exit from the CD Server and try connection again
+
+# ssh 54.152.67.44
+
+-Then teste Ansible
+
+# ansible -m ping dev-servers
+
+
+"
+Using Python3.8 with Ansible
+
+Passo a Passo Definitivo
+1. Instalar o Python 3.8
+No Amazon Linux 2, habilite o repositório de extras e instale o Python 3.8:
+
+sudo amazon-linux-extras enable python3.8
+sudo yum install python3.8 -y
+Confirme a instalação:
+
+python3.8 --version
+A saída deve ser algo como:
+
+Python 3.8.x
+2. Configurar o pip para o Python 3.8
+Garanta que o pip esteja instalado e atualizado para o Python 3.8:
+
+python3.8 -m ensurepip --upgrade
+python3.8 -m pip install --upgrade pip
+
+3. Instalar o Ansible com o Python 3.8
+Use o pip do Python 3.8 para instalar o Ansible:
+
+python3.8 -m pip install ansible
+
+
+Verifique a instalação:
+
+python3.8 -m pip show ansible
+A saída deve indicar o caminho, como:
+
+Location: /usr/local/lib/python3.8/site-packages
+
+4. Ajustar o PATH
+Garanta que o diretório do executável Ansible (/usr/local/bin) esteja no PATH:
+
+Temporariamente:
+
+export PATH="/usr/local/bin:$PATH"
+
+"
+Torne a mudança permanente: Edite o arquivo .bashrc:
+
+nano ~/.bashrc
+Adicione a seguinte linha ao final:
+
+export PATH="/usr/local/bin:$PATH"
+"
+Aplique a alteração:
+
+source ~/.bashrc
+Confirme se o Ansible está acessível:
+
+which ansible
+
+A saída deve ser:
+
+/usr/local/bin/ansible
+
+5. Verificar a Versão do Ansible
+Certifique-se de que o Ansible está utilizando o Python 3.8:
+
+ansible --version
+A saída deve incluir algo como:
+
+python version = 3.8.x
+"""
+
+
+
+- Install packages on CD Server
+
+-Install Python (min 3.8)
+
+-Install pip
+
+-Install docker-py
+
+# apt install python3-docker
+
+# apt install docker.io
+
+-Install awscli
+
+# apt install unzip
+
+# sudo yum remove awscli
+
+# curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+- Create a Playbook to establish a connection from CD Server to AWS ECR
+
+# cd tmp
+
+# vim loginecr.yml
+
+-Put the following content
+"
+---
+- hosts: dev-servers
+  task:
+    - name: Establish a login to ECR
+      shell: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 089350267643.dkr.ecr.us-east-1.amazonaws.com
+"
+
+# ansible-playbook loginecr.yml
+
+"
+[WARNING]: Invalid characters were found in group names but not replaced, use -vvvv to see details
+
+PLAY [dev-servers] ***********************************************************************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************************************************************************
+ok: [3.92.54.223]
+
+TASK [Establish a login to ECR] **********************************************************************************************************************************************
+changed: [3.92.54.223]
+
+PLAY RECAP *******************************************************************************************************************************************************************
+3.92.54.223                : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+"
+
+- Playbook to pull the image from ECR to CD Server
+
+-We need to add one more task
+
+"
+- name: Pull the image from ECR to CD Server
+      shell: docker pull 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:26
+"
+
+- Playbook to run the Container using the Docker Image
+
+-We need to add one more task
+
+"
+- name: Run the container using the docker image
+      shell: docker run --name=springbootcontainer -p 8080:8080 --detach 089350267643.dkr.ecr.us-east-1.amazonaws.com/hellodatarepo:26
+"
+
+- Access the Springboot Application running on CD Server
+
+-Now just access the Springboot Application on serverIP:8080/course-svc/getAllDevopsTools
+
+- (EXTRA) Pipeline step do update the application in CD Server
+
+
+
+-Creating autentication in CD Server to Jenkins user
+
+# sudo visudo
+
+-Add the line
+
+jenkins ALL=(ALL) NOPASSWD:ALL
+
+# sudo usermod -s /bin/bash jenkins
+
+# sudo -u jenkins -i
+
+# ssh-keygen -t rsa -b 2048 -f id_rsa -N ""
+
+# chmod 700 /var/lib/jenkins/.ssh
+# chmod 600 /var/lib/jenkins/.ssh/id_rsa
+# chmod 644 /var/lib/jenkins/.ssh/id_rsa.pub
+
+# sudo nano /var/lib/jenkins/.ssh/config
+
+-Add the lines
+
+Host CD Server
+    User root
+    IdentityFile /var/lib/jenkins/.ssh/id_rsa
+    StrictHostKeyChecking no
+
+
+
+-*- Jenkins Master and Slave
+
+- Lab - Install Jenkins Master Server in AWS Environment
+
+-Launch an Instance Amazon Linux 2
+
+-Install Java
+
+sudo yum install java-17-amazon-corretto-headless
+
+
+-Install Jenkins Linux RPM (https://pkg.jenkins.io/redhat-stable/)
+
+# cd /etc/yum.repos.d/
+
+# sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+
+# sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+# sudo yum install jenkins
+
+# sudo systemctl start jenkins
+
+# sudo systemctl status jenkins
+
+-Enable port 8080 on Security Group
+
+-Get the Jenkins password in /var/lib/jenkins/secrets/initialAdminPassword
+
+
+- Lab - Manage Nodes and Clouds
+
+We need to go to "Manage Jenkins"
+
+And then "Manage Nodes and Clouds"
+
+  -> New Node (Obs: For this we need to launch another instance EC2)
+    Node name: slave-one
+    Permanent Agent ? (
+      "
+      Add a simple and permanent agent in Jenkins. This is called "permanent" because Jenkins does not provide high-level integration with these agents, such as dynamic
+      provisioning. Select this type if no other option is applicable — for example, when you are adding a physical computer, virtual machines managed outside of Jenkins, etc.
+      "
+    )
+
+      Now we gonna see new field to fill in.
+
+        Description: Slave machine: EC2 Amazon Linux 2 Type
+        (
+          "
+          Optional description of this agent. This information is displayed on the project configuration screen.
+          When you have agents that are different from others, it is helpful to use this field to explain what makes them unique. For example, entering "Windows Agent" in this
+          field would allow project owners to always build on a Windows machine (e.g., if they need a Windows-specific build tool).
+          "
+        )
+        Number of executors: 5
+        (
+          "
+          The maximum number of concurrent builds that Jenkins may perform on this node.
+          A good value to start with would be the number of CPU cores on the machine. Setting a higher value would cause each build to take longer, but could increase the 
+          overall throughput. For example, one build might be CPU-bound, while a second build running at the same time might be I/O-bound — so the second build could take 
+          advantage of the spare I/O capacity at that moment.
+
+          Agents (nodes that are not the built-in node) must have at least one executor. To temporarily prevent any builds from being executed on an agent, use the Mark this 
+          node temporarily offline button on the agent's page.
+
+          For the built-in node, set the number of executors to zero to prevent it from executing builds locally on the controller. Note: The built-in node will always be able
+          to run flyweight tasks including Pipeline's top-level task.
+          "
+        )
+        Remote root directory: /root/slave-one
+            -Creating a new directory in slave machine (On Slave Machine)
+            # cd /root
+            # mkdir slave-one
+        (
+          "
+          An agent needs to have a directory dedicated to Jenkins. Specify the path to this directory on the agent. It is best to use an absolute path, such as /var/jenkins or 
+          c:\jenkins . This should be a path local to the agent machine. There is no need for this path to be visible from the controller.
+
+          Agents do not maintain important data; all job configurations, build logs and artifacts are stored on the controller, so it would be possible to use a temporary 
+          directory as the agent root directory.
+          However, by giving an agent a directory that is not deleted after a machine reboot, for example, the agent can cache data such as tool installations, or build 
+          workspaces. This prevents unnecessary downloading of tools, or checking out source code again when builds start to run on this agent again after a reboot.
+
+          If you use a relative path, such as ./jenkins-agent , the path will be relative to the working directory provided by the Launch method .
+
+          For launchers where Jenkins controls starting the agent process, such as SSH, the current working directory will typically be consistent, e.g. the user's home 
+          directory.
+          For launchers where Jenkins has no control over starting the agent process, such as inbound agents launched from the command line, the current working directory may 
+          change between launches of the agent and use of a relative path may prove problematic.
+          The principal issue encountered when using relative paths with inbound launchers is the proliferation of stale workspaces and tool installation on the agent machine. 
+          This can cause disk space issues.
+          "
+        )
+        Labels: slave-one (This would me mentioned instead of "agent any", we need to put slave-one in the place of any)
+        (
+          "
+          Labels (or tags) are used to group multiple agents into one logical group.
+          For example, if you have multiple Windows agents and you have a job that must run on Windows, then you could configure all your Windows agents to have the label 
+          windows, and then tie that job to this label.
+
+          This would ensure that your job runs on one of your Windows agents, but not on any agents without this label.
+
+          Labels do not necessarily have to represent the operating system on the agent; you can also use labels to note the CPU architecture, or that a certain tool is 
+          installed on the agent.
+
+          Multiple labels must be separated by a space. For example, windows docker would assign two labels to the agent: windows and docker.
+
+          Labels may contain any non-space characters, but you should avoid special characters such as any of these: !&|<>(), as other Jenkins features allow for defining label 
+          expressions, where these characters may be used.
+          "
+        )
+        Usage: Use this node as much as possible
+        (
+          "
+          Use this agent as much as possible
+          This is the default setting. In this mode, Jenkins uses this agent freely. Whenever there is a build that can be executed on this agent, Jenkins will use it.
+
+          Leave this machine for tied tasks only
+          In this mode, Jenkins will only build a project on this machine when that project is specifically set to use this agent as the "associated node." This allows an 
+          agent to be reserved for certain types of tasks. For example, to continuously run Jenkins performance tests, you can use this configuration with the number of 
+          executors set to 1, ensuring that only one performance test runs at any given time and that an executor won't be blocked by other builds that could be done on other 
+          agents.
+          "
+        )
+        Launch method: Launch agents via SSH (The most used)
+            Host: 52.91.33.164
+            Credentials: (Obs: After create de credentials we need to set option created)
+              + Add
+                  In the slave machine: (Just to get root password and user)
+                      # passwd root
+                      -Edit the sshd config to use user and password for authentication
+                      # sudo vim /etc/ssh/sshd_config
+                          "
+                          PermitRootLogin yes
+                          PasswordAuthentication yes
+                          "
+                      # systemctl restart sshd
+                      # systemctl status sshd
+
+                      So...
+
+                      Username: root
+                      Password: *******
+                      ID: ssh-credentials
+                      Description: ssh-credentials
+            
+            Host Key Verification Strategy: Non verifying Verification Strategy
+            (
+              "
+              Controls how Jenkins verifies the SSH key presented by the remote host whilst connecting.
+              "
+            )
+
+        (
+          "
+          Controls how Jenkins starts this agent.
+
+          Launch an agent by connecting it to the controller
+          Allows an agent to connect to the Jenkins controller whenever it is ready.
+          In this mode, Java Web Start is used. In this case, a JNLP file needs to be opened on the agent machine, which will establish a TCP connection with the Jenkins 
+          controller (other launch methods may use the JNLP file but not Java Web Start, or they may not use JNLP at all).
+
+          This means the agent does not need to be reachable by the controller; it only needs to be able to reach the controller. If you have security enabled via the Configure
+          Global Security page, you can customize the port on which the Jenkins controller will listen for incoming agent connections.
+
+          By default, the agent will launch a GUI, but it is also possible to run the agent without the GUI, such as as a Windows service.
+
+          Launch agents via SSH
+          Starts an agent by sending commands over a secure SSH connection. The agent needs to be reachable from the Jenkins controller, and you will need to provide an account
+          that can log in to the target machine. Root privileges are not required.
+          "
+        )
+        Availability: Keep this agent online as much as possible
+        (
+          "
+          Controls when jenkins starts and stops this agent
+          "
+        )
+
+
+- Lab - Troubleshooting while adding a slave server
+
+-The first problem is that the java is missing...
+
+# sudo yum install java-17-amazon-corretto-headless
+
+
+- Lab - Create a job for the Slave Using Freestyle project
+
+-> Dashboard
+  -> New Item
+    -> Name: helloworld (Freestyle project)
+      -> Description: Testing slave machine...
+         Restrict where this project can be run
+         Label Expression: slave-one
+
+      -> Build
+         Execute shell:
+         "
+            echo "Hello world, checking my slave server is working fine or not"
+         "
+
+Build now!
+
+Output:
+
+"
+Started by user Marlon Augusto Nezzo Narcizo
+Running as SYSTEM
+Building remotely on slave-one in workspace /root/slave-one/workspace/helloworld
+[helloworld] $ /bin/sh -xe /tmp/jenkins999026151258574854.sh
++ echo 'Hello world, checking my slave server is working fine or not'
+Hello world, checking my slave server is working fine or not
+Finished: SUCCESS
+"
+
+-You can check the workspace of your new project on the path that we have defined for the slave-one node
+
+# ls /root/slave-one/workspace/
+
+
+- Lab - Create a job for the Slave Using pipeline project
+
+-Dashboard > New Item > Name: mynewspringbootapp
+
+-At this time choose pipeline...
+
+"
+pipeline {
+    agent {
+        label 'slave-one'
+    }
+    stages {
+        stage ('Checkout the code') {
+            steps {
+                git 'https://github.com/nezzonarcizo/springboot-maven-micro.git'
+            }
+        }
+    }
+}
+"
+
+Tip: Try to use the pipeline sintax constructor...
+
+-We can use the git, the repository URL and the branch main/master 
+
+-We will gonna receive a error when the pipeline try to perform 'git pull', this happens because we dont have 'git' installed on our slave machine
+
+-So, install git...
+
+# yum install git -y
+
+-And we need to configure the git on the slave paine on Jenkins
+
+-You will gonna need the path of the git
+
+# whereis git
+
+# git: /usr/bin/git /usr/share/man/man1/git.1.gz
+
+-Manage Jenkins -> Tools -> Git -> Path to Git executable: "/usr/bin/git"
+
+-Check the project that just was created...
+
+# ls /root/slave-one/workspace/
+
+# ls /root/slave-one/workspace/
+helloworld  mynewspringbootapp
+
+# cd mynewspringbootapp/
+# ls
+Dockerfile   ansible.yaml     generate_kubeconfig_eks.sh  mvnw      pom.xml                   springboot-deployment-acr.yml  springboot-deployment.yml    springboot-service.yaml
+Jenkinsfile  deployment.yaml  kubernetes                  mvnw.cmd  sonar-project.properties  springboot-deployment-ecr.yml  springboot-service-acr.yaml  src
+
+
+- Lab - Create a job for Slave Using a pipeline project
+
+-Lets add one more step in our pipeline
+
+-Add the maven build...But, in our machine we dont have maven installed
+
+# yum install maven -y
+
+# mvn -version
+
+"
+Apache Maven 3.0.5 (Red Hat 3.0.5-17)
+Maven home: /usr/share/maven
+Java version: 17.0.13, vendor: Amazon.com Inc.
+Java home: /usr/lib/jvm/java-17-amazon-corretto.x86_64
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "5.10.228-219.884.amzn2.x86_64", arch: "amd64", family: "unix"
+"
+
+-Now we gonna to do like we did for git, configure the maven on Jenkins...
+
+Name: maven-3 
+Path: /usr/share/maven
+(You got these informations on command # mvn -version)
+
+
+-Adding a new stage to the pipeline...
+
+"
+stage ('Build the project') {
+  steps {
+      sh 'mvn clean install'
+  }
+}
+"
+
+
+-Receiving a pipeline error, I need a different version of maven, at least 3.10...
+
+# wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip
+# unzip apache-maven-3.9.9-bin.zip
+# mv apache-maven-3.9.9 /opt/maven
+# export M2_HOME=/opt/maven
+# export PATH=$M2_HOME/bin:$PATH
+
+-Change the maven path on Jenkins tools configurations...
+
+-Obs: In case of problem with Maven version and you need to change, dont forget to restart the jenkins server...
+
+
+
+- Lab - Establish connectivity between Master & Slave Using SSH Keys
+
+-Create a new instance amazon linux 2 (slave-two)
+
+# sudo su
+
+-Add a new node on Jenkins
+
+-Create the remote root directory
+
+# mkdir /root/slave-two
+
+-On Jenkins server..."Launch agents via SSH"
+
+Obs: Put the ip address of the slave that you are trying to connect on the field host...
+
+"SSH Username with private key"
+
+ID: ssh-private-key
+Username: root
+
+"Enter directly"
+
+(Create and Get the private key on slave-two)
+
+# ssh-keygen -t rsa
+
+# cat id_rsa 
+(Put in the Jenkins slave-two configuration)
+
+# cat id_rsa.pub
+(Put in the authotized_keys in the same machine, slave-two)
+
+"Host Key Verification Strategy" -> "Non Verifying Verification Strategy"
+
+
+- Lab - Launch agent on Slave Machine
+
+-We we'll gonna to get the same error as before, becausa the java is not installed in the slave-two node...
+
+# sudo yum install java-17-amazon-corretto-headless
+
+
+- Lab - Create a job for building a Springboot project on Slave Machine
+
+-We we'll gonna create a job for this node too, but first of all, lets install git...
+
+# yum install git -y
+
+-We need to install maven too...
+
+# cd /opt
+# wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip
+# unzip apache-maven-3.9.9-bin.zip
+# mv apache-maven-3.9.9 /opt/maven
+# export M2_HOME=/opt/maven
+# export PATH=$M2_HOME/bin:$PATH
+
+-Go to the dashboard and configure the mynewspringbootapp to use slave-two instead of slave-one
+
+"
+pipeline {
+    agent {
+        label 'slave-two'
+    }
+...
+"
+
+# sudo nano /etc/profile.d/maven.sh
+
+-Obs: Every time that you add a new configuration for plugins version its good to restart Jenkins...
+
+-Go to /root/slave-two and verify the builds...
+
+# pwd
+/root/slave-two/workspace
+# ls
+mynewspringbootapp
