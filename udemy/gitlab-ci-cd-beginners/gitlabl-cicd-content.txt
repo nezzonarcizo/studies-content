@@ -1,0 +1,8 @@
+* Setup GitLab CI Runner with Docker Executor on Windows 10/11
+
+https://medium.com/devops-with-valentine/setup-gitlab-ci-runner-with-docker-executor-on-windows-10-11-c58dafba9191
+
+
+* Configure GitLab CI Runner with Docker executor using AWS EC2
+
+https://www.youtube.com/watch?v=HGJWMTNeYqI
