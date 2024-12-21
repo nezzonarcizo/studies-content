@@ -1,0 +1,34 @@
+-*- Seção 2: Python + VS Code: Preparando meu ambiente de desenvolvimento 
+
+-4. Ubuntu 22 - Instalação básica do Python e o VSCode
+
+-Comandos
+https://gist.github.com/luizomf/8623264cbf69cd2619bcdee258628f41
+
+-Escolher versão do Python3
+
+# sudo update-alternatives --config python3
+
+-Comandos uteis
+
+# python3 -m venv venv
+
+# source venv/bin/activate
+
+# python --version
+
+# which python
+
+# python -m pip install pip --upgrade
+
+
+-5. Ubuntu 22 - Instalação Complexa do Python e o VS Code (pyenc e zsh)
+
+-Comandos
+
+https://gist.github.com/luizomf/688c8a48fe007829c120818138ac2317
+
+
+
+-*- Seção 3: Iniciando na programação com Python (Lógica de programação básica)
+

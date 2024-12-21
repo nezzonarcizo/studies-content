@@ -1,0 +1,38 @@
+
+* Setup GitLab CI Runner with Docker Executor on Windows 10/11
+
+https://medium.com/devops-with-valentine/setup-gitlab-ci-runner-with-docker-executor-on-windows-10-11-c58dafba9191
+
+
+* Configure GitLab CI Runner with Docker executor using AWS EC2
+
+https://www.youtube.com/watch?v=HGJWMTNeYqI
+
+
+* Create a GitLab Account
+
+https://gitlab.com/
+
+
+* Short introduction to YAML
+
+https://learn.getgrav.org/16/advanced/yaml
+
+
+* Top 10 Bash file system commands you can’t live without
+
+https://hackernoon.com/top-10-bash-file-system-commands-you-cant-live-without-4cd937bd7df1
+
+* Help! My GitLab CI pipeline is not running.
+
+You may encounter a problem where your GitLab CI pipeline is not running.
+
+Make sure that:
+
+- You have named your file .gitlab-ci.yml (and not gitlab-ci.yml or .gitlab-ci.yaml)
+
+- the pipeline file is in the root of the project and not inside a directory
+
+- Do not enable Auto DevOps!
+
+If you still have issues with this, let me know - I am happy to help.

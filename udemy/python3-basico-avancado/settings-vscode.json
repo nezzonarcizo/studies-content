@@ -1,0 +1,25 @@
+{
+    "[python]": {
+        "editor.formatOnType": true
+    },
+    "window.zoomLevel": 2,
+    "remote.autoForwardPortsSource": "hybrid",
+    "workbench.iconTheme": "eq-material-theme-icons-ocean",
+    "python.terminal.activateEnvironment": false,
+    "editor.inlayHints.fontFamily": "Ubuntu Mono for Powerline, Consolas, 'Courier New', monospace",
+    "workbench.settings.applyToAllProfiles": [
+        "editor.inlayHints.fontFamily"
+    ],
+    "explorer.compactFolders": false,
+    "editor.fontSize": 14,
+    "workbench.startupEditor": "none",
+    "editor.fontFamily": "Ubuntu Mono for Powerline",
+    "workbench.settings.editor": "json",
+    "code-runner.runInTerminal": true,
+    "code-runner.clearPreviousOutput": true,
+    "code-runner.executorMap": {
+        "python": "python -u"
+    },
+    "code-runner.ignoreSelection": true,
+    "workbench.colorTheme": "Theme Darker"
+}
