@@ -36,3 +36,24 @@ Make sure that:
 - Do not enable Auto DevOps!
 
 If you still have issues with this, let me know - I am happy to help.
+
+
+* Setup GitLab CI Runner with Docker Executor on Windows 10/11
+
+https://medium.com/devops-with-valentine/setup-gitlab-ci-runner-with-docker-executor-on-windows-10-11-c58dafba9191
+
+
+* Configure GitLab CI Runner with Docker executor using AWS EC2
+
+https://www.youtube.com/watch?v=HGJWMTNeYqI
+
+
+* How to Install Ubuntu Desktop on a Virtual Machine using VirtualBox 7
+
+https://medium.com/devops-with-valentine/how-to-install-ubuntu-desktop-on-a-virtual-machine-using-virtualbox-7-7ee537b609b9
+
+
+* How to Install Ubuntu Desktop on a Virtual Machine using VirtualBox 7
+
+https://medium.com/devops-with-valentine/how-to-install-ubuntu-desktop-on-a-virtual-machine-using-virtualbox-7-7ee537b609b9
+
