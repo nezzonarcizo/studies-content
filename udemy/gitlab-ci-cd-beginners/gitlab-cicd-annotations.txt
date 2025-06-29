@@ -61,3 +61,39 @@ https://medium.com/devops-with-valentine/how-to-install-ubuntu-desktop-on-a-virt
 * Git for GitLab (Beginner's FULL COURSE)
 
 https://www.youtube.com/watch?v=4lxvVj7wlZw
+
+
+* Forking a Git Repository
+
+The repository to fork -> https://gitlab.com/gitlab-course-public/learn-gitlab-app
+
+
+* Download Node.js
+
+https://nodejs.org/en/download
+
+
+* Visual Studio Code
+
+https://code.visualstudio.com/
+
+
+* Git
+
+https://git-scm.com/
+
+
+* Setup Git for using GitLab (including SSH key) - Linux
+
+https://www.youtube.com/watch?v=iXuIp5uNnLk
+
+
+* Setup Git for using GitLab (including SSH key) - Windows 10
+
+https://www.youtube.com/watch?v=Vmt0V6a3ppE
+
+
+* Setup Git for using GitLab (including SSH key) - MacOS
+
+https://www.youtube.com/watch?v=_qDJ0W1wR5w
+
