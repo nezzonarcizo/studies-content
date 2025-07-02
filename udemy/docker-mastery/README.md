@@ -1006,3 +1006,78 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 >
 >**Note 2**: If `ps` doesn't work in your container, you may need to install it. In
 >debian-based images with apt, you can add it with `apt-get update && apt-get install procps`
+
+
+### Docs: Dockerfile reference
+
+[https://docs.docker.com/reference/dockerfile/]
+
+
+### Docs: ENTRYPOINT
+
+[https://docs.docker.com/reference/dockerfile/#entrypoint]
+
+
+### MySQL Docker Hub Image
+
+[https://hub.docker.com/_/mysql]
+
+
+### SIGINT, SIGTERM and SIGKILL
+
+[https://eitca.org/cybersecurity/eitc-is-lsa-linux-system-administration/linux-processes/process-signals/examination-review-process-signals/explain-the-difference-between-sigint-sigterm-and-sigkill-signals-in-linux/]
+
+
+### Docker Blog: Choosing Between RUN, CMD and ENTRYPOINT
+
+[https://www.docker.com/blog/docker-best-practices-choosing-between-run-cmd-and-entrypoint/]
+
+
+### PIDs in Linux and Unix
+
+[https://en.wikipedia.org/wiki/Process_identifier]
+
+
+### Docs: Shell and Exec Form
+
+[https://docs.docker.com/reference/dockerfile/#shell-and-exec-form]
+
+
+### Docs: How CMD and ENTRYPOINT interact
+
+[https://docs.docker.com/reference/dockerfile/#understand-how-cmd-and-entrypoint-interact]
+
+
+### Docs: The SHELL Statement
+
+[https://docs.docker.com/reference/dockerfile/#shell]
+
+
+### Docs: ENTRYPOINT Examples
+
+[https://docs.docker.com/reference/dockerfile/#entrypoint]
+
+
+### Constructing commands to run in Docker containers
+
+[https://dev.to/rimelek/constructing-commands-to-run-in-docker-containers-2g2i]
+
+
+### Assignment 1 instructions: Create CLI Utilities
+
+[https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment01]
+
+
+### Assignment 1 Answer: Create CLI Utilities
+
+[https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment01]
+
+
+### Assignment 2 Instructions: Startup Scripts
+
+[https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
+
+
+### Assignment 2 Answer: Startup Scripts
+
+[https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
