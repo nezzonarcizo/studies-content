@@ -1081,3 +1081,4 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 ### Assignment 2 Answer: Startup Scripts
 
 [https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
+
