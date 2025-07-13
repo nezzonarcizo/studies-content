@@ -79,5 +79,56 @@ The exact quotas and payment details depend on your GitHub plan, a detailed summ
 If you can't find an "Actions" tab in your GitHub repository, you can should enable them as described here: [https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository]
 
 
+### GitHub Actions: Runners
 
+[https://docs.github.com/pt/actions/concepts/runners/about-github-hosted-runners]
+
+
+### Running Multi-Line Shell Commands
+
+Thus far, you learned how to run simple shell commands like `echo "Something"` via `run: echo "Something"`.
+
+If you need to run multiple shell commands (or multi-line commands, e.g., for readability), you can easily do so by adding the pipe symbol (`|`) as a value after the `run:` key.
+
+Like this:
+
+>...
+>`run: |`
+>    `echo "First output"`
+>    `echo "Second output"`
+>`This will run both commands in one step.`
+
+
+### GitHub Actions - Checkout (Created by the GitHub Team)
+
+[GitHub Repository -> Checkout Action](https://github.com/actions/checkout) - [View on Marketplace](https://github.com/marketplace/actions/checkout) - [GitHub Actions](https://github.com/features/actions)
+
+
+### Preinstalled software for GitHub-owned images
+
+[https://docs.github.com/en/actions/concepts/runners/about-github-hosted-runners#preinstalled-software-for-github-owned-images]
+
+
+### GitHub Actions - Context Reference, Expressions & Functions
+
+[Contexts Reference](https://docs.github.com/en/actions/reference/contexts-reference)
+
+[Evaluate expressions in workflows and actions](https://docs.github.com/en/actions/reference/evaluate-expressions-in-workflows-and-actions)
+
+[Functions](https://docs.github.com/en/actions/reference/evaluate-expressions-in-workflows-and-actions#functions)
+
+
+### Events that triggers workflows
+
+[https://docs.github.com/pt/actions/reference/events-that-trigger-workflows]
+
+
+### Cheat Sheet
+
+[https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet]
+
+
+### Skip workflow runs
+
+[https://docs.github.com/en/actions/how-tos/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs]
 
