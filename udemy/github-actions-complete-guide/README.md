@@ -57,7 +57,7 @@ This can be done via:
 You can learn more about Git's configuration options here: [https://git-scm.com/docs/git-config]
 
 
-## Section 3 - GitHub Actions - Basic Building Blocks & Components
+## Section 3 - Basic Building Blocks & Components
 
 
 ### Events the trigger workflows
@@ -99,7 +99,7 @@ Like this:
 >`This will run both commands in one step.`
 
 
-### GitHub Actions - Checkout (Created by the GitHub Team)
+### Checkout (Created by the GitHub Team)
 
 [GitHub Repository -> Checkout Action](https://github.com/actions/checkout) - [View on Marketplace](https://github.com/marketplace/actions/checkout) - [GitHub Actions](https://github.com/features/actions)
 
@@ -109,7 +109,7 @@ Like this:
 [https://docs.github.com/en/actions/concepts/runners/about-github-hosted-runners#preinstalled-software-for-github-owned-images]
 
 
-### GitHub Actions - Context Reference, Expressions & Functions
+### Context Reference, Expressions & Functions
 
 [Contexts Reference](https://docs.github.com/en/actions/reference/contexts-reference)
 
@@ -132,3 +132,46 @@ Like this:
 
 [https://docs.github.com/en/actions/how-tos/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs]
 
+
+### Upload Artifact
+
+[https://github.com/actions/upload-artifact]
+
+
+### Download Artifact
+
+[https://github.com/actions/download-artifact]
+
+
+### Cache
+
+[https://github.com/actions/cache]
+
+
+### MongoDB Atlas
+
+[https://www.mongodb.com/products/platform/cloud]
+
+
+### Store Information in Variables
+
+[https://docs.github.com/en/actions/how-tos/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables]
+
+
+### Workflow Syntax - jobs.<job_id>.steps[*].shell
+
+[https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsshell]
+
+
+#### Default Environment Variables
+
+You learned how to set and use your own environment variables.
+
+GitHub Actions also provides a couple of default environment variables that are set automatically: [https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables]
+
+These environment variable can, for example, give you quick access to the repository to which the workflow belongs, the name of the event that triggered the workflow and many other things.
+
+
+### Secrets
+
+[https://docs.github.com/pt/actions/how-tos/security-for-github-actions/security-guides/using-secrets-in-github-actions]
