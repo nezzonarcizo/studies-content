@@ -118,6 +118,9 @@ Like this:
 [Functions](https://docs.github.com/en/actions/reference/evaluate-expressions-in-workflows-and-actions#functions)
 
 
+## Section 4 - Workflows & Events - Deep Dive
+
+
 ### Events that triggers workflows
 
 [https://docs.github.com/pt/actions/reference/events-that-trigger-workflows]
@@ -131,6 +134,9 @@ Like this:
 ### Skip workflow runs
 
 [https://docs.github.com/en/actions/how-tos/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs]
+
+
+## Section 5 - Job Artifacts & Outputs
 
 
 ### Upload Artifact
@@ -163,6 +169,9 @@ Like this:
 [https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsshell]
 
 
+## Section 6 - Using Environment Variables & Secrets
+
+
 #### Default Environment Variables
 
 You learned how to set and use your own environment variables.
@@ -175,3 +184,90 @@ These environment variable can, for example, give you quick access to the reposi
 ### Secrets
 
 [https://docs.github.com/pt/actions/how-tos/security-for-github-actions/security-guides/using-secrets-in-github-actions]
+
+
+## Section 7 - Controlling Workflow & Job Execution
+
+
+### Operators
+
+[https://docs.github.com/en/actions/reference/evaluate-expressions-in-workflows-and-actions#operators]
+
+
+## Section 8 - Jobs & Docker Containers
+
+
+### Docker Hub - An exemple of public repository to use on Actions
+
+[https://hub.docker.com/]
+
+
+## Section 9 - Building & Using Custom Actions
+
+### GitHub Actions Marketplace
+
+[https://github.com/marketplace?type=actions]
+
+
+### Metadata syntax for GitHub Actions
+
+[https://docs.github.com/en/actions/reference/metadata-syntax-reference]
+
+
+#### Runs for Javascript Actions
+
+[https://docs.github.com/en/actions/reference/metadata-syntax-reference#runs-for-javascript-actions]
+
+
+### Actions Toolkit
+
+[https://github.com/actions/toolkit]
+
+
+### Amazon AWS
+
+[https://aws.amazon.com/]
+
+
+### Granting read-only permission to a public anonymous user
+
+[https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html#example-bucket-policies-anonymous-user]
+
+
+### AWS SDK for JavaScript
+
+[https://aws.amazon.com/pt/sdk-for-javascript/]
+
+
+### Metadata Syntax - `runs` for Docker container actions
+
+[https://docs.github.com/en/actions/reference/metadata-syntax-reference#runs-for-docker-container-actions]
+
+
+### Storing Actions In Repositories & Sharing Actions With Others
+
+In this module, we created custom Actions that were stored in the same repository as our Workflow(s).
+
+Alternatively, we could've stored the custom Actions in **separate repositories** (which therefore then only include the Action definition + code).
+
+This is actually quite straightforward:
+
+1. Create a new, local project folder which contains your `action.yml` file + all the code belonging to the action (Important: Don't put your `action.yml` file or code in a `.github/actions` folder or anything like that - just keep it directly on the root level of your created project!)
+
+2. Add a local Git repository to your created project (via `git init`)
+
+3. Create your commit(s) via `git add` and `git commit`
+
+4. Create a GitHub repository and connect it to your local Git repository (via `git remote add`)
+
+5. Add a tag via `git tag -a -m "My action release" v1`
+
+6. Push your local code to the remote GitHub repository (via `git push --follow tags`)
+
+7. Use your custom Action in any other Workflow (in any other project and repository) by referencing the repository which contains your action (e.g., `my-account/my-action@v1`)
+
+If your custom Action is stored in a public repository, it can also be published to the GitHub Actions Marketplace as described here: [https://docs.github.com/en/actions/creating-actions/publishing-actions-in-github-marketplace#publishing-an-action]
+
+
+## Section 10 - Security & Permissions
+
