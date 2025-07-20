@@ -271,3 +271,57 @@ If your custom Action is stored in a public repository, it can also be published
 
 ## Section 10 - Security & Permissions
 
+
+### Security Guides - Automatic Token Authentications
+
+[https://docs.github.com/pt/actions/tutorials/use-github_token-in-workflows]
+
+
+### Actions Security - General Configurations
+
+[https://github.com/nezzonarcizo/gha-security-permissions/settings/actions]
+
+
+### OpenID Connect
+
+[https://docs.github.com/en/actions/concepts/security/openid-connect]
+
+
+### Configuring OpenID Connect in Amazon Web Services
+
+[https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services]
+
+
+### Create an OpenID Connect (OIDC) identity provider in IAM (AWS Documentation)
+
+[https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html]
+
+
+### More On GitHub Actions Security
+
+In addition to the concepts covered in this module, you should absolutely also explore the security guides by GitHub itself:
+
+- General overview & important concepts: [https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions]
+
+- More on Secrets: [https://docs.github.com/en/actions/security-guides/encrypted-secrets]
+
+- Using `GITHUB_TOKEN`: [https://docs.github.com/en/actions/security-guides/automatic-token-authentication]
+
+- Advanced - Preventing Fork Pull Requests Attacks: [https://securitylab.github.com/research/github-actions-preventing-pwn-requests/]
+
+- Security Hardening with OpenID Connect: [https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect]
+
+
+### Bonus Lecture
+
+If you enjoyed this course, you might enjoy my other courses & tutorials as well.
+
+- You find a full list of my courses here: [https://academind.com/courses]
+
+- You can also get all my courses in a monthly or yearly subscription package: [https://pro.academind.com/]
+
+- More tutorials can be found here: [https://academind.com/tutorials]
+
+- Also visit my YouTube channel for more content: [https://youtube.com/c/academind]
+
+- Or follow me on Twitter: [https://twitter.com/maxedapps] (or: [https://twitter.com/academind_real])
