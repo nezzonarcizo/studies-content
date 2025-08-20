@@ -3,6 +3,7 @@
 -4. Ubuntu 22 - Instalação básica do Python e o VSCode
 
 -Comandos
+
 https://gist.github.com/luizomf/8623264cbf69cd2619bcdee258628f41
 
 -Escolher versão do Python3
@@ -32,3 +33,6 @@ https://gist.github.com/luizomf/688c8a48fe007829c120818138ac2317
 
 -*- Seção 3: Iniciando na programação com Python (Lógica de programação básica)
 
+-58. Tipos embutidos
+
+https://docs.python.org/pt-br/3/library/stdtypes.html
