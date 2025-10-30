@@ -36,21 +36,3 @@ https://gist.github.com/luizomf/688c8a48fe007829c120818138ac2317
 -58. Tipos embutidos
 
 https://docs.python.org/pt-br/3/library/stdtypes.html
-
-
-
-amazon-eks-node-1.30-v20251016
-ami-0784db2711ef5cb4e
-EKS Kubernetes Worker AMI with AmazonLinux2 image, (k8s: 1.30.14, containerd: 1.7.27-1.eks.amzn2.0.4)
-
-OwnerAlias: amazon
-Platform: –
-Architecture: x86_64
-Owner: 602401143452
-Publish date: 2025-10-17
-Root device type: ebs
-Virtualization: hvm
-ENA enabled: Yes
-
-
-ami-0c697b3e7af0e57be
