@@ -1008,6 +1008,8 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 >debian-based images with apt, you can add it with `apt-get update && apt-get install procps`
 
 
+## 7 - Dockerfile ENTRYPOINT
+
 ### Docs: Dockerfile reference
 
 [https://docs.docker.com/reference/dockerfile/]
@@ -1077,6 +1079,9 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 
 [https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
 
+### Assignment 2: Your Homework
+
+[https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
 
 ### Assignment 2 Answer: Startup Scripts
 
