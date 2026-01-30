@@ -1087,3 +1087,35 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 
 [https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
 
+
+## 8 - Making it Easier with Docker Compose: The Multi-Container Tool
+
+### Docker Compose and The docker-compose.yml
+
+[Legacy Versions](https://docs.docker.com/reference/compose-file/legacy-versions/)
+
+[Releases](https://github.com/docker/compose/releases)
+
+[YAML Ain't Makup Language](https://yaml.org/)
+
+[JS-YAML demo. YAML JavaScript parser](https://nodeca.github.io/js-yaml/)
+
+
+### Trying Out Basic Compose Commands
+
+[docker/compose](https://github.com/docker/compose/releases)
+
+[Only one host for production environment. What to use: docker-compose or single node swarm](https://github.com/BretFisher/ama/discussions/146)
+
+
+### Compose-Assignment-1: Build a Compose File for a Multi-Container Project
+
+[Compose File Reference](https://docs.docker.com/reference/compose-file/)
+
+[Legacy Container Links](https://docs.docker.com/engine/network/links/)
+
+
+### Adding Image Building to Compose Files
+
+
+[Compose Build Specification](https://docs.docker.com/reference/compose-file/build/)
