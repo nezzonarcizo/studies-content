@@ -1,1 +1,45 @@
 # create your drupal and postgres config here, based off the last assignment
+# Drupal with PostgreSQL
+#
+# Access via "http://localhost:8080"
+#
+# During initial Drupal setup,
+# Database type: PostgreSQL
+# Database name: postgres
+# Database username: postgres
+# Database password: example
+# ADVANCED OPTIONS; Database host: postgres
+
+services:
+  drupal-cms-website-2:
+    image: custom-drupal
+    build: .
+    ports:
+      - 8080:80
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-themes:/var/www/html/themes
+      # this takes advantage of the feature in Docker that a new anonymous
+      # volume (which is what we're creating here) will be initialized with the
+      # existing content of the image at the same location
+      - drupal-sites:/var/www/html/sites
+    restart: always
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: 12345678
+    restart: always
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+
+volumes:
+  drupal-data: 
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+
+# After use you need to include the -v in the command to delete the volumes
+# docker compose down -v

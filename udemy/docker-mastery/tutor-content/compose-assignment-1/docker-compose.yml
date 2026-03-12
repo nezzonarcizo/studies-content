@@ -28,4 +28,13 @@ services:
     image: postgres:14
     environment:
       POSTGRES_PASSWORD: 12345678
-    restart: always    
+    restart: always
+
+volumes:
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+
+# After use you need to include the -v in the command to delete the volumes
+# docker compose down -v

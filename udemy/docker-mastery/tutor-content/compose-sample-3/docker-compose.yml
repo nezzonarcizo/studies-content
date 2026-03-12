@@ -20,3 +20,6 @@ services:
     image: httpd
     volumes:
       - ./html:/usr/local/apache2/htdocs/
+
+# In this case, to delete the image that was built and save in your cache you need to use another flag
+# docker compose down --rmi
