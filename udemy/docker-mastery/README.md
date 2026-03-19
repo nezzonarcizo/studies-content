@@ -1270,7 +1270,7 @@ This is a good thing, and doesn't affect the functionality of Swarm. It's just a
 
 **You'll hear me talking about Docker Machine in various lectures. Docker has stopped support for docker-machine**, and we mostly have better tools for this now.
 
-### Use Multipass as a better option for managing multiple local VMs
+#### Use Multipass as a better option for managing multiple local VMs
 
 If you'd like to create multiple VM's for setting up Swarm or K8s clusters, use [multipass.run](https://canonical.com/multipass)
 
@@ -1278,7 +1278,53 @@ Multipass creates full Ubuntu server VM on your Host machine using various virtu
 
 Once you have Multipass VM's created, then install docker and/or kubernetes inside them (`multipass shell <name>` gets you into the VM shell, `multipass mount` can connect a host directory into the VM, and `multipass transfer` can copy files in.)
 
-### Background on Docker Machine depreciation
+#### Background on Docker Machine depreciation
 
 docker-machine which was used to create VMs with docker pre-installed. The last release from 2019 is archived on [github](https://github.com/docker-archive-public/docker.machine/releases/tag/v0.16.2). There isn't anything wrong with docker machine, Docker simply shifted focus from creating virtual machines. Today there are better alternatives like [multipass](https://canonical.com/multipass). For the course, you can still choose to use docker-machine but multipass is the best option. You can see me discuss multipass on my [live show](https://www.youtube.com/watch?v=0Jipb9fhpIw&t=641s).
+
+
+### Creating a 3-Node Swarm Cluster
+
+[How to Add SSH Keys to New or Existing Droplets](https://docs.digitalocean.com/products/droplets/how-to/add-ssh-keys/)
+
+[Docker Swarm Firewall Ports](https://www.bretfisher.com/blog/docker-swarm-firewall-ports)
+
+[How To Configure Custom Connection Options for your SSH Client](https://www.digitalocean.com/community/tutorials/how-to-configure-custom-connection-options-for-your-ssh-client)
+
+[Deprecated and retired Docker products and features](https://docs.docker.com/retired/)
+
+[The Inference Cloud built for scale — without complexity or surprise costs.](https://www.digitalocean.com/?refcode=ee97875d52fa&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=CopyPaste)
+
+
+
+## 10 - Swarm Basic Features and How to Use Them In Your Workflow
+
+### Sections Requirements for Swarm, Drupal and Postgres
+
+#### Swarm Multi-Node Clusters
+
+In the last section, you set up a multi-node Swarm.**In this section, I will teach using that multi-node Swarm cluster in various ways, but you can always do your part on a single-node Swarm if a multi-node is too much to build or maintain.**  Nearly everything in Swarm behaves the same in a single-node vs. multi-node, except that the Scheduler will assign Service Replicas to different nodes if you have more than one node in your cluster. How and if you want to learn on a multi-node cluster is up to you.
+
+#### Drupal and Postgres Versions
+
+Due to recent breaking changes in Drupal, **be sure you're using the below versions in docker commands and YAML, so that it'll work as expected.** While a lecture video might show a slightly older version, know that any code examples and answer files in the course repository have been updated to reflect these versions:
+
+```YAML
+drupal:9
+postgres:14
+```
+
+### Jan 2025: Bug in Play-with-Docker Swarm networking
+
+Read this if you're using Play-with-Docker to run these Swarm examples.
+
+As of December 2024, there's a bug in Play with Docker's Swarm networking that somehow prevents Swarm from auto-creating the default bridge network `docker_gwbridge`. You'll see that network listed in the next Udemy Lecture, and if you do a `docker network ls` in your PWD instances after Swarm has been initialized and you find the `docker_gwbridge` missing, then you can manually create it, which should fix the issue.
+
+`docker network create -d bridge docker_gwbridge`
+
+Once I've confirmed that Docker's fixed the issue, I'll remove this Lecture.
+
+### Scaling Out with Routing Mesh
+
+[Use Swarm mode routing mesh](https://docs.docker.com/engine/swarm/ingress/)
 
