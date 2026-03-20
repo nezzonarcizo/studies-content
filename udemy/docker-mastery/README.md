@@ -1324,7 +1324,22 @@ As of December 2024, there's a bug in Play with Docker's Swarm networking that s
 
 Once I've confirmed that Docker's fixed the issue, I'll remove this Lecture.
 
+
 ### Scaling Out with Routing Mesh
 
 [Use Swarm mode routing mesh](https://docs.docker.com/engine/swarm/ingress/)
 
+
+### Swarm Stacks and Production Grade Compose
+
+[Only one host for production environment. What to use: docker-compose or single node swarm?](https://github.com/BretFisher/ama/discussions/146)
+
+
+### Using Secrets in Swarm Services
+
+[Manage sensitive data with Docker secrets](https://docs.docker.com/engine/swarm/secrets/)
+
+
+### Using Secrets with Swarm Stacks
+
+[Secrets](https://docs.docker.com/reference/compose-file/secrets/)
