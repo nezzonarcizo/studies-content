@@ -1,5 +1,6 @@
 # Docker Mastery: with Kubernetes + Swarm from a Docker Captain
 
+
 ## 1 - Quick Start!
 
 ### Kubernetes vs Docker
@@ -53,6 +54,7 @@
 ### Why Docker? Why Now in 2025? (Class on GitHub)
 
 [https://github.com/BretFisher/udemy-docker-mastery/blob/main/intro/why-docker/why-docker.md]
+
 
 
 ## 2 - Course Introduction
@@ -313,6 +315,7 @@
 | **Security**            | Strong (full OS isolation)                  | Moderate (kernel shared with host)             |
 
 
+
 ## 3 - The Best Way to Setup Docker for your OS
 
 
@@ -521,6 +524,7 @@
 >**2017** Versions are now `YY.MM`  based (like Ubuntu). There may be mentions
 >of `1.12`  and `1.13`  in this course, which were the two versions before the
 >date-based version changes.
+
 
 
 ## 4 - Creating and Using Containers Like a Boss
@@ -749,6 +753,7 @@
 [https://en.wikipedia.org/wiki/Round-robin_DNS]
 
 
+
 ## 5 - Container Images, Where to Find Them and How to Build Them
 
 
@@ -794,6 +799,7 @@
 >Lastly, realize that the Linux VM will *eventually* auto-shrink. You may
 >not see the free space on your host OS right away, and it may take Docker
 >a restart and some idle time before it completes a VM shrink.
+
 
 
 ## 6 -  Persistent Data: Volumes, Volumes, Volumes XD
@@ -1008,6 +1014,7 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 >debian-based images with apt, you can add it with `apt-get update && apt-get install procps`
 
 
+
 ## 7 - Dockerfile ENTRYPOINT
 
 ### Docs: Dockerfile reference
@@ -1086,6 +1093,7 @@ sub-processes as the nginx user (ID 101), which keeps it more secure.
 ### Assignment 2 Answer: Startup Scripts
 
 [https://github.com/BretFisher/udemy-docker-mastery/tree/main/dockerfiles/entrypoint/assignment02]
+
 
 
 ## 8 - Making it Easier with Docker Compose: The Multi-Container Tool
@@ -1219,6 +1227,7 @@ Where it’s created:
 > To clean all the volumes, after `docker compose down` add the `-v` parameter.
 
 
+
 ## 9 - Swarm Intro and Creating a 3-Node Swarm Cluster
 
 [Docker 1.12 Swarm Mode Deep Dive Part 1: Topology](https://www.youtube.com/watch?v=dooPhkXT9yI)
@@ -1343,3 +1352,30 @@ Once I've confirmed that Docker's fixed the issue, I'll remove this Lecture.
 ### Using Secrets with Swarm Stacks
 
 [Secrets](https://docs.docker.com/reference/compose-file/secrets/)
+
+
+
+## 11 - Swarm App Lifecycle
+
+
+### Full App Lifecycle: Dev, Build and Deploy with a Single Compose Design
+
+[Extend your Compose file](https://docs.docker.com/compose/how-tos/multiple-compose-files/extends/#multiple-compose-files)
+
+[Use Compose in Production](https://docs.docker.com/compose/how-tos/production/)
+
+
+### Service Updates: Changing Things in Flight
+
+[Docker Service Update](https://docs.docker.com/reference/cli/docker/service/update/)
+
+
+### Healthchecks in Dockerfiles
+
+[php-docker-good-defaults](https://github.com/BretFisher/php-docker-good-defaults)
+
+[HEALTHCHECK](https://docs.docker.com/reference/dockerfile#healthcheck:~:text=docker%20create.-,HEALTHCHECK,-The%20HEALTHCHECK%20instruction)
+
+[Compose File Reference](https://docs.docker.com/reference/compose-file/#healthcheck)
+
+
