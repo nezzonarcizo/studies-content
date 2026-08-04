@@ -1378,4 +1378,3 @@ Once I've confirmed that Docker's fixed the issue, I'll remove this Lecture.
 
 [Compose File Reference](https://docs.docker.com/reference/compose-file/#healthcheck)
 
-
