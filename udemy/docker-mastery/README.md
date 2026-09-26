@@ -1378,3 +1378,114 @@ Once I've confirmed that Docker's fixed the issue, I'll remove this Lecture.
 
 [Compose File Reference](https://docs.docker.com/reference/compose-file/#healthcheck)
 
+
+
+## 12 - Container Registries: Image Storage and Distribution
+
+
+### Docker Hub: Digging Deeper
+
+[Docker Hub](https://hub.docker.com/)
+
+
+### Understanding Docker Registry
+
+[Mirror the Docker Hub Library](https://docs.docker.com/docker-hub/image-library/mirror/)
+
+[Distribution Registry](https://distribution.github.io/distribution/)
+
+[Garbage Collection](https://distribution.github.io/distribution/about/garbage-collection/)
+
+
+### Assignment: Secure Docker Registry with TLS and Authentication
+
+The default registry install is rather bare bones, and is open by default, meaning anyone can push and pull images.  You'll likely want to at least add TLS to it so you can work with it easily via HTTPS, and then also add some basic authentication.  
+
+These aren't actually that hard to setup, but do require some commands.  You can learn the basics by creating a self-signed certificate for HTTPS, and then enabling `htpasswd`  auth, which you'll add users too with basic cli commands.
+
+For this assignment you'll use Play With Docker, a great resource for web-based docker testing and also has a library of labs built by Docker Captains and others, and supported by Docker Inc. 
+
+I'd like you to do the [Part 2 and 3 of "Docker Registry for Linux"](http://training.play-with-docker.com/linux-registry-part2/) for this assignment. You can use their text to do this assignment on your own machine, or [jump back to their Part 1 and run the container on their infrastructure](https://training.play-with-docker.com/linux-registry-part1/) using their web-based interface to a real docker engine and learn how "PWD" works!
+
+For more extra credit labs, look through their growing list: [http://training.play-with-docker.com/](https://training.play-with-docker.com/)
+
+
+### Third Party Image Registries
+
+I've mentioned Docker Hub, Docker Enterprise Edition DTR (Docker Trusted Registry), and Docker Registry as three options for storing your images, but there are many 3rd party options out there.
+
+[Quay.io](https://quay.io/) is a popular choice, and is very comparable to Docker Hub as a cloud-based image registry. Sysdig did a [Docker Usage Report in April 2017](https://www.sysdig.com/blog) based off their users that shows Quay as the most popular cloud-based choice.
+
+If you're on [AWS](https://aws.amazon.com/pt/ecr/), [Azure](https://azure.microsoft.com/en-us/products/container-registry/), or [Google Cloud](https://docs.cloud.google.com/artifact-registry/docs?hl=pt-br), they all have their own registry options that are well integrated with their toolset.
+
+If you want a self-hosted option, there's [Docker EE](https://www.docker.com/#/container_management), [Quay Enterprise](https://quay.io/plans/?tab=enterprise), and also GitLab, which comes with [GitLab Container Registry](https://docs.gitlab.com/user/packages/container_registry/), among others.
+
+There's a much larger list of registries over at the [Awesome Docker](https://github.com/veggiemonk/awesome-docker#hosting-images-registries) list.
+
+## 13 - Docker in Production
+
+### The Future of Swarm
+
+#### In 2020, What's Up with Swarm's Latest Features?
+
+With all the media excitement about the never-ending new Kubernetes projects, Swarm news can get drowned out. I've written articles on
+Swarm in 2018, and updated in 2019, and now there's more news in 2020, so I made a Youtube Live about everything going on.
+
+Basically, Mirantis is pledging public support in 2020 and beyond by growing the Swarm/SwarmKit team and telling us about planned new 
+features.
+
+[See the whole video on YouTube](https://www.youtube.com/watch?t=223&v=L5N43aQQArw&feature=youtu.be)
+
+
+### Swarm Raft Quorum and Recovery (Laura Frank from DockerCon 2017)
+
+Also from DockerCon 2017, fellow Docker Captain and friend [Laura Frank](https://x.com/rhein_wein) had a great session on the internals
+of Swarm Managers and how quorum of their Raft log works, called ["Everything you thought you already knew about Orchestration"](https://x.com/rhein_wein). She goes into the math of how you always need an odd number of managers, and what happens when one or more
+fail.
+
+She then shows various recovery options in case you "loose quorum" in your Swarm cluster. This video is demo heavy, so it's worth watching the whole thing!
+
+Watch on YouTube: [Everything you thought you already knew about Orchestration](https://www.youtube.com/watch?v=Qsv-q8WbIZY)
+
+
+## 14 - The What and Why of Kubernetes
+
+### What is Kubernetes?
+
+[History of Kubernetes](https://en.wikipedia.org/wiki/Kubernetes)
+
+[Kubernetes Home Page](https://kubernetes.io/)
+
+
+### Why Kubernetes?
+
+[List of Certified Kubernetes Distributions](https://kubernetes.io/partners/#conformance)
+
+
+## 15 - Kubernetes Architecture and Install
+
+### Kubernetes Architecture Terminology
+
+[Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/#master-components)
+
+
+### Kubernetes Local Install
+
+[Minikube Download](https://github.com/kubernetes/minikube/releases/)
+
+[Microk8s for Linux Hosts](https://github.com/canonical/microk8s)
+
+[Install kubectl on Windows - Without Docker Desktop](https://kubernetes.io/docs/tasks/tools/#install-kubectl-on-windows)
+
+[Play-with-K8s in a Browser](https://labs.play-with-k8s.com/)
+
+[Killercoda: K8s labs in your browser](https://killercoda.com/)
+
+
+### Kubernetes Container Abstractions
+
+[Pod Overview (docs)](https://kubernetes.io/docs/concepts/workloads/pods/)
+
+[Service (docs)](https://kubernetes.io/docs/concepts/services-networking/service/)
+
+[Namespace (docs)](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
